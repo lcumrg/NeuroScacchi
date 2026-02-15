@@ -1,0 +1,111 @@
+:root {
+  /* Palette Colori NeuroScacchi */
+  --bg-main: #F8F9FA;
+  --bg-card: #FFFFFF;
+  --text-primary: #2C3E50;
+  --text-secondary: #5A6C7D;
+  
+  /* Colori Pulsanti Intent */
+  --color-attack: #FFB74D;
+  --color-develop: #81C784;
+  --color-defend: #64B5F6;
+  
+  /* Feedback */
+  --feedback-positive: #E8F5E9;
+  --feedback-negative: #FFEBEE;
+  --feedback-neutral: #FFF9C4;
+  
+  /* Bordi e Ombre */
+  --border-color: #E0E0E0;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
+  
+  /* Scacchiera */
+  --square-light: #E8E8E8;
+  --square-dark: #B8B8B8;
+  
+  /* Transizioni */
+  --transition-fast: 0.2s ease;
+  --transition-medium: 0.3s ease;
+  --transition-slow: 0.5s ease;
+  
+  /* Typography */
+  --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-main);
+  background: var(--bg-main);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Animazioni */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+/* Utility Classes */
+.fade-in {
+  animation: fadeIn var(--transition-medium);
+}
+
+.shake {
+  animation: shake 0.4s;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+}

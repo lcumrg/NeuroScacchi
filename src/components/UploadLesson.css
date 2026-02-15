@@ -1,0 +1,126 @@
+.upload-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.upload-modal {
+  background: var(--bg-card);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  max-width: 600px;
+  width: 90%;
+  animation: slideUp 0.4s ease;
+}
+
+.upload-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.upload-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.upload-content {
+  padding: 24px;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-label {
+  display: block;
+  padding: 40px;
+  background: var(--bg-main);
+  border: 2px dashed var(--border-color);
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.file-label:hover {
+  border-color: var(--color-develop);
+  background: var(--feedback-positive);
+}
+
+.validation-result {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.validation-result.valid {
+  background: var(--feedback-positive);
+  border-left: 4px solid var(--color-develop);
+}
+
+.validation-result.invalid {
+  background: var(--feedback-negative);
+  border-left: 4px solid var(--color-attack);
+}
+
+.validation-errors ul,
+.validation-warnings ul {
+  margin: 8px 0 0 20px;
+  font-size: 14px;
+}
+
+.upload-actions {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 12px;
+}
+
+.btn-cancel-upload,
+.btn-confirm-upload {
+  flex: 1;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-cancel-upload {
+  background: var(--bg-main);
+  border: 2px solid var(--border-color);
+}
+
+.btn-confirm-upload {
+  background: var(--color-develop);
+  color: white;
+  border: none;
+}
+
+.btn-confirm-upload:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

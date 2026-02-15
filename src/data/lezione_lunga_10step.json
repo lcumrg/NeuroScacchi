@@ -1,0 +1,211 @@
+{
+  "id": "attacco_centro_completo",
+  "titolo": "Attacco al Centro: Piano Strategico Completo",
+  "descrizione": "Sequenza di 10 mosse per costruire e lanciare un attacco centrale decisivo",
+  "tipo_modulo": "intent_sequenza",
+  "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 5",
+  "categoria": "mediogioco",
+  "difficolta": "difficile",
+  "tempo_stimato": "10 min",
+  "parametri": {
+    "tempo_freeze": 2000,
+    "orientamento_scacchiera": "white",
+    "usa_profilassi": true,
+    "tipo_profilassi": "radar_checklist",
+    "domande_checklist": [
+      "Il mio Re è al sicuro dopo questa mossa?",
+      "Sto lasciando pezzi indifesi?",
+      "L'avversario può controattaccare efficacemente?"
+    ]
+  },
+  "steps": [
+    {
+      "numero": 1,
+      "domanda": "Il Nero ha sviluppato i cavalli. Qual è la priorità del Bianco?",
+      "opzioni_risposta": [
+        "Attaccare immediatamente con d4",
+        "Mettere il Re al sicuro con l'arrocco",
+        "Sviluppare la donna prematuramente"
+      ],
+      "risposta_corretta": "Mettere il Re al sicuro con l'arrocco",
+      "mosse_consentite": ["e1g1", "d2d4", "d1e2"],
+      "mosse_corrette": ["e1g1"],
+      "mostra_chunk_visivo": ["g1", "f1", "h1"],
+      "frecce_pattern": [
+        { "from": "e1", "to": "g1" }
+      ],
+      "feedback": "Perfetto! Prima sicurezza, poi attacco. Step 2..."
+    },
+    {
+      "numero": 2,
+      "fen_aggiornata": "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 1 5",
+      "domanda": "Il Nero arrocca. Ora quale pezzo migliorare?",
+      "opzioni_risposta": [
+        "Portare il Cavallo da b1 a c3",
+        "Spingere subito d4",
+        "Sviluppare l'alfiere camposcuro"
+      ],
+      "risposta_corretta": "Portare il Cavallo da b1 a c3",
+      "mosse_consentite": ["b1c3", "d2d4", "c1e3"],
+      "mosse_corrette": ["b1c3"],
+      "mostra_chunk_visivo": ["c3", "d5"],
+      "frecce_pattern": [
+        { "from": "c3", "to": "d5" }
+      ],
+      "feedback": "Ottimo! Il Cavallo in c3 sostiene l'avanzata centrale. Step 3..."
+    },
+    {
+      "numero": 3,
+      "fen_aggiornata": "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQ1RK1 w kq - 2 6",
+      "domanda": "Tutti i pezzi leggeri sviluppati. Quale spinta centrale?",
+      "opzioni_risposta": [
+        "Avanzare d4 per aprire il centro",
+        "Spingere c3 per consolidare",
+        "Attaccare sul lato con h3"
+      ],
+      "risposta_corretta": "Avanzare d4 per aprire il centro",
+      "mosse_consentite": ["d2d4", "c2c3", "h2h3"],
+      "mosse_corrette": ["d2d4"],
+      "mostra_chunk_visivo": ["d4", "d5", "e5"],
+      "frecce_pattern": [
+        { "from": "d4", "to": "e5" }
+      ],
+      "feedback": "Esatto! d4 apre linee e sfida il centro nero. Step 4..."
+    },
+    {
+      "numero": 4,
+      "fen_aggiornata": "r1bqkb1r/pppp1ppp/2n2n2/4p3/2BPP3/2N2N2/PPP2PPP/R1BQ1RK1 b kq d3 0 6",
+      "domanda": "Il Nero cattura exd4. Come riprendere?",
+      "opzioni_risposta": [
+        "Con il Cavallo Cxd4 (Centralizza pezzo)",
+        "Con il pedone cxd4 (Mantiene catena)",
+        "Non riprendere e sviluppare"
+      ],
+      "risposta_corretta": "Con il Cavallo Cxd4 (Centralizza pezzo)",
+      "mosse_consentite": ["c3d4", "c2c3"],
+      "mosse_corrette": ["c3d4"],
+      "mostra_chunk_visivo": ["d4", "f5", "e6"],
+      "frecce_pattern": [
+        { "from": "d4", "to": "f5" },
+        { "from": "d4", "to": "e6" }
+      ],
+      "feedback": "Perfetto! Il Cavallo centralizzato domina. Profilassi attiva sul prossimo step..."
+    },
+    {
+      "numero": 5,
+      "fen_aggiornata": "r1bqkb1r/pppp1ppp/2n2n2/8/2BNP3/5N2/PPP2PPP/R1BQ1RK1 w kq - 0 7",
+      "domanda": "Il Cavallo in d4 è forte. Come aumentare la pressione?",
+      "opzioni_risposta": [
+        "Sviluppare l'Alfiere in g5 (Inchioda Cavallo)",
+        "Portare la Regina in d2",
+        "Spingere f4 per attaccare"
+      ],
+      "risposta_corretta": "Sviluppare l'Alfiere in g5 (Inchioda Cavallo)",
+      "mosse_consentite": ["c1g5", "d1d2", "f2f4"],
+      "mosse_corrette": ["c1g5"],
+      "mostra_chunk_visivo": ["g5", "f6", "d8"],
+      "frecce_pattern": [
+        { "from": "g5", "to": "f6" },
+        { "from": "g5", "to": "d8" }
+      ],
+      "feedback": "Ottimo! Ag5 inchioda e prepara tattiche. ATTENZIONE: Prossima mossa critica, usa profilassi!"
+    },
+    {
+      "numero": 6,
+      "fen_aggiornata": "r1bqkb1r/pppp1ppp/2n2n2/6B1/2BNP3/5N2/PPP2PPP/R2Q1RK1 b kq - 1 7",
+      "domanda": "Il Nero difende con Ae7. Quale tattica applicare?",
+      "opzioni_risposta": [
+        "Catturare Axf6 per rovinare struttura pedonale",
+        "Ritirarsi con Af4",
+        "Attaccare con Dd3"
+      ],
+      "risposta_corretta": "Catturare Axf6 per rovinare struttura pedonale",
+      "mosse_consentite": ["g5f6", "g5f4", "d1d3"],
+      "mosse_corrette": ["g5f6"],
+      "mostra_chunk_visivo": ["f6", "g7", "h7"],
+      "frecce_pattern": [
+        { "from": "f6", "to": "g7" }
+      ],
+      "feedback": "Esatto! Axf6 debilita la difesa del Re nero. Step 7..."
+    },
+    {
+      "numero": 7,
+      "fen_aggiornata": "r1bqk2r/ppppbBpp/2n5/8/2BNP3/5N2/PPP2PPP/R2Q1RK1 w kq - 0 8",
+      "domanda": "Dopo Aexf6, quale pezzo portare all'attacco?",
+      "opzioni_risposta": [
+        "La Regina in d3 puntando h7",
+        "La Torre in e1 sulla colonna aperta",
+        "Il Cavallo in f5"
+      ],
+      "risposta_corretta": "La Regina in d3 puntando h7",
+      "mosse_consentite": ["d1d3", "f1e1", "f3g5"],
+      "mosse_corrette": ["d1d3"],
+      "mostra_chunk_visivo": ["d3", "h7", "h3"],
+      "frecce_pattern": [
+        { "from": "d3", "to": "h7" },
+        { "from": "d3", "to": "h3" }
+      ],
+      "feedback": "Perfetto! Dd3 minaccia Dh7#. Il Nero deve difendere. Step 8..."
+    },
+    {
+      "numero": 8,
+      "fen_aggiornata": "r1b1k2r/ppppqBpp/2n5/8/2BNP3/3Q1N2/PPP2PPP/R4RK1 b kq - 1 8",
+      "domanda": "Il Nero difende h7 con De7. Come aumentare l'attacco?",
+      "opzioni_risposta": [
+        "Portare il Cavallo in g5 (Pressione su f7)",
+        "Raddoppiare le torri",
+        "Spingere h4"
+      ],
+      "risposta_corretta": "Portare il Cavallo in g5 (Pressione su f7)",
+      "mosse_consentite": ["f3g5", "a1e1", "h2h4"],
+      "mosse_corrette": ["f3g5"],
+      "mostra_chunk_visivo": ["g5", "f7", "h7"],
+      "frecce_pattern": [
+        { "from": "g5", "to": "f7" },
+        { "from": "g5", "to": "h7" }
+      ],
+      "feedback": "Ottimo! Cg5 attacca f7 e h7 simultaneamente. CRITICO: Prossima mossa decisiva!"
+    },
+    {
+      "numero": 9,
+      "fen_aggiornata": "r1b1k2r/ppppqBpp/2n5/6N1/2BNP3/3Q4/PPP2PPP/R4RK1 w kq - 2 9",
+      "domanda": "Il Nero è sotto pressione. Come concludere l'attacco?",
+      "opzioni_risposta": [
+        "Sacrificio Cxf7! (Distrugge difese)",
+        "Continuare con Df5",
+        "Consolidare con Tae1"
+      ],
+      "risposta_corretta": "Sacrificio Cxf7! (Distrugge difese)",
+      "mosse_consentite": ["g5f7", "d3f5", "a1e1"],
+      "mosse_corrette": ["g5f7"],
+      "mostra_chunk_visivo": ["f7", "e8", "h8"],
+      "frecce_pattern": [
+        { "from": "f7", "to": "e8" },
+        { "from": "f7", "to": "h8" }
+      ],
+      "feedback": "BRILLANTE! Cxf7 è un sacrificio posizionale devastante. Step finale..."
+    },
+    {
+      "numero": 10,
+      "fen_aggiornata": "r1b1k2r/ppppqNpp/2n5/8/2BNP3/3Q4/PPP2PPP/R4RK1 b kq - 0 9",
+      "domanda": "Dopo Cxf7, il Re è esposto. Come dare lo scacco decisivo?",
+      "opzioni_risposta": [
+        "Dh7+ seguita da matto",
+        "Cf5+ con doppia minaccia",
+        "Axf7+ aprendo linee"
+      ],
+      "risposta_corretta": "Cf5+ con doppia minaccia",
+      "mosse_consentite": ["d4f5", "d3h7", "c4f7"],
+      "mosse_corrette": ["d4f5"],
+      "mostra_chunk_visivo": ["f5", "d6", "e7", "g7"],
+      "frecce_pattern": [
+        { "from": "f5", "to": "d6" },
+        { "from": "f5", "to": "e7" },
+        { "from": "f5", "to": "g7" }
+      ],
+      "feedback_finale": "🎉 MAGISTRALE! Cf5+ è devastante: minaccia Cd6+ (forchetta Re-Donna) e Cxe7+. Il Nero è perduto. Hai eseguito un attacco centrale perfetto in 10 mosse: 0-0 → Cc3 → d4 → Cxd4 → Ag5 → Axf6 → Dd3 → Cg5 → Cxf7! → Cf5+. Strategia impeccabile!"
+    }
+  ],
+  "feedback_positivo": "Sequenza d'attacco completata! Hai dimostrato eccellente visione strategica.",
+  "feedback_negativo": "Questa sequenza richiede profonda comprensione. Studia ogni step con attenzione e riprova."
+}

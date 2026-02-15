@@ -1,0 +1,206 @@
+{
+  "id": "attacco_centro_completo_v2",
+  "titolo": "Attacco al Centro: Piano Strategico Completo",
+  "descrizione": "Sequenza di 10 mosse per costruire e lanciare un attacco centrale decisivo",
+  "tipo_modulo": "intent_sequenza",
+  "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 5",
+  "categoria": "mediogioco",
+  "difficolta": "difficile",
+  "tempo_stimato": "10 min",
+  "parametri": {
+    "tempo_freeze": 2000,
+    "orientamento_scacchiera": "white",
+    "usa_profilassi": true,
+    "tipo_profilassi": "radar_checklist",
+    "domande_checklist": [
+      "Il mio Re è al sicuro dopo questa mossa?",
+      "Sto lasciando pezzi indifesi?",
+      "L'avversario può controattaccare efficacemente?"
+    ]
+  },
+  "steps": [
+    {
+      "numero": 1,
+      "domanda": "Il Nero ha sviluppato entrambi i cavalli. Qual è la priorità del Bianco?",
+      "opzioni_risposta": [
+        "Spingere d4 per conquistare il centro",
+        "Arroccare corto per mettere il Re al sicuro",
+        "Portare la donna in e2"
+      ],
+      "risposta_corretta": "Arroccare corto per mettere il Re al sicuro",
+      "mosse_consentite": ["e1g1", "d2d4", "d1e2"],
+      "mosse_corrette": ["e1g1"],
+      "mostra_chunk_visivo": ["g1", "f1"],
+      "frecce_pattern": [
+        { "from": "e1", "to": "g1" }
+      ],
+      "feedback": "Corretto! Sicurezza del Re prima dell'attacco. Il Nero arrocca anche lui..."
+    },
+    {
+      "numero": 2,
+      "fen_aggiornata": "r1bqk2r/ppppbppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQ1RK1 w kq - 6 6",
+      "domanda": "Entrambi hanno arroccato. Quale pezzo sviluppare ora?",
+      "opzioni_risposta": [
+        "Il cavallo da b1 verso il centro",
+        "Spingere d4 immediatamente",
+        "L'alfiere camposcuro in g5"
+      ],
+      "risposta_corretta": "Il cavallo da b1 verso il centro",
+      "mosse_consentite": ["b1c3", "d2d4", "c1g5"],
+      "mosse_corrette": ["b1c3"],
+      "mostra_chunk_visivo": ["c3", "d5"],
+      "frecce_pattern": [
+        { "from": "c3", "to": "d5" }
+      ],
+      "feedback": "Bene! Cc3 supporta l'avanzata d4. Il Nero gioca d6..."
+    },
+    {
+      "numero": 3,
+      "fen_aggiornata": "r1bq1rk1/ppp1bppp/2np1n2/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQ1RK1 w - - 0 7",
+      "domanda": "Tutti i pezzi leggeri sono sviluppati. Quale rottura centrale?",
+      "opzioni_risposta": [
+        "Avanzare d4 per aprire linee",
+        "Consolidare con c3",
+        "Attaccare sul lato con h3"
+      ],
+      "risposta_corretta": "Avanzare d4 per aprire linee",
+      "mosse_consentite": ["d2d4", "c2c3", "h2h3"],
+      "mosse_corrette": ["d2d4"],
+      "mostra_chunk_visivo": ["d4", "e5"],
+      "frecce_pattern": [
+        { "from": "d4", "to": "e5" }
+      ],
+      "feedback": "Esatto! d4 sfida il centro. Il Nero cattura exd4..."
+    },
+    {
+      "numero": 4,
+      "fen_aggiornata": "r1bq1rk1/ppp1bppp/2np1n2/8/2BpP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 8",
+      "domanda": "Il Nero ha catturato exd4. Come riprendere?",
+      "opzioni_risposta": [
+        "Con il cavallo Cxd4",
+        "Con il pedone c3xd4",
+        "Non riprendere e giocare Ae3"
+      ],
+      "risposta_corretta": "Con il cavallo Cxd4",
+      "mosse_consentite": ["c3d4", "c2d4", "c1e3"],
+      "mosse_corrette": ["c3d4"],
+      "mostra_chunk_visivo": ["d4", "f5", "e6"],
+      "frecce_pattern": [
+        { "from": "d4", "to": "f5" },
+        { "from": "d4", "to": "e6" }
+      ],
+      "feedback": "Perfetto! Il cavallo centralizzato domina. Il Nero gioca Ag4..."
+    },
+    {
+      "numero": 5,
+      "fen_aggiornata": "r2q1rk1/ppp1bppp/2np1n2/8/2BNP1b1/5N2/PPP2PPP/R1BQ1RK1 w - - 2 9",
+      "domanda": "Il Nero inchioda il tuo cavallo in f3. Come aumentare la pressione?",
+      "opzioni_risposta": [
+        "Sviluppare l'alfiere in e3",
+        "Scambiare con h3 per eliminare l'alfiere",
+        "Portare la regina in d2"
+      ],
+      "risposta_corretta": "Scambiare con h3 per eliminare l'alfiere",
+      "mosse_consentite": ["c1e3", "h2h3", "d1d2"],
+      "mosse_corrette": ["h2h3"],
+      "mostra_chunk_visivo": ["h3", "g4"],
+      "frecce_pattern": [
+        { "from": "h3", "to": "g4" }
+      ],
+      "feedback": "Corretto! h3 costringe lo scambio. Il Nero cattura Axf3..."
+    },
+    {
+      "numero": 6,
+      "fen_aggiornata": "r2q1rk1/ppp1bppp/2np1n2/8/2BNP3/5N1P/PPP2PP1/R1BQ1RK1 b - - 0 9",
+      "domanda": "Il Nero ha catturato Axf3. Come riprendere?",
+      "opzioni_risposta": [
+        "Con la donna Dxf3",
+        "Con il pedone gxf3",
+        "Non riprendere"
+      ],
+      "risposta_corretta": "Con la donna Dxf3",
+      "mosse_consentite": ["d1f3", "g2f3"],
+      "mosse_corrette": ["d1f3"],
+      "mostra_chunk_visivo": ["f3", "h5"],
+      "frecce_pattern": [
+        { "from": "f3", "to": "h5" }
+      ],
+      "feedback": "Ottimo! La donna è attiva. Il Nero gioca Dd7..."
+    },
+    {
+      "numero": 7,
+      "fen_aggiornata": "r4rk1/pppqbppp/2np1n2/8/2BNP3/5Q1P/PPP2PP1/R1B2RK1 w - - 2 11",
+      "domanda": "La donna è centralizzata. Come intensificare l'attacco?",
+      "opzioni_risposta": [
+        "Portare l'alfiere in g5 per inchiodare",
+        "Spingere f4 per aprire la colonna",
+        "Raddoppiare le torri"
+      ],
+      "risposta_corretta": "Portare l'alfiere in g5 per inchiodare",
+      "mosse_consentite": ["c1g5", "f2f4", "a1e1"],
+      "mosse_corrette": ["c1g5"],
+      "mostra_chunk_visivo": ["g5", "f6"],
+      "frecce_pattern": [
+        { "from": "g5", "to": "f6" }
+      ],
+      "feedback": "Perfetto! Ag5 inchioda il cavallo. Il Nero difende con h6..."
+    },
+    {
+      "numero": 8,
+      "fen_aggiornata": "r4rk1/pppqbpp1/2np1n1p/6B1/2BNP3/5Q1P/PPP2PP1/R4RK1 w - - 0 12",
+      "domanda": "Il Nero ha giocato h6. Come rispondere?",
+      "opzioni_risposta": [
+        "Catturare Axf6 per rovinare i pedoni",
+        "Ritirarsi con Ae3",
+        "Intensificare con Df5"
+      ],
+      "risposta_corretta": "Catturare Axf6 per rovinare i pedoni",
+      "mosse_consentite": ["g5f6", "g5e3", "f3f5"],
+      "mosse_corrette": ["g5f6"],
+      "mostra_chunk_visivo": ["f6", "g7"],
+      "frecce_pattern": [
+        { "from": "f6", "to": "g7" }
+      ],
+      "feedback": "Esatto! Axf6 debilita il Re. Il Nero riprende Axf6..."
+    },
+    {
+      "numero": 9,
+      "fen_aggiornata": "r4rk1/pppq1pp1/2np1b1p/8/2BNP3/5Q1P/PPP2PP1/R4RK1 w - - 0 13",
+      "domanda": "I pedoni neri sono deboli. Come sfruttare?",
+      "opzioni_risposta": [
+        "Portare il cavallo in e6 con forchetta",
+        "Spingere e5 per attaccare il cavallo",
+        "Portare la torre in e1"
+      ],
+      "risposta_corretta": "Portare il cavallo in e6 con forchetta",
+      "mosse_consentite": ["d4e6", "e4e5", "f1e1"],
+      "mosse_corrette": ["d4e6"],
+      "mostra_chunk_visivo": ["e6", "d8", "f8"],
+      "frecce_pattern": [
+        { "from": "e6", "to": "d8" },
+        { "from": "e6", "to": "f8" }
+      ],
+      "feedback": "Brillante! Ce6+ fa forchetta. Il Nero deve muovere il Re..."
+    },
+    {
+      "numero": 10,
+      "fen_aggiornata": "r4r2/pppq1ppk/2npNb1p/8/2B1P3/5Q1P/PPP2PP1/R4RK1 w - - 2 14",
+      "domanda": "Il Re nero è in h7. Come concludere?",
+      "opzioni_risposta": [
+        "Catturare la donna con Cxd8",
+        "Dare scacco con Df5+",
+        "Catturare la torre con Cxf8"
+      ],
+      "risposta_corretta": "Catturare la donna con Cxd8",
+      "mosse_consentite": ["e6d8", "f3f5", "e6f8"],
+      "mosse_corrette": ["e6d8"],
+      "mostra_chunk_visivo": ["d8"],
+      "frecce_pattern": [
+        { "from": "e6", "to": "d8" }
+      ],
+      "feedback_finale": "🎉 MAGISTRALE! Cxd8 vince la donna! Hai eseguito un attacco perfetto: 0-0 → Cc3 → d4 → Cxd4 → h3 → Dxf3 → Ag5 → Axf6 → Ce6+ → Cxd8. Sequenza strategica impeccabile con vantaggio decisivo!"
+    }
+  ],
+  "feedback_positivo": "Sequenza d'attacco completata! Hai dimostrato eccellente visione strategica.",
+  "feedback_negativo": "Questa sequenza richiede profonda comprensione. Studia ogni step con attenzione e riprova."
+}

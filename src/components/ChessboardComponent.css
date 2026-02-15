@@ -1,0 +1,51 @@
+.chessboard-wrapper {
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto;
+  animation: fadeIn 0.8s ease;
+}
+
+.chessboard-wrapper.frozen {
+  cursor: not-allowed;
+}
+
+.freeze-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(248, 249, 250, 0.25);
+  backdrop-filter: blur(0.5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  z-index: 10;
+  pointer-events: none;
+  animation: fadeIn 0.3s ease;
+  border: 3px solid rgba(255, 183, 77, 0.6);
+}
+
+.freeze-message {
+  background: rgba(255, 183, 77, 0.95);
+  color: #5D4037;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  animation: pulse 1.5s ease infinite;
+  border: 2px solid #F57C00;
+}
+
+@media (max-width: 768px) {
+  .chessboard-wrapper {
+    max-width: 100%;
+  }
+  
+  .freeze-message {
+    font-size: 16px;
+    padding: 12px 24px;
+  }
+}

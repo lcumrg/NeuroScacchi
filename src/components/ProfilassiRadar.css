@@ -1,0 +1,201 @@
+.profilassi-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.profilassi-modal {
+  background: var(--bg-card);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 0.4s ease;
+}
+
+.profilassi-header {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FFE66D 100%);
+  padding: 20px;
+  border-radius: 16px 16px 0 0;
+  text-align: center;
+  color: #2C3E50;
+}
+
+.profilassi-icon {
+  font-size: 36px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.profilassi-header h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.profilassi-content {
+  padding: 24px;
+}
+
+.profilassi-radar {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--bg-main);
+  border-radius: 12px;
+  border-left: 4px solid var(--color-attack);
+}
+
+.profilassi-radar h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.radar-safe {
+  color: var(--color-develop);
+  font-weight: 600;
+  padding: 12px;
+  background: var(--feedback-positive);
+  border-radius: 8px;
+}
+
+.radar-warnings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radar-warning {
+  padding: 10px 12px;
+  background: var(--feedback-negative);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.profilassi-checklist h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.checklist-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-main);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.checklist-item:hover {
+  background: var(--feedback-neutral);
+  transform: translateX(4px);
+}
+
+.checklist-item input[type="checkbox"] {
+  margin-top: 2px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--color-develop);
+}
+
+.checklist-text {
+  flex: 1;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.profilassi-actions {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 12px;
+}
+
+.btn-profilassi {
+  flex: 1;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-main);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-cancel {
+  background: var(--bg-main);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.btn-cancel:hover {
+  background: var(--feedback-negative);
+  border-color: #F44336;
+}
+
+.btn-confirm {
+  background: var(--color-develop);
+  color: white;
+}
+
+.btn-confirm:hover:not(.disabled) {
+  background: #66BB6A;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-confirm.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .profilassi-modal {
+    max-width: 95%;
+  }
+  
+  .profilassi-header h3 {
+    font-size: 18px;
+  }
+  
+  .profilassi-icon {
+    font-size: 32px;
+  }
+  
+  .profilassi-content {
+    padding: 16px;
+  }
+  
+  .btn-profilassi {
+    font-size: 14px;
+    padding: 12px 20px;
+  }
+}

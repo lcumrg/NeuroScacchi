@@ -1,0 +1,84 @@
+{
+  "id": "qga_sviluppo_completo",
+  "titolo": "GDA: Sviluppo Completo (4 mosse)",
+  "descrizione": "Completa lo sviluppo nel Gambetto di Donna Accettato",
+  "tipo_modulo": "intent_sequenza",
+  "fen": "rnbqkbnr/ppp1pppp/8/8/2pP4/4P3/PP3PPP/RNBQKBNR b KQkq - 0 3",
+  "categoria": "aperture",
+  "difficolta": "facile",
+  "tempo_stimato": "4 min",
+  "parametri": {
+    "tempo_freeze": 1500,
+    "orientamento_scacchiera": "black",
+    "usa_profilassi": false
+  },
+  "steps": [
+    {
+      "numero": 1,
+      "domanda": "Il Bianco minaccia il pedone c4. Qual è la priorità?",
+      "opzioni_risposta": [
+        "Difenderlo con b5 (Pericoloso)",
+        "Ignorarlo e preparare l'arrocco (Sviluppo)",
+        "Contrattaccare al centro subito"
+      ],
+      "risposta_corretta": "Ignorarlo e preparare l'arrocco (Sviluppo)",
+      "mosse_consentite": ["e7e6", "b7b5", "c7c6"],
+      "mosse_corrette": ["e7e6"],
+      "mostra_chunk_visivo": ["f8", "e6"],
+      "frecce_pattern": [
+        { "from": "e7", "to": "e6" }
+      ],
+      "feedback": "Ottimo! e6 apre la strada all'Alfiere. Prossimo pezzo?"
+    },
+    {
+      "numero": 2,
+      "fen_aggiornata": "rnbqkbnr/ppp2ppp/4p3/8/2BP4/4P3/PP3PPP/RNBQK1NR b KQkq - 0 4",
+      "domanda": "Hai aperto la diagonale. Quale pezzo leggero sviluppare?",
+      "opzioni_risposta": [
+        "Il Cavallo in f6 per controllare il centro",
+        "La Regina in f6 (Troppo presto)",
+        "Spingere i pedoni laterali"
+      ],
+      "risposta_corretta": "Il Cavallo in f6 per controllare il centro",
+      "mosse_consentite": ["g8f6", "d8f6", "h7h6"],
+      "mosse_corrette": ["g8f6"],
+      "mostra_chunk_visivo": ["d5", "e4", "f6"],
+      "frecce_pattern": [
+        { "from": "f6", "to": "d5" },
+        { "from": "f6", "to": "e4" }
+      ],
+      "feedback": "Perfetto! Il Cavallo controlla case centrali. Ora l'alfiere..."
+    },
+    {
+      "numero": 3,
+      "fen_aggiornata": "rnbqkb1r/ppp2ppp/4pn2/8/2BP4/4PN2/PP3PPP/RNBQK2R b KQkq - 0 5",
+      "domanda": "Dove posizionare l'alfiere camposcuro?",
+      "opzioni_risposta": [
+        "Ae7 (Solido e prepara arrocco)",
+        "Ad6 (Attivo ma vulnerabile)",
+        "Ab4+ (Scacco inutile)"
+      ],
+      "risposta_corretta": "Ae7 (Solido e prepara arrocco)",
+      "mosse_consentite": ["f8e7", "f8d6", "f8b4"],
+      "mosse_corrette": ["f8e7"],
+      "mostra_chunk_visivo": ["e7", "g8"],
+      "feedback": "Ottimo! Ae7 è solido. Ultimo passo: sicurezza del Re..."
+    },
+    {
+      "numero": 4,
+      "fen_aggiornata": "rnbqk2r/ppp1bppp/4pn2/8/2BP4/4PN2/PP3PPP/RNBQK2R b KQkq - 0 6",
+      "domanda": "Come mettere il Re al sicuro?",
+      "opzioni_risposta": [
+        "0-0 (Arrocco corto)",
+        "0-0-0 (Arrocco lungo - prematuro)",
+        "Re in f8 (Troppo lento)"
+      ],
+      "risposta_corretta": "0-0 (Arrocco corto)",
+      "mosse_consentite": ["e8g8", "e8c8", "e8f8"],
+      "mosse_corrette": ["e8g8"],
+      "feedback_finale": "🎉 ECCELLENTE! Hai completato lo sviluppo ideale: e6 → Cf6 → Ae7 → 0-0. Posizione solida e pronta per il medio gioco!"
+    }
+  ],
+  "feedback_positivo": "Sequenza completata con successo!",
+  "feedback_negativo": "Riprova la sequenza con più attenzione al piano."
+}

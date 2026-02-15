@@ -1,0 +1,140 @@
+.intent-panel {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  animation: fadeIn 0.6s ease 0.2s backwards;
+}
+
+.intent-question {
+  margin-bottom: 24px;
+}
+
+.intent-question h3 {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.intent-question p {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.intent-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.intent-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border: none;
+  border-radius: 16px;
+  font-family: var(--font-main);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  text-align: left;
+}
+
+.intent-button.attack {
+  background: var(--color-attack);
+  color: #5D4037;
+}
+
+.intent-button.develop {
+  background: var(--color-develop);
+  color: #2E7D32;
+}
+
+.intent-button.defend {
+  background: var(--color-defend);
+  color: #1565C0;
+}
+
+.intent-button:not(.cooldown):not(.disabled):hover {
+  transform: scale(1.03) translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.intent-button:active {
+  transform: scale(0.98);
+}
+
+.intent-button.cooldown {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.intent-button.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.intent-button.selected {
+  animation: shake 0.4s;
+  box-shadow: 0 0 0 3px rgba(129, 199, 132, 0.6);
+}
+
+.cooldown-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  animation: progress 1.5s ease forwards;
+}
+
+.intent-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.intent-text {
+  flex: 1;
+  line-height: 1.3;
+}
+
+@media (max-width: 768px) {
+  .intent-panel {
+    padding: 20px;
+  }
+  
+  .intent-question p {
+    font-size: 16px;
+  }
+  
+  .intent-button {
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  .intent-icon {
+    font-size: 28px;
+    width: 36px;
+    height: 36px;
+  }
+  
+  .intent-text {
+    font-size: 15px;
+  }
+}

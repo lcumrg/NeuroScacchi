@@ -1,0 +1,79 @@
+.detective-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: fadeIn 0.6s ease;
+}
+
+.detective-question {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+}
+
+.detective-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.detective-question h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.detective-attempts {
+  font-size: 14px;
+  opacity: 0.9;
+  font-family: var(--font-mono);
+}
+
+.detective-board-wrapper {
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.detective-solution-overlay {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+.detective-solution-message {
+  background: rgba(255, 193, 7, 0.95);
+  color: #5D4037;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.4s ease;
+}
+
+.detective-solution-message strong {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .detective-question h3 {
+    font-size: 18px;
+  }
+  
+  .detective-icon {
+    font-size: 28px;
+  }
+  
+  .detective-solution-message {
+    font-size: 14px;
+    padding: 12px 20px;
+  }
+}
