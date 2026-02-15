@@ -10,7 +10,6 @@ import ProfilassiRadar from './components/ProfilassiRadar'
 import SequencePlayer from './components/SequencePlayer'
 import { getLessons, saveLesson, deleteLesson, getSettings, saveLessonProgress } from './utils/storageManager'
 import lezione01 from './data/lezione01.json'
-import testPromozione from './data/test_promozione.json'
 import './App.css'
 
 function App() {
@@ -53,12 +52,9 @@ function App() {
     const stored = getLessons()
     // Aggiungi lezione di test se non ci sono lezioni
     if (stored.length === 0) {
-      const defaultLessons = [
-        { ...lezione01, categoria: 'test' },
-        { ...testPromozione }
-      ]
-      defaultLessons.forEach(l => saveLesson(l))
-      setLessons(defaultLessons)
+      const testLesson = { ...lezione01, categoria: 'test' }
+      saveLesson(testLesson)
+      setLessons([testLesson])
     } else {
       setLessons(stored)
     }
