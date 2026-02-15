@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Chess } from 'chess.js'
 import './ProfilassiRadar.css'
 
-function ProfilassiRadar({ 
-  position, 
-  move, 
-  onConfirm, 
+function ProfilassiRadar({
+  position,
+  move,
+  onConfirm,
   onCancel,
   checklistQuestions = [
     "Il mio Re è al sicuro?",
@@ -14,28 +14,21 @@ function ProfilassiRadar({
   ]
 }) {
   const [checkedItems, setCheckedItems] = useState([])
-  
-  // Analizza posizione per radar
-  const game = new Chess(position)
-  
-  // Simula la mossa per vedere le conseguenze
-  let positionAfterMove = position
-  let threats = []
-  
-  try {
-    const tempGame = new Chess(position)
-    tempGame.move({
-      from: move.from,
-      to: move.to,
-      promotion: 'q'
-    })
-    positionAfterMove = tempGame.fen()
-    
-    // Analizza minacce sulla posizione risultante
-    threats = analyzeThreats(tempGame)
-  } catch (e) {
-    console.error('Error analyzing move:', e)
-  }
+
+  // Fix #3: calcola le minacce solo quando position/move cambiano, non a ogni render
+  const threats = useMemo(() => {
+    try {
+      const tempGame = new Chess(position)
+      tempGame.move({
+        from: move.from,
+        to: move.to,
+        promotion: 'q'
+      })
+      return analyzeThreats(tempGame)
+    } catch (e) {
+      return []
+    }
+  }, [position, move.from, move.to])
 
   const handleCheck = (index) => {
     if (checkedItems.includes(index)) {
@@ -95,13 +88,13 @@ function ProfilassiRadar({
         </div>
 
         <div className="profilassi-actions">
-          <button 
+          <button
             className="btn-profilassi btn-cancel"
             onClick={onCancel}
           >
             ✗ Annulla
           </button>
-          <button 
+          <button
             className={`btn-profilassi btn-confirm ${!allChecked ? 'disabled' : ''}`}
             onClick={onConfirm}
             disabled={!allChecked}
@@ -114,62 +107,39 @@ function ProfilassiRadar({
   )
 }
 
-// Funzione helper per analizzare minacce
+// Fix #7: analisi minacce piu' robusta usando isAttacked() di chess.js
 function analyzeThreats(game) {
   const threats = []
-  
-  // Controlla se il re è in scacco
+
+  // Controlla se il re avversario e' in scacco (dopo la nostra mossa, tocca all'avversario)
   if (game.isCheck()) {
     threats.push('Il tuo Re è sotto scacco!')
   }
-  
-  // Controlla se la mossa è illegale (non dovrebbe succedere ma safe check)
-  if (game.isGameOver()) {
-    if (game.isCheckmate()) {
-      threats.push('Questa mossa porta a scacco matto!')
-    }
+
+  if (game.isCheckmate()) {
+    threats.push('Questa mossa porta a scacco matto!')
+    return threats
   }
-  
-  // Analisi pezzi attaccati (semplificata)
+
+  // Analisi pezzi attaccati: dopo la mossa tocca all'avversario,
+  // quindi i nostri pezzi sono quelli del colore opposto al turno corrente
   const board = game.board()
-  const turn = game.turn()
-  
+  const opponentTurn = game.turn() // chi deve muovere ora (l'avversario)
+  const ourColor = opponentTurn === 'w' ? 'b' : 'w'
+
   board.forEach((row, rowIdx) => {
     row.forEach((square, colIdx) => {
-      if (square && square.color === turn) {
+      if (square && square.color === ourColor && square.type !== 'p' && square.type !== 'k') {
         const squareName = String.fromCharCode(97 + colIdx) + (8 - rowIdx)
-        const attacks = game.moves({ square: squareName, verbose: true })
-          .filter(m => m.captured)
-        
-        // Controlla se questo pezzo è attaccato
-        const isAttacked = isSquareAttacked(game, squareName, turn)
-        if (isAttacked && square.type !== 'p') {
+        // Usa isAttacked di chess.js: controlla se la casa e' attaccata dal colore indicato
+        if (game.isAttacked(squareName, opponentTurn)) {
           threats.push(`Il tuo ${getPieceName(square.type)} in ${squareName} è vulnerabile`)
         }
       }
     })
   })
-  
-  return threats.slice(0, 3) // Max 3 avvisi per non sovraccaricare
-}
 
-function isSquareAttacked(game, square, byColor) {
-  // Controlla se una casa è attaccata dall'avversario
-  try {
-    const tempGame = new Chess(game.fen())
-    // Cambia turno per vedere attacchi avversari
-    const fen = tempGame.fen()
-    const parts = fen.split(' ')
-    parts[1] = byColor === 'w' ? 'b' : 'w'
-    const flippedFen = parts.join(' ')
-    
-    const testGame = new Chess(flippedFen)
-    const moves = testGame.moves({ verbose: true })
-    
-    return moves.some(m => m.to === square)
-  } catch (e) {
-    return false
-  }
+  return threats.slice(0, 3) // Max 3 avvisi per non sovraccaricare
 }
 
 function getPieceName(type) {

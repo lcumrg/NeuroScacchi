@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Chess } from 'chess.js'
 import Header from './components/Header'
 import LessonSelector from './components/LessonSelector'
@@ -19,7 +19,8 @@ function App() {
   const [settings] = useState(getSettings())
   
   // Lesson player state
-  const [game] = useState(new Chess())
+  const gameRef = useRef(new Chess())
+  const game = gameRef.current
   const [position, setPosition] = useState('')
   const [isFrozen, setIsFrozen] = useState(true)
   const [intentSelected, setIntentSelected] = useState(false)
@@ -31,6 +32,20 @@ function App() {
   const [showProfilassi, setShowProfilassi] = useState(false)
   const [pendingMove, setPendingMove] = useState(null)
   const [lessonComplete, setLessonComplete] = useState(false)
+  const [promotionToSquare, setPromotionToSquare] = useState(null)
+  const [promotionFromSquare, setPromotionFromSquare] = useState(null)
+  const timersRef = useRef([])
+
+  // Cancella tutti i timer attivi (cleanup)
+  const clearAllTimers = () => {
+    timersRef.current.forEach(id => clearTimeout(id))
+    timersRef.current = []
+  }
+  const safeTimeout = (fn, ms) => {
+    const id = setTimeout(fn, ms)
+    timersRef.current.push(id)
+    return id
+  }
 
   // Carica lezioni al mount
   useEffect(() => {
@@ -47,10 +62,19 @@ function App() {
 
   // Inizializza lezione
   const startLesson = (lesson) => {
+    clearAllTimers()
     setCurrentLesson(lesson)
     setCurrentScreen('lesson')
-    game.load(lesson.fen)
-    setPosition(lesson.fen)
+
+    // Fix #6: gestione FEN invalida
+    try {
+      game.load(lesson.fen)
+      setPosition(lesson.fen)
+    } catch (e) {
+      setFeedback({ type: 'negative', message: 'Errore: la posizione FEN di questa lezione non è valida.' })
+      return
+    }
+
     setIsFrozen(lesson.tipo_modulo === 'intent')
     setIntentSelected(false)
     setLessonComplete(false)
@@ -58,29 +82,29 @@ function App() {
     setHighlightedSquares([])
     setArrows([])
     setCooldownActive(true)
-    
+
     // Imposta orientamento
     if (lesson.parametri?.orientamento_scacchiera) {
       setBoardOrientation(lesson.parametri.orientamento_scacchiera)
     }
-    
+
     // Debug mode: auto-complete
     if (settings.debugMode) {
-      setTimeout(() => {
+      safeTimeout(() => {
         if (lesson.tipo_modulo === 'intent') {
           handleIntentSelection(lesson.risposta_corretta)
         }
       }, 500)
     }
-    
+
     // Freeze iniziale
     const freezeTime = lesson.parametri?.tempo_freeze || 1500
-    setTimeout(() => {
+    safeTimeout(() => {
       setCooldownActive(false)
       if (lesson.tipo_modulo === 'intent') {
-        setFeedback({ 
-          type: 'neutral', 
-          message: 'Osserva attentamente la posizione. Quale piano strategico sceglieresti?' 
+        setFeedback({
+          type: 'neutral',
+          message: 'Osserva attentamente la posizione. Quale piano strategico sceglieresti?'
         })
       }
     }, freezeTime)
@@ -107,7 +131,7 @@ function App() {
       }
       
       // Sblocca scacchiera
-      setTimeout(() => {
+      safeTimeout(() => {
         setIsFrozen(false)
         setIntentSelected(true)
       }, 800)
@@ -127,7 +151,7 @@ function App() {
       message: currentLesson.modalita_detective.feedback_positivo || currentLesson.feedback_positivo
     })
     
-    setTimeout(() => {
+    safeTimeout(() => {
       completeLesson()
     }, 2000)
   }
@@ -139,6 +163,14 @@ function App() {
     })
   }
 
+  // Controlla se una mossa e' una promozione
+  const isPromotionMove = (sourceSquare, targetSquare) => {
+    const piece = game.get(sourceSquare)
+    if (!piece || piece.type !== 'p') return false
+    return (piece.color === 'w' && targetSquare[1] === '8') ||
+           (piece.color === 'b' && targetSquare[1] === '1')
+  }
+
   // Gestione mossa
   const onDrop = (sourceSquare, targetSquare) => {
     if (isFrozen) return false
@@ -146,12 +178,19 @@ function App() {
     const moveNotation = sourceSquare + targetSquare
 
     // Verifica se la mossa è consentita
-    if (currentLesson.mosse_consentite && 
+    if (currentLesson.mosse_consentite &&
         !currentLesson.mosse_consentite.includes(moveNotation)) {
       setFeedback({
         type: 'negative',
         message: 'Questa mossa non è ottimale. Prova a sviluppare i pezzi verso il centro.'
       })
+      return false
+    }
+
+    // Se e' una promozione, mostra il dialog di scelta
+    if (isPromotionMove(sourceSquare, targetSquare)) {
+      setPromotionFromSquare(sourceSquare)
+      setPromotionToSquare(targetSquare)
       return false
     }
 
@@ -166,27 +205,52 @@ function App() {
     return executeMove(sourceSquare, targetSquare)
   }
 
-  const executeMove = (sourceSquare, targetSquare) => {
+  // Callback quando l'utente sceglie il pezzo di promozione
+  const handlePromotionPieceSelect = (piece) => {
+    if (!piece || !promotionFromSquare || !promotionToSquare) {
+      setPromotionFromSquare(null)
+      setPromotionToSquare(null)
+      return false
+    }
+    // piece e' nel formato "wQ", "wR", "wB", "wN" ecc.
+    const promotionPiece = piece[1].toLowerCase()
+
+    // Se c'e' la profilassi, salva la mossa come pending
+    if (currentLesson.parametri?.usa_profilassi) {
+      setPendingMove({ from: promotionFromSquare, to: promotionToSquare, promotion: promotionPiece })
+      setShowProfilassi(true)
+      setPromotionFromSquare(null)
+      setPromotionToSquare(null)
+      return true
+    }
+
+    const result = executeMove(promotionFromSquare, promotionToSquare, promotionPiece)
+    setPromotionFromSquare(null)
+    setPromotionToSquare(null)
+    return result
+  }
+
+  const executeMove = (sourceSquare, targetSquare, promotion = 'q') => {
     try {
       const move = game.move({
         from: sourceSquare,
         to: targetSquare,
-        promotion: 'q'
+        promotion
       })
 
       if (move) {
         setPosition(game.fen())
-        
+
         const moveNotation = sourceSquare + targetSquare
         const isCorrect = currentLesson.mosse_corrette?.includes(moveNotation)
-        
+
         if (isCorrect) {
           setFeedback({
             type: 'positive',
             message: '✅ Eccellente! Hai eseguito la mossa migliore.'
           })
-          
-          setTimeout(() => {
+
+          safeTimeout(() => {
             completeLesson()
           }, 2000)
         } else {
@@ -195,7 +259,7 @@ function App() {
             message: 'Mossa accettabile, ma ce n\'era una migliore.'
           })
         }
-        
+
         return true
       }
     } catch (e) {
@@ -221,6 +285,7 @@ function App() {
 
   // Exit lezione
   const handleExit = () => {
+    clearAllTimers()
     setCurrentScreen('selector')
     setCurrentLesson(null)
   }
@@ -285,6 +350,9 @@ function App() {
                   highlightedSquares={highlightedSquares}
                   boardOrientation={boardOrientation}
                   arrows={arrows}
+                  showPromotionDialog={!!promotionToSquare}
+                  promotionToSquare={promotionToSquare}
+                  onPromotionPieceSelect={handlePromotionPieceSelect}
                 />
               </>
             )}
@@ -317,7 +385,7 @@ function App() {
           move={pendingMove}
           onConfirm={() => {
             setShowProfilassi(false)
-            executeMove(pendingMove.from, pendingMove.to)
+            executeMove(pendingMove.from, pendingMove.to, pendingMove.promotion || 'q')
             setPendingMove(null)
           }}
           onCancel={() => {
