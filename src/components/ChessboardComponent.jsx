@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
 import { Chessboard } from 'react-chessboard'
 import './ChessboardComponent.css'
+
+const BOARD_SIZE = 480
 
 function ChessboardComponent({
   position,
@@ -9,25 +10,9 @@ function ChessboardComponent({
   highlightedSquares,
   boardOrientation = 'white',
   arrows = [],
-  showPromotionDialog = false,
-  promotionToSquare = null,
-  onPromotionPieceSelect
+  onPromotionPieceSelect,
+  onPromotionCheck
 }) {
-  const wrapperRef = useRef(null)
-  const [boardWidth, setBoardWidth] = useState(600)
-
-  // Responsive: adatta la dimensione al container
-  useEffect(() => {
-    const updateSize = () => {
-      if (wrapperRef.current) {
-        const width = wrapperRef.current.offsetWidth
-        setBoardWidth(Math.min(width, 600))
-      }
-    }
-    updateSize()
-    window.addEventListener('resize', updateSize)
-    return () => window.removeEventListener('resize', updateSize)
-  }, [])
 
   // Custom square styles per highlighting
   const customSquareStyles = {}
@@ -45,7 +30,7 @@ function ChessboardComponent({
   const customArrows = arrows.map(arrow => [arrow.from, arrow.to])
 
   return (
-    <div ref={wrapperRef} className={`chessboard-wrapper ${isFrozen ? 'frozen' : ''}`}>
+    <div className={`chessboard-wrapper ${isFrozen ? 'frozen' : ''}`}>
       {isFrozen && (
         <div className="freeze-overlay">
           <div className="freeze-message">
@@ -57,7 +42,7 @@ function ChessboardComponent({
       <Chessboard
         position={position}
         onPieceDrop={onDrop}
-        boardWidth={boardWidth}
+        boardWidth={BOARD_SIZE}
         boardOrientation={boardOrientation}
         customSquareStyles={customSquareStyles}
         customArrows={customArrows}
@@ -73,9 +58,8 @@ function ChessboardComponent({
           backgroundColor: 'var(--square-dark)'
         }}
         arePiecesDraggable={!isFrozen}
-        showPromotionDialog={showPromotionDialog}
-        promotionToSquare={promotionToSquare}
         onPromotionPieceSelect={onPromotionPieceSelect}
+        onPromotionCheck={onPromotionCheck}
       />
     </div>
   )
