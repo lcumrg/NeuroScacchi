@@ -32,9 +32,8 @@ function App() {
   const [showProfilassi, setShowProfilassi] = useState(false)
   const [pendingMove, setPendingMove] = useState(null)
   const [lessonComplete, setLessonComplete] = useState(false)
-  const [promotionToSquare, setPromotionToSquare] = useState(null)
-  const [promotionFromSquare, setPromotionFromSquare] = useState(null)
   const timersRef = useRef([])
+  const promotionHandledRef = useRef(false)
 
   // Cancella tutti i timer attivi (cleanup)
   const clearAllTimers = () => {
@@ -163,16 +162,31 @@ function App() {
     })
   }
 
-  // Controlla se una mossa e' una promozione
-  const isPromotionMove = (sourceSquare, targetSquare) => {
-    const piece = game.get(sourceSquare)
-    if (!piece || piece.type !== 'p') return false
-    return (piece.color === 'w' && targetSquare[1] === '8') ||
-           (piece.color === 'b' && targetSquare[1] === '1')
+  // Controlla se una mossa e' una promozione (per la libreria react-chessboard)
+  const handlePromotionCheck = (sourceSquare, targetSquare, piece) => {
+    const isPromo = ((piece === "wP" && sourceSquare[1] === "7" && targetSquare[1] === "8") ||
+                     (piece === "bP" && sourceSquare[1] === "2" && targetSquare[1] === "1")) &&
+                    Math.abs(sourceSquare.charCodeAt(0) - targetSquare.charCodeAt(0)) <= 1
+    if (!isPromo) return false
+
+    // Se la mossa non e' consentita, non mostrare il dialog di promozione
+    const moveNotation = sourceSquare + targetSquare
+    if (currentLesson.mosse_consentite &&
+        !currentLesson.mosse_consentite.includes(moveNotation)) {
+      return false
+    }
+
+    return true
   }
 
   // Gestione mossa
   const onDrop = (sourceSquare, targetSquare) => {
+    // Se la promozione e' gia' stata gestita, conferma alla libreria senza rieseguire
+    if (promotionHandledRef.current) {
+      promotionHandledRef.current = false
+      return true
+    }
+
     if (isFrozen) return false
 
     const moveNotation = sourceSquare + targetSquare
@@ -187,13 +201,6 @@ function App() {
       return false
     }
 
-    // Se e' una promozione, mostra il dialog di scelta
-    if (isPromotionMove(sourceSquare, targetSquare)) {
-      setPromotionFromSquare(sourceSquare)
-      setPromotionToSquare(targetSquare)
-      return false
-    }
-
     // Profilassi attiva?
     if (currentLesson.parametri?.usa_profilassi) {
       setPendingMove({ from: sourceSquare, to: targetSquare })
@@ -205,28 +212,23 @@ function App() {
     return executeMove(sourceSquare, targetSquare)
   }
 
-  // Callback quando l'utente sceglie il pezzo di promozione
-  const handlePromotionPieceSelect = (piece) => {
-    if (!piece || !promotionFromSquare || !promotionToSquare) {
-      setPromotionFromSquare(null)
-      setPromotionToSquare(null)
+  // Callback quando l'utente sceglie il pezzo di promozione dal dialog della libreria
+  const handlePromotionPieceSelect = (piece, promoteFromSquare, promoteToSquare) => {
+    if (!piece || !promoteFromSquare || !promoteToSquare) {
       return false
     }
-    // piece e' nel formato "wQ", "wR", "wB", "wN" ecc.
     const promotionPiece = piece[1].toLowerCase()
 
     // Se c'e' la profilassi, salva la mossa come pending
     if (currentLesson.parametri?.usa_profilassi) {
-      setPendingMove({ from: promotionFromSquare, to: promotionToSquare, promotion: promotionPiece })
+      setPendingMove({ from: promoteFromSquare, to: promoteToSquare, promotion: promotionPiece })
       setShowProfilassi(true)
-      setPromotionFromSquare(null)
-      setPromotionToSquare(null)
+      promotionHandledRef.current = true
       return true
     }
 
-    const result = executeMove(promotionFromSquare, promotionToSquare, promotionPiece)
-    setPromotionFromSquare(null)
-    setPromotionToSquare(null)
+    const result = executeMove(promoteFromSquare, promoteToSquare, promotionPiece)
+    if (result) promotionHandledRef.current = true
     return result
   }
 
@@ -350,9 +352,8 @@ function App() {
                   highlightedSquares={highlightedSquares}
                   boardOrientation={boardOrientation}
                   arrows={arrows}
-                  showPromotionDialog={!!promotionToSquare}
-                  promotionToSquare={promotionToSquare}
                   onPromotionPieceSelect={handlePromotionPieceSelect}
+                  onPromotionCheck={handlePromotionCheck}
                 />
               </>
             )}

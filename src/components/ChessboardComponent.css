@@ -1,8 +1,8 @@
 .chessboard-wrapper {
   position: relative;
-  max-width: 600px;
+  width: 480px;
+  max-width: 100%;
   margin: 0 auto;
-  animation: fadeIn 0.8s ease;
 }
 
 .chessboard-wrapper.frozen {
@@ -40,10 +40,6 @@
 }
 
 @media (max-width: 768px) {
-  .chessboard-wrapper {
-    max-width: 100%;
-  }
-  
   .freeze-message {
     font-size: 16px;
     padding: 12px 24px;

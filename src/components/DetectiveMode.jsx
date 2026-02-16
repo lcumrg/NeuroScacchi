@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { Chessboard } from 'react-chessboard'
 import './DetectiveMode.css'
+
+const BOARD_SIZE = 480
 
 function DetectiveMode({
   position,
@@ -14,21 +16,6 @@ function DetectiveMode({
   const [attempts, setAttempts] = useState(0)
   const [clickedSquare, setClickedSquare] = useState(null)
   const [showSolution, setShowSolution] = useState(false)
-  const wrapperRef = useRef(null)
-  const [boardWidth, setBoardWidth] = useState(600)
-
-  // Responsive: adatta la dimensione al container
-  useEffect(() => {
-    const updateSize = () => {
-      if (wrapperRef.current) {
-        const width = wrapperRef.current.offsetWidth
-        setBoardWidth(Math.min(width, 600))
-      }
-    }
-    updateSize()
-    window.addEventListener('resize', updateSize)
-    return () => window.removeEventListener('resize', updateSize)
-  }, [])
 
   const handleSquareClick = (square) => {
     setClickedSquare(square)
@@ -97,10 +84,10 @@ function DetectiveMode({
         </div>
       </div>
 
-      <div ref={wrapperRef} className="detective-board-wrapper">
+      <div className="detective-board-wrapper">
         <Chessboard
           position={position}
-          boardWidth={boardWidth}
+          boardWidth={BOARD_SIZE}
           boardOrientation={boardOrientation}
           arePiecesDraggable={false}
           onSquareClick={handleSquareClick}
