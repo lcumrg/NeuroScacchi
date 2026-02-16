@@ -1,12 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Chessboard } from 'react-chessboard'
 import './DetectiveMode.css'
 
-function DetectiveMode({ 
-  position, 
-  question, 
-  correctSquare, 
-  onCorrect, 
+function DetectiveMode({
+  position,
+  question,
+  correctSquare,
+  onCorrect,
   onWrong,
   boardOrientation = 'white',
   maxAttempts = 3
@@ -14,10 +14,25 @@ function DetectiveMode({
   const [attempts, setAttempts] = useState(0)
   const [clickedSquare, setClickedSquare] = useState(null)
   const [showSolution, setShowSolution] = useState(false)
+  const wrapperRef = useRef(null)
+  const [boardWidth, setBoardWidth] = useState(600)
+
+  // Responsive: adatta la dimensione al container
+  useEffect(() => {
+    const updateSize = () => {
+      if (wrapperRef.current) {
+        const width = wrapperRef.current.offsetWidth
+        setBoardWidth(Math.min(width, 600))
+      }
+    }
+    updateSize()
+    window.addEventListener('resize', updateSize)
+    return () => window.removeEventListener('resize', updateSize)
+  }, [])
 
   const handleSquareClick = (square) => {
     setClickedSquare(square)
-    
+
     if (square === correctSquare) {
       // Risposta corretta!
       setTimeout(() => {
@@ -27,9 +42,9 @@ function DetectiveMode({
       // Risposta sbagliata
       const newAttempts = attempts + 1
       setAttempts(newAttempts)
-      
+
       onWrong()
-      
+
       if (newAttempts >= maxAttempts) {
         // Mostra soluzione dopo max tentativi
         setShowSolution(true)
@@ -37,7 +52,7 @@ function DetectiveMode({
           onCorrect() // Procedi comunque
         }, 3000)
       }
-      
+
       // Reset visual feedback dopo 1s
       setTimeout(() => {
         setClickedSquare(null)
@@ -47,11 +62,11 @@ function DetectiveMode({
 
   // Custom square styles per feedback visivo
   const customSquareStyles = {}
-  
+
   if (clickedSquare) {
     const isCorrect = clickedSquare === correctSquare
     customSquareStyles[clickedSquare] = {
-      background: isCorrect 
+      background: isCorrect
         ? 'radial-gradient(circle, rgba(76, 175, 80, 0.8) 0%, rgba(76, 175, 80, 0.3) 70%)'
         : 'radial-gradient(circle, rgba(244, 67, 54, 0.8) 0%, rgba(244, 67, 54, 0.3) 70%)',
       boxShadow: isCorrect
@@ -61,7 +76,7 @@ function DetectiveMode({
       zIndex: 2
     }
   }
-  
+
   // Mostra soluzione se ha esaurito tentativi
   if (showSolution && correctSquare) {
     customSquareStyles[correctSquare] = {
@@ -82,10 +97,10 @@ function DetectiveMode({
         </div>
       </div>
 
-      <div className="detective-board-wrapper">
+      <div ref={wrapperRef} className="detective-board-wrapper">
         <Chessboard
           position={position}
-          boardWidth={600}
+          boardWidth={boardWidth}
           boardOrientation={boardOrientation}
           arePiecesDraggable={false}
           onSquareClick={handleSquareClick}
@@ -102,7 +117,7 @@ function DetectiveMode({
             backgroundColor: 'var(--square-dark)'
           }}
         />
-        
+
         {showSolution && (
           <div className="detective-solution-overlay">
             <div className="detective-solution-message">

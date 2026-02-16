@@ -4,29 +4,6 @@ import './IntentPanel.css'
 function IntentPanel({ question, options, onSelect, disabled, cooldownActive }) {
   const [selectedOption, setSelectedOption] = useState(null)
 
-  // Supporta sia stringhe che oggetti
-  const normalizeOptions = () => {
-    return options.map(opt => {
-      if (typeof opt === 'string') {
-        return { testo: opt, categoria: detectCategory(opt) }
-      }
-      return opt
-    })
-  }
-
-  const normalizedOptions = normalizeOptions()
-
-  const handleClick = (option) => {
-    if (disabled && !cooldownActive) return
-    
-    const optionText = typeof option === 'string' ? option : option.testo
-    setSelectedOption(optionText)
-    onSelect(optionText)
-    
-    // Reset visual selection dopo un momento
-    setTimeout(() => setSelectedOption(null), 1000)
-  }
-
   // Rileva categoria dal testo (fallback per lezioni vecchie)
   const detectCategory = (text) => {
     if (text.toLowerCase().includes('attac')) return 'attacco'
@@ -49,6 +26,29 @@ function IntentPanel({ question, options, onSelect, disabled, cooldownActive }) 
     if (categoria === 'sviluppo') return 'develop'
     if (categoria === 'difesa') return 'defend'
     return 'develop'
+  }
+
+  // Supporta sia stringhe che oggetti
+  const normalizeOptions = () => {
+    return options.map(opt => {
+      if (typeof opt === 'string') {
+        return { testo: opt, categoria: detectCategory(opt) }
+      }
+      return opt
+    })
+  }
+
+  const normalizedOptions = normalizeOptions()
+
+  const handleClick = (option) => {
+    if (disabled && !cooldownActive) return
+
+    const optionText = typeof option === 'string' ? option : option.testo
+    setSelectedOption(optionText)
+    onSelect(optionText)
+
+    // Reset visual selection dopo un momento
+    setTimeout(() => setSelectedOption(null), 1000)
   }
 
   return (

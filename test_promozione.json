@@ -1,0 +1,37 @@
+{
+  "id": "test_promozione_01",
+  "titolo": "Il Pedone Corona!",
+  "descrizione": "Porta il pedone in fondo alla scacchiera e scegli in quale pezzo trasformarlo. Lezione di test per promozione, profilassi e chunk visivi.",
+  "tipo_modulo": "intent",
+  "fen": "8/4Pk2/8/8/8/8/8/4K3 w - - 0 1",
+  "domanda": "Il pedone bianco in e7 è a un passo dalla promozione. Qual è il piano migliore?",
+  "opzioni_risposta": [
+    "Promuovere il pedone per ottenere un pezzo forte",
+    "Avvicinare il Re al centro",
+    "Attendere e mantenere la posizione"
+  ],
+  "risposta_corretta": "Promuovere il pedone per ottenere un pezzo forte",
+  "mosse_consentite": ["e7e8"],
+  "mosse_corrette": ["e7e8"],
+  "feedback_positivo": "Esatto! Il pedone è pronto per la promozione. Ora trascinalo in e8 e scegli il pezzo!",
+  "feedback_negativo": "Pensa meglio: il pedone è a un solo passo dalla promozione. Perché aspettare?",
+  "categoria": "finali",
+  "difficolta": "facile",
+  "tempo_stimato": "2 min",
+  "autori": ["Claude"],
+  "parametri": {
+    "tempo_freeze": 2000,
+    "orientamento_scacchiera": "white",
+    "mostra_chunk_visivo": ["e7", "e8"],
+    "frecce_pattern": [
+      { "from": "e7", "to": "e8" }
+    ],
+    "usa_profilassi": true,
+    "tipo_profilassi": "radar_checklist",
+    "domande_checklist": [
+      "Quale pezzo mi conviene scegliere?",
+      "Il mio nuovo pezzo sarà al sicuro?",
+      "Metto il Re avversario in pericolo?"
+    ]
+  }
+}

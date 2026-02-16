@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Chess } from 'chess.js'
 import ChessboardComponent from './ChessboardComponent'
 import IntentPanel from './IntentPanel'
@@ -7,7 +7,8 @@ import ProfilassiRadar from './ProfilassiRadar'
 import './SequencePlayer.css'
 
 function SequencePlayer({ lesson, onComplete, onExit }) {
-  const [game] = useState(new Chess())
+  const gameRef = useRef(new Chess())
+  const game = gameRef.current
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [position, setPosition] = useState('')
   const [isFrozen, setIsFrozen] = useState(true)
@@ -19,6 +20,24 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
   const [cooldownActive, setCooldownActive] = useState(true)
   const [showProfilassi, setShowProfilassi] = useState(false)
   const [pendingMove, setPendingMove] = useState(null)
+  const [promotionToSquare, setPromotionToSquare] = useState(null)
+  const [promotionFromSquare, setPromotionFromSquare] = useState(null)
+  const timersRef = useRef([])
+
+  const clearAllTimers = () => {
+    timersRef.current.forEach(id => clearTimeout(id))
+    timersRef.current = []
+  }
+  const safeTimeout = (fn, ms) => {
+    const id = setTimeout(fn, ms)
+    timersRef.current.push(id)
+    return id
+  }
+
+  // Cleanup timer al dismount
+  useEffect(() => {
+    return () => clearAllTimers()
+  }, [])
 
   const currentStep = lesson.steps[currentStepIndex]
   const totalSteps = lesson.steps.length
@@ -26,9 +45,17 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
 
   // Inizializza step corrente
   useEffect(() => {
+    clearAllTimers()
     const stepFen = currentStep.fen_aggiornata || lesson.fen
-    game.load(stepFen)
-    setPosition(stepFen)
+
+    try {
+      game.load(stepFen)
+      setPosition(stepFen)
+    } catch (e) {
+      setFeedback({ type: 'negative', message: 'Errore: posizione FEN non valida per questo step.' })
+      return
+    }
+
     setIsFrozen(true)
     setIntentSelected(false)
     setFeedback({ type: 'neutral', message: '' })
@@ -43,14 +70,14 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
 
     // Freeze iniziale
     const freezeTime = lesson.parametri?.tempo_freeze || 1500
-    setTimeout(() => {
+    safeTimeout(() => {
       setCooldownActive(false)
       setFeedback({
         type: 'neutral',
         message: `Step ${currentStepIndex + 1}/${totalSteps}: ${currentStep.domanda}`
       })
     }, freezeTime)
-  }, [currentStepIndex, currentStep, lesson, game])
+  }, [currentStepIndex])
 
   // Gestione Intent
   const handleIntentSelection = (selectedIntent) => {
@@ -70,7 +97,7 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
         setArrows(currentStep.frecce_pattern)
       }
 
-      setTimeout(() => {
+      safeTimeout(() => {
         setIsFrozen(false)
         setIntentSelected(true)
       }, 800)
@@ -82,6 +109,14 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
     }
   }
 
+  // Controlla se una mossa e' una promozione
+  const isPromotionMove = (sourceSquare, targetSquare) => {
+    const piece = game.get(sourceSquare)
+    if (!piece || piece.type !== 'p') return false
+    return (piece.color === 'w' && targetSquare[1] === '8') ||
+           (piece.color === 'b' && targetSquare[1] === '1')
+  }
+
   // Gestione mossa
   const onDrop = (sourceSquare, targetSquare) => {
     if (isFrozen) return false
@@ -89,12 +124,19 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
     const moveNotation = sourceSquare + targetSquare
 
     // Verifica mossa consentita
-    if (currentStep.mosse_consentite && 
+    if (currentStep.mosse_consentite &&
         !currentStep.mosse_consentite.includes(moveNotation)) {
       setFeedback({
         type: 'negative',
         message: 'Questa mossa non è ottimale per il piano scelto.'
       })
+      return false
+    }
+
+    // Se e' una promozione, mostra il dialog di scelta
+    if (isPromotionMove(sourceSquare, targetSquare)) {
+      setPromotionFromSquare(sourceSquare)
+      setPromotionToSquare(targetSquare)
       return false
     }
 
@@ -108,12 +150,35 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
     return executeMove(sourceSquare, targetSquare)
   }
 
-  const executeMove = (sourceSquare, targetSquare) => {
+  // Callback quando l'utente sceglie il pezzo di promozione
+  const handlePromotionPieceSelect = (piece) => {
+    if (!piece || !promotionFromSquare || !promotionToSquare) {
+      setPromotionFromSquare(null)
+      setPromotionToSquare(null)
+      return false
+    }
+    const promotionPiece = piece[1].toLowerCase()
+
+    if (lesson.parametri?.usa_profilassi) {
+      setPendingMove({ from: promotionFromSquare, to: promotionToSquare, promotion: promotionPiece })
+      setShowProfilassi(true)
+      setPromotionFromSquare(null)
+      setPromotionToSquare(null)
+      return true
+    }
+
+    const result = executeMove(promotionFromSquare, promotionToSquare, promotionPiece)
+    setPromotionFromSquare(null)
+    setPromotionToSquare(null)
+    return result
+  }
+
+  const executeMove = (sourceSquare, targetSquare, promotion = 'q') => {
     try {
       const move = game.move({
         from: sourceSquare,
         to: targetSquare,
-        promotion: 'q'
+        promotion
       })
 
       if (move) {
@@ -129,10 +194,10 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
             // Ultimo step - lezione completata
             setFeedback({
               type: 'positive',
-              message: lesson.feedback_finale || currentStep.feedback_finale || 
+              message: lesson.feedback_finale || currentStep.feedback_finale ||
                       '🎉 Sequenza completata! Hai dimostrato ottima pianificazione strategica.'
             })
-            setTimeout(() => {
+            safeTimeout(() => {
               onComplete()
             }, 3000)
           } else {
@@ -141,7 +206,7 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
               type: 'positive',
               message: currentStep.feedback || 'Ottimo! Prossimo step...'
             })
-            setTimeout(() => {
+            safeTimeout(() => {
               setCurrentStepIndex(currentStepIndex + 1)
             }, 2000)
           }
@@ -152,7 +217,7 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
             message: 'Mossa accettabile, ma ce n\'era una migliore.'
           })
           if (!isLastStep) {
-            setTimeout(() => {
+            safeTimeout(() => {
               setCurrentStepIndex(currentStepIndex + 1)
             }, 2500)
           }
@@ -167,6 +232,7 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
   }
 
   const handleReset = () => {
+    clearAllTimers()
     setCurrentStepIndex(0)
   }
 
@@ -175,7 +241,7 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
       {/* Progress Bar */}
       <div className="sequence-progress">
         <div className="progress-bar">
-          <div 
+          <div
             className="progress-fill"
             style={{ width: `${((currentStepIndex + 1) / totalSteps) * 100}%` }}
           />
@@ -200,6 +266,9 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
             highlightedSquares={highlightedSquares}
             boardOrientation={boardOrientation}
             arrows={arrows}
+            showPromotionDialog={!!promotionToSquare}
+            promotionToSquare={promotionToSquare}
+            onPromotionPieceSelect={handlePromotionPieceSelect}
           />
         </div>
 
@@ -228,7 +297,7 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
           move={pendingMove}
           onConfirm={() => {
             setShowProfilassi(false)
-            executeMove(pendingMove.from, pendingMove.to)
+            executeMove(pendingMove.from, pendingMove.to, pendingMove.promotion || 'q')
             setPendingMove(null)
           }}
           onCancel={() => {
