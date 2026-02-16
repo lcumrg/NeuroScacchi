@@ -8,7 +8,9 @@ import IntentPanel from './components/IntentPanel'
 import FeedbackBox from './components/FeedbackBox'
 import ProfilassiRadar from './components/ProfilassiRadar'
 import SequencePlayer from './components/SequencePlayer'
-import { getLessons, saveLesson, deleteLesson, getSettings, saveLessonProgress } from './utils/storageManager'
+import ReflectionPrompt from './components/ReflectionPrompt'
+import LessonSummary from './components/LessonSummary'
+import { getLessons, saveLesson, deleteLesson, getSettings, saveLessonProgress, createSession, saveSession } from './utils/storageManager'
 import lezione01 from './data/lezione01.json'
 import './App.css'
 
@@ -17,7 +19,7 @@ function App() {
   const [lessons, setLessons] = useState([])
   const [currentLesson, setCurrentLesson] = useState(null)
   const [settings] = useState(getSettings())
-  
+
   // Lesson player state
   const gameRef = useRef(new Chess())
   const game = gameRef.current
@@ -34,6 +36,13 @@ function App() {
   const [lessonComplete, setLessonComplete] = useState(false)
   const timersRef = useRef([])
   const promotionHandledRef = useRef(false)
+
+  // v4.0 Metacognizione state
+  const sessionRef = useRef(null)
+  const [showReflection, setShowReflection] = useState(false)
+  const [reflectionContext, setReflectionContext] = useState(null)
+  const [showSummary, setShowSummary] = useState(false)
+  const [completedSession, setCompletedSession] = useState(null)
 
   // Cancella tutti i timer attivi (cleanup)
   const clearAllTimers = () => {
@@ -81,6 +90,13 @@ function App() {
     setHighlightedSquares([])
     setArrows([])
     setCooldownActive(true)
+    setShowReflection(false)
+    setReflectionContext(null)
+    setShowSummary(false)
+    setCompletedSession(null)
+
+    // v4.0: crea sessione di tracciamento
+    sessionRef.current = createSession(lesson.id)
 
     // Imposta orientamento
     if (lesson.parametri?.orientamento_scacchiera) {
@@ -100,6 +116,11 @@ function App() {
     const freezeTime = lesson.parametri?.tempo_freeze || 1500
     safeTimeout(() => {
       setCooldownActive(false)
+      // v4.0: segna fine fase freeze, inizio fase intent
+      if (sessionRef.current) {
+        sessionRef.current.phases.freeze.end = Date.now()
+        sessionRef.current.phases.intent.start = Date.now()
+      }
       if (lesson.tipo_modulo === 'intent') {
         setFeedback({
           type: 'neutral',
@@ -113,34 +134,76 @@ function App() {
   const handleIntentSelection = (selectedIntent) => {
     const isCorrect = selectedIntent === currentLesson.risposta_corretta
 
+    // v4.0: traccia tentativo
+    if (sessionRef.current) {
+      sessionRef.current.intentAttempts++
+    }
+
     if (isCorrect) {
+      // v4.0: segna fine fase intent, inizio fase move
+      if (sessionRef.current) {
+        sessionRef.current.phases.intent.end = Date.now()
+        sessionRef.current.phases.move.start = Date.now()
+      }
+
       setFeedback({
         type: 'positive',
         message: currentLesson.feedback_positivo
       })
-      
+
       // Mostra chunk visivi
       if (currentLesson.parametri?.mostra_chunk_visivo) {
         setHighlightedSquares(currentLesson.parametri.mostra_chunk_visivo)
       }
-      
+
       // Mostra frecce
       if (currentLesson.parametri?.frecce_pattern) {
         setArrows(currentLesson.parametri.frecce_pattern)
       }
-      
+
       // Sblocca scacchiera
       safeTimeout(() => {
         setIsFrozen(false)
         setIntentSelected(true)
       }, 800)
-      
+
     } else {
+      // v4.0: traccia errore intent
+      if (sessionRef.current) {
+        sessionRef.current.intentErrors.push({
+          selected: selectedIntent,
+          correct: currentLesson.risposta_corretta,
+          timestamp: Date.now()
+        })
+      }
+
       setFeedback({
         type: 'negative',
         message: currentLesson.feedback_negativo
       })
+
+      // v4.0: mostra riflessione dopo il secondo errore
+      if (sessionRef.current && sessionRef.current.intentErrors.length >= 2) {
+        safeTimeout(() => {
+          setReflectionContext({ phase: 'intent', selected: selectedIntent })
+          setShowReflection(true)
+        }, 1500)
+      }
     }
+  }
+
+  // v4.0: gestione riflessione
+  const handleReflection = (reflection) => {
+    if (sessionRef.current) {
+      sessionRef.current.reflections.push(reflection)
+    }
+    setShowReflection(false)
+    setReflectionContext(null)
+  }
+
+  const handleReflectionSkip = () => {
+    setShowReflection(false)
+    setReflectionContext(null)
   }
 
   // Gestione Detective
@@ -149,13 +212,21 @@ function App() {
       type: 'positive',
       message: currentLesson.modalita_detective.feedback_positivo || currentLesson.feedback_positivo
     })
-    
+
     safeTimeout(() => {
       completeLesson()
     }, 2000)
   }
 
   const handleDetectiveWrong = () => {
+    // v4.0: traccia errore detective
+    if (sessionRef.current) {
+      sessionRef.current.moveErrors.push({
+        type: 'detective',
+        timestamp: Date.now()
+      })
+    }
+
     setFeedback({
       type: 'negative',
       message: currentLesson.modalita_detective.feedback_negativo || currentLesson.feedback_negativo
@@ -191,13 +262,36 @@ function App() {
 
     const moveNotation = sourceSquare + targetSquare
 
+    // v4.0: traccia tentativo mossa
+    if (sessionRef.current) {
+      sessionRef.current.moveAttempts++
+    }
+
     // Verifica se la mossa è consentita
     if (currentLesson.mosse_consentite &&
         !currentLesson.mosse_consentite.includes(moveNotation)) {
+      // v4.0: traccia errore mossa
+      if (sessionRef.current) {
+        sessionRef.current.moveErrors.push({
+          type: 'wrong_move',
+          attempted: moveNotation,
+          timestamp: Date.now()
+        })
+      }
+
       setFeedback({
         type: 'negative',
         message: 'Questa mossa non è ottimale. Prova a sviluppare i pezzi verso il centro.'
       })
+
+      // v4.0: mostra riflessione dopo il secondo errore mossa
+      if (sessionRef.current && sessionRef.current.moveErrors.length >= 2) {
+        safeTimeout(() => {
+          setReflectionContext({ phase: 'move', attempted: moveNotation })
+          setShowReflection(true)
+        }, 1500)
+      }
+
       return false
     }
 
@@ -274,10 +368,19 @@ function App() {
   const completeLesson = () => {
     setLessonComplete(true)
     saveLessonProgress(currentLesson.id, { completed: true })
-    setFeedback({
-      type: 'positive',
-      message: '🎉 Lezione completata! Hai dimostrato ottima capacità di pianificazione strategica.'
-    })
+
+    // v4.0: finalizza e salva sessione, poi mostra summary
+    if (sessionRef.current) {
+      sessionRef.current.phases.move.end = Date.now()
+      sessionRef.current.completed = true
+      sessionRef.current.completedAt = Date.now()
+      saveSession(sessionRef.current)
+      setCompletedSession({ ...sessionRef.current })
+    }
+
+    safeTimeout(() => {
+      setShowSummary(true)
+    }, 1500)
   }
 
   // Reset lezione
@@ -288,6 +391,8 @@ function App() {
   // Exit lezione
   const handleExit = () => {
     clearAllTimers()
+    setShowSummary(false)
+    setShowReflection(false)
     setCurrentScreen('selector')
     setCurrentLesson(null)
   }
@@ -304,15 +409,21 @@ function App() {
     setLessons(lessons.filter(l => l.id !== lessonId))
   }
 
+  // v4.0: callback per SequencePlayer completeLesson
+  const handleSequenceComplete = () => {
+    saveLessonProgress(currentLesson.id, { completed: true })
+    setLessonComplete(true)
+  }
+
   return (
     <div className="app-container">
-      <Header 
+      <Header
         showExit={currentScreen === 'lesson'}
         onExit={handleExit}
         onSettings={() => alert('Impostazioni (coming soon)')}
         lessonTitle={currentScreen === 'lesson' ? currentLesson?.titolo : null}
       />
-      
+
       {currentScreen === 'selector' ? (
         <LessonSelector
           lessons={lessons}
@@ -323,7 +434,7 @@ function App() {
       ) : currentLesson?.tipo_modulo === 'intent_sequenza' ? (
         <SequencePlayer
           lesson={currentLesson}
-          onComplete={completeLesson}
+          onComplete={handleSequenceComplete}
           onExit={handleExit}
         />
       ) : (
@@ -344,7 +455,7 @@ function App() {
                   <h2>{currentLesson?.titolo}</h2>
                   <p className="lesson-description">{currentLesson?.descrizione}</p>
                 </div>
-                
+
                 <ChessboardComponent
                   position={position}
                   onDrop={onDrop}
@@ -369,13 +480,22 @@ function App() {
                 cooldownActive={cooldownActive}
               />
             )}
-            
-            <FeedbackBox
-              type={feedback.type}
-              message={feedback.message}
-              onReset={handleReset}
-              showReset={lessonComplete}
-            />
+
+            {/* v4.0: Riflessione post-errore */}
+            {showReflection && reflectionContext ? (
+              <ReflectionPrompt
+                onReflect={handleReflection}
+                onSkip={handleReflectionSkip}
+                errorContext={reflectionContext}
+              />
+            ) : (
+              <FeedbackBox
+                type={feedback.type}
+                message={feedback.message}
+                onReset={handleReset}
+                showReset={lessonComplete && !showSummary}
+              />
+            )}
           </div>
         </main>
       )}
@@ -394,6 +514,16 @@ function App() {
             setPendingMove(null)
           }}
           checklistQuestions={currentLesson.parametri?.domande_checklist}
+        />
+      )}
+
+      {/* v4.0: Schermata riepilogo post-lezione */}
+      {showSummary && completedSession && (
+        <LessonSummary
+          session={completedSession}
+          lessonTitle={currentLesson?.titolo}
+          onRepeat={handleReset}
+          onExit={handleExit}
         />
       )}
     </div>

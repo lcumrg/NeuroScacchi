@@ -1,9 +1,10 @@
-// Storage Manager - Gestione localStorage per NeuroScacchi
+// Storage Manager - Gestione localStorage per NeuroScacchi v4.0
 const STORAGE_KEYS = {
   LESSONS: 'neuroscacchi_lessons',
   PLAYLISTS: 'neuroscacchi_playlists',
   PROGRESS: 'neuroscacchi_progress',
-  SETTINGS: 'neuroscacchi_settings'
+  SETTINGS: 'neuroscacchi_settings',
+  SESSIONS: 'neuroscacchi_sessions'
 }
 
 // === SETTINGS ===
@@ -163,4 +164,54 @@ export const resetAllProgress = () => {
     console.error('Failed to reset all progress:', e)
     return false
   }
+}
+
+// === SESSIONS (v4.0 - Metacognizione) ===
+// Ogni sessione traccia: tempi per fase, errori, riflessioni
+
+export const createSession = (lessonId) => {
+  return {
+    lessonId,
+    startedAt: Date.now(),
+    phases: {
+      freeze: { start: Date.now(), end: null },
+      intent: { start: null, end: null },
+      move: { start: null, end: null }
+    },
+    intentAttempts: 0,
+    intentErrors: [],
+    moveAttempts: 0,
+    moveErrors: [],
+    reflections: [],
+    completed: false,
+    completedAt: null
+  }
+}
+
+export const saveSession = (session) => {
+  try {
+    const sessions = getSessions()
+    sessions.push(session)
+    // Mantieni solo le ultime 100 sessioni
+    const trimmed = sessions.slice(-100)
+    localStorage.setItem(STORAGE_KEYS.SESSIONS, JSON.stringify(trimmed))
+    return true
+  } catch (e) {
+    console.error('Failed to save session:', e)
+    return false
+  }
+}
+
+export const getSessions = () => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEYS.SESSIONS)
+    return stored ? JSON.parse(stored) : []
+  } catch (e) {
+    console.error('Failed to load sessions:', e)
+    return []
+  }
+}
+
+export const getSessionsByLesson = (lessonId) => {
+  return getSessions().filter(s => s.lessonId === lessonId)
 }

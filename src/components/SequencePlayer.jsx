@@ -4,6 +4,9 @@ import ChessboardComponent from './ChessboardComponent'
 import IntentPanel from './IntentPanel'
 import FeedbackBox from './FeedbackBox'
 import ProfilassiRadar from './ProfilassiRadar'
+import ReflectionPrompt from './ReflectionPrompt'
+import LessonSummary from './LessonSummary'
+import { createSession, saveSession } from '../utils/storageManager'
 import './SequencePlayer.css'
 
 function SequencePlayer({ lesson, onComplete, onExit }) {
@@ -22,6 +25,14 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
   const [pendingMove, setPendingMove] = useState(null)
   const timersRef = useRef([])
   const promotionHandledRef = useRef(false)
+
+  // v4.0 Metacognizione state
+  const sessionRef = useRef(null)
+  const [showReflection, setShowReflection] = useState(false)
+  const [reflectionContext, setReflectionContext] = useState(null)
+  const [showSummary, setShowSummary] = useState(false)
+  const [completedSession, setCompletedSession] = useState(null)
+  const [sequenceComplete, setSequenceComplete] = useState(false)
 
   const clearAllTimers = () => {
     timersRef.current.forEach(id => clearTimeout(id))
@@ -42,6 +53,11 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
   const totalSteps = lesson.steps.length
   const isLastStep = currentStepIndex === totalSteps - 1
 
+  // v4.0: inizializza sessione al primo mount
+  useEffect(() => {
+    sessionRef.current = createSession(lesson.id)
+  }, [lesson.id])
+
   // Inizializza step corrente
   useEffect(() => {
     clearAllTimers()
@@ -61,16 +77,34 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
     setHighlightedSquares([])
     setArrows([])
     setCooldownActive(true)
+    setShowReflection(false)
+    setReflectionContext(null)
 
     // Orientamento
     if (lesson.parametri?.orientamento_scacchiera) {
       setBoardOrientation(lesson.parametri.orientamento_scacchiera)
     }
 
+    // v4.0: traccia inizio fase freeze per lo step
+    if (sessionRef.current && currentStepIndex === 0) {
+      sessionRef.current.phases.freeze.start = Date.now()
+    }
+
     // Freeze iniziale
     const freezeTime = lesson.parametri?.tempo_freeze || 1500
     safeTimeout(() => {
       setCooldownActive(false)
+
+      // v4.0: traccia transizione freeze -> intent
+      if (sessionRef.current) {
+        if (currentStepIndex === 0) {
+          sessionRef.current.phases.freeze.end = Date.now()
+        }
+        if (!sessionRef.current.phases.intent.start) {
+          sessionRef.current.phases.intent.start = Date.now()
+        }
+      }
+
       setFeedback({
         type: 'neutral',
         message: `Step ${currentStepIndex + 1}/${totalSteps}: ${currentStep.domanda}`
@@ -82,7 +116,18 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
   const handleIntentSelection = (selectedIntent) => {
     const isCorrect = selectedIntent === currentStep.risposta_corretta
 
+    // v4.0: traccia tentativo
+    if (sessionRef.current) {
+      sessionRef.current.intentAttempts++
+    }
+
     if (isCorrect) {
+      // v4.0: se ultimo step corretto, segna transizione intent -> move
+      if (sessionRef.current && !sessionRef.current.phases.intent.end) {
+        sessionRef.current.phases.intent.end = Date.now()
+        sessionRef.current.phases.move.start = Date.now()
+      }
+
       setFeedback({
         type: 'positive',
         message: currentStep.feedback || 'Corretto!'
@@ -101,11 +146,43 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
         setIntentSelected(true)
       }, 800)
     } else {
+      // v4.0: traccia errore intent
+      if (sessionRef.current) {
+        sessionRef.current.intentErrors.push({
+          step: currentStepIndex + 1,
+          selected: selectedIntent,
+          correct: currentStep.risposta_corretta,
+          timestamp: Date.now()
+        })
+      }
+
       setFeedback({
         type: 'negative',
         message: currentStep.feedback_negativo || 'Riprova, pensa meglio al piano strategico.'
       })
+
+      // v4.0: mostra riflessione dopo il secondo errore
+      if (sessionRef.current && sessionRef.current.intentErrors.length >= 2) {
+        safeTimeout(() => {
+          setReflectionContext({ phase: 'intent', step: currentStepIndex + 1, selected: selectedIntent })
+          setShowReflection(true)
+        }, 1500)
+      }
     }
+  }
+
+  // v4.0: gestione riflessione
+  const handleReflection = (reflection) => {
+    if (sessionRef.current) {
+      sessionRef.current.reflections.push(reflection)
+    }
+    setShowReflection(false)
+    setReflectionContext(null)
+  }
+
+  const handleReflectionSkip = () => {
+    setShowReflection(false)
+    setReflectionContext(null)
   }
 
   // Controlla se una mossa e' una promozione (per la libreria react-chessboard)
@@ -135,13 +212,37 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
 
     const moveNotation = sourceSquare + targetSquare
 
+    // v4.0: traccia tentativo mossa
+    if (sessionRef.current) {
+      sessionRef.current.moveAttempts++
+    }
+
     // Verifica mossa consentita
     if (currentStep.mosse_consentite &&
         !currentStep.mosse_consentite.includes(moveNotation)) {
+      // v4.0: traccia errore mossa
+      if (sessionRef.current) {
+        sessionRef.current.moveErrors.push({
+          type: 'wrong_move',
+          step: currentStepIndex + 1,
+          attempted: moveNotation,
+          timestamp: Date.now()
+        })
+      }
+
       setFeedback({
         type: 'negative',
         message: 'Questa mossa non è ottimale per il piano scelto.'
       })
+
+      // v4.0: mostra riflessione dopo il secondo errore mossa
+      if (sessionRef.current && sessionRef.current.moveErrors.length >= 2) {
+        safeTimeout(() => {
+          setReflectionContext({ phase: 'move', step: currentStepIndex + 1, attempted: moveNotation })
+          setShowReflection(true)
+        }, 1500)
+      }
+
       return false
     }
 
@@ -198,9 +299,21 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
               message: lesson.feedback_finale || currentStep.feedback_finale ||
                       '🎉 Sequenza completata! Hai dimostrato ottima pianificazione strategica.'
             })
+
+            // v4.0: finalizza e salva sessione
+            if (sessionRef.current) {
+              sessionRef.current.phases.move.end = Date.now()
+              sessionRef.current.completed = true
+              sessionRef.current.completedAt = Date.now()
+              saveSession(sessionRef.current)
+              setCompletedSession({ ...sessionRef.current })
+            }
+
             safeTimeout(() => {
+              setSequenceComplete(true)
+              setShowSummary(true)
               onComplete()
-            }, 3000)
+            }, 2000)
           } else {
             // Step intermedio - passa al prossimo
             setFeedback({
@@ -234,6 +347,12 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
 
   const handleReset = () => {
     clearAllTimers()
+    setShowSummary(false)
+    setShowReflection(false)
+    setCompletedSession(null)
+    setSequenceComplete(false)
+    // v4.0: nuova sessione
+    sessionRef.current = createSession(lesson.id)
     setCurrentStepIndex(0)
   }
 
@@ -281,12 +400,21 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
             cooldownActive={cooldownActive}
           />
 
-          <FeedbackBox
-            type={feedback.type}
-            message={feedback.message}
-            onReset={handleReset}
-            showReset={isLastStep && intentSelected}
-          />
+          {/* v4.0: Riflessione post-errore */}
+          {showReflection && reflectionContext ? (
+            <ReflectionPrompt
+              onReflect={handleReflection}
+              onSkip={handleReflectionSkip}
+              errorContext={reflectionContext}
+            />
+          ) : (
+            <FeedbackBox
+              type={feedback.type}
+              message={feedback.message}
+              onReset={handleReset}
+              showReset={sequenceComplete && !showSummary}
+            />
+          )}
         </div>
       </main>
 
@@ -305,6 +433,16 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
             setPendingMove(null)
           }}
           checklistQuestions={lesson.parametri?.domande_checklist}
+        />
+      )}
+
+      {/* v4.0: Schermata riepilogo post-lezione */}
+      {showSummary && completedSession && (
+        <LessonSummary
+          session={completedSession}
+          lessonTitle={lesson.titolo}
+          onRepeat={handleReset}
+          onExit={onExit}
         />
       )}
     </div>
