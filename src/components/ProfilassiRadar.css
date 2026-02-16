@@ -43,6 +43,45 @@
   font-weight: 700;
 }
 
+/* v4.0 */
+.profilassi-hint {
+  font-size: 13px;
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
+/* v4.0: Progress bar */
+.profilassi-progress {
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.profilassi-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-main);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.profilassi-progress-fill {
+  height: 100%;
+  background: var(--color-develop);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.profilassi-progress-text {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .profilassi-content {
   padding: 24px;
 }
@@ -53,6 +92,10 @@
   background: var(--bg-main);
   border-radius: 12px;
   border-left: 4px solid var(--color-attack);
+}
+
+.profilassi-radar.radar-safe-block {
+  border-left-color: var(--color-develop);
 }
 
 .profilassi-radar h4 {
@@ -81,6 +124,14 @@
   border-radius: 8px;
   font-size: 14px;
   color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.radar-warning-icon {
+  font-size: 16px;
+  flex-shrink: 0;
 }
 
 .profilassi-checklist h4 {
@@ -92,32 +143,41 @@
 .checklist-items {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
-.checklist-item {
+/* v4.0: Checklist step-by-step items */
+.checklist-item-v4 {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
-  padding: 12px;
+  padding: 14px 16px;
   background: var(--bg-main);
-  border-radius: 8px;
-  cursor: pointer;
+  border-radius: 12px;
+  border: 2px solid transparent;
   transition: all var(--transition-fast);
-  user-select: none;
 }
 
-.checklist-item:hover {
+.checklist-item-v4.current {
   background: var(--feedback-neutral);
-  transform: translateX(4px);
+  border-color: #FFB74D;
+  animation: fadeIn 0.3s ease;
 }
 
-.checklist-item input[type="checkbox"] {
-  margin-top: 2px;
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  accent-color: var(--color-develop);
+.checklist-item-v4.checked {
+  background: var(--feedback-positive);
+  border-color: var(--color-develop);
+}
+
+.checklist-item-v4.locked {
+  opacity: 0.5;
+}
+
+.checklist-status {
+  font-size: 18px;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
 }
 
 .checklist-text {
@@ -125,6 +185,25 @@
   font-size: 15px;
   line-height: 1.4;
   color: var(--text-primary);
+}
+
+.btn-check-step {
+  padding: 6px 16px;
+  background: #FFB74D;
+  border: none;
+  border-radius: 8px;
+  color: #2C3E50;
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.btn-check-step:hover {
+  background: #FFA726;
+  transform: scale(1.05);
 }
 
 .profilassi-actions {
@@ -175,27 +254,40 @@
 .btn-confirm.disabled {
   opacity: 0.4;
   cursor: not-allowed;
+  font-size: 13px;
 }
 
 @media (max-width: 768px) {
   .profilassi-modal {
     max-width: 95%;
   }
-  
+
   .profilassi-header h3 {
     font-size: 18px;
   }
-  
+
   .profilassi-icon {
     font-size: 32px;
   }
-  
+
   .profilassi-content {
     padding: 16px;
   }
-  
+
   .btn-profilassi {
     font-size: 14px;
     padding: 12px 20px;
+  }
+
+  .btn-confirm.disabled {
+    font-size: 12px;
+  }
+
+  .checklist-item-v4 {
+    padding: 12px 14px;
+  }
+
+  .profilassi-progress {
+    padding: 10px 16px;
   }
 }
