@@ -425,6 +425,13 @@ function App() {
             message: 'Mossa accettabile, ma ce n\'era una migliore.',
             confrontation
           })
+
+          // In esame mode: completa comunque la lezione dopo il feedback
+          if (esameMode) {
+            safeTimeout(() => {
+              completeLesson()
+            }, confrontation ? 3500 : 2500)
+          }
         }
 
         return true
