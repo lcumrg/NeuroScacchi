@@ -1,0 +1,20 @@
+{
+  "id": "test_candidate_01",
+  "titolo": "Trova le mosse candidate",
+  "descrizione": "Posizione del Giuoco Piano: identifica le migliori mosse per il Bianco prima di scegliere.",
+  "autori": ["NeuroScacchi v4.1"],
+  "tipo_modulo": "candidate",
+  "categoria": "tattica",
+  "difficolta": "medio",
+  "tempo_stimato": "3 min",
+  "fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+  "parametri": {
+    "orientamento_scacchiera": "white",
+    "tempo_freeze": 2500,
+    "num_candidate": 2
+  },
+  "mosse_candidate": ["e1g1", "d2d3", "c2c3", "b1c3"],
+  "mossa_migliore": "e1g1",
+  "feedback_positivo": "Eccellente! L'arrocco e la mossa migliore: mette il Re al sicuro e collega le Torri.",
+  "feedback_negativo": "Questa mossa non era tra le migliori. Pensa alla sicurezza del Re e allo sviluppo."
+}

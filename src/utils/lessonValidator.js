@@ -11,9 +11,9 @@ export const validateLesson = (lessonData) => {
   if (!lessonData.fen) errors.push('Campo "fen" (posizione) mancante')
 
   // Valida tipo modulo
-  const validTypes = ['intent', 'detective', 'intent_sequenza']
+  const validTypes = ['intent', 'detective', 'intent_sequenza', 'candidate']
   if (lessonData.tipo_modulo && !validTypes.includes(lessonData.tipo_modulo)) {
-    errors.push(`tipo_modulo deve essere "intent", "detective" o "intent_sequenza", ricevuto: "${lessonData.tipo_modulo}"`)
+    errors.push(`tipo_modulo deve essere "intent", "detective", "intent_sequenza" o "candidate", ricevuto: "${lessonData.tipo_modulo}"`)
   }
 
   // Valida parametri
@@ -67,6 +67,18 @@ export const validateLesson = (lessonData) => {
           warnings.push(`Step ${idx + 1}: "mosse_corrette" mancante`)
         }
       })
+    }
+  }
+
+  // Validazione specifica per Candidate
+  if (lessonData.tipo_modulo === 'candidate') {
+    if (!lessonData.mosse_candidate || !Array.isArray(lessonData.mosse_candidate)) {
+      errors.push('Lezione Candidate: campo "mosse_candidate" deve essere un array')
+    } else if (lessonData.mosse_candidate.length < 2) {
+      errors.push('Lezione Candidate: servono almeno 2 mosse candidate')
+    }
+    if (!lessonData.mossa_migliore) {
+      errors.push('Lezione Candidate: campo "mossa_migliore" mancante')
     }
   }
 
@@ -132,15 +144,17 @@ const estimateTime = (lesson) => {
   // Freeze base
   seconds += (lesson.parametri?.tempo_freeze || 1500) / 1000
   
-  // Tempo per leggere e rispondere Intent/Detective
+  // Tempo per leggere e rispondere Intent/Detective/Candidate
   if (lesson.tipo_modulo === 'intent') {
     seconds += 10 // Lettura domanda + scelta
   } else if (lesson.tipo_modulo === 'detective') {
     seconds += 8 // Osservazione + click
+  } else if (lesson.tipo_modulo === 'candidate') {
+    seconds += 20 // Selezione candidate + valutazione
   }
-  
+
   // Tempo per mossa
-  if (lesson.tipo_modulo === 'intent') {
+  if (lesson.tipo_modulo === 'intent' || lesson.tipo_modulo === 'candidate') {
     seconds += 5 // Trascinamento pezzo
   }
   

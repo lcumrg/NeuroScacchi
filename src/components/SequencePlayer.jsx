@@ -10,7 +10,7 @@ import { createSession, saveSession } from '../utils/storageManager'
 import { generateConfrontation } from '../utils/confrontation'
 import './SequencePlayer.css'
 
-function SequencePlayer({ lesson, onComplete, onExit }) {
+function SequencePlayer({ lesson, esameMode = false, onComplete, onExit }) {
   const gameRef = useRef(new Chess())
   const game = gameRef.current
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
@@ -73,12 +73,9 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
       return
     }
 
-    setIsFrozen(true)
-    setIntentSelected(false)
     setFeedback({ type: 'neutral', message: '' })
     setHighlightedSquares([])
     setArrows([])
-    setCooldownActive(true)
     setShowReflection(false)
     setReflectionContext(null)
 
@@ -86,6 +83,30 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
     if (lesson.parametri?.orientamento_scacchiera) {
       setBoardOrientation(lesson.parametri.orientamento_scacchiera)
     }
+
+    // Esame mode: niente freeze, niente intent, scacchiera subito attiva
+    if (esameMode) {
+      setIsFrozen(false)
+      setIntentSelected(true)
+      setCooldownActive(false)
+      if (sessionRef.current) {
+        sessionRef.current.isEsame = true
+        if (currentStepIndex === 0) {
+          sessionRef.current.phases.freeze.end = Date.now()
+          sessionRef.current.phases.intent.end = Date.now()
+          sessionRef.current.phases.move.start = Date.now()
+        }
+      }
+      setFeedback({
+        type: 'neutral',
+        message: `Esame - Step ${currentStepIndex + 1}/${totalSteps}: Esegui la mossa corretta.`
+      })
+      return
+    }
+
+    setIsFrozen(true)
+    setIntentSelected(false)
+    setCooldownActive(true)
 
     // v4.0: traccia inizio fase freeze per lo step
     if (sessionRef.current && currentStepIndex === 0) {
@@ -135,11 +156,11 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
         message: currentStep.feedback || 'Corretto!'
       })
 
-      // Mostra chunking se presente
-      if (currentStep.mostra_chunk_visivo) {
+      // Mostra chunking se presente (non in esame mode)
+      if (currentStep.mostra_chunk_visivo && !esameMode) {
         setHighlightedSquares(currentStep.mostra_chunk_visivo)
       }
-      if (currentStep.frecce_pattern) {
+      if (currentStep.frecce_pattern && !esameMode) {
         setArrows(currentStep.frecce_pattern)
       }
 
@@ -248,8 +269,8 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
       return false
     }
 
-    // Profilassi?
-    if (lesson.parametri?.usa_profilassi) {
+    // Profilassi? (non in esame mode)
+    if (lesson.parametri?.usa_profilassi && !esameMode) {
       setPendingMove({ from: sourceSquare, to: targetSquare })
       setShowProfilassi(true)
       return false
@@ -265,7 +286,7 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
     }
     const promotionPiece = piece[1].toLowerCase()
 
-    if (lesson.parametri?.usa_profilassi) {
+    if (lesson.parametri?.usa_profilassi && !esameMode) {
       setPendingMove({ from: promoteFromSquare, to: promoteToSquare, promotion: promotionPiece })
       setShowProfilassi(true)
       promotionHandledRef.current = true
@@ -401,7 +422,7 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
           />
         </div>
         <div className="progress-text">
-          Step {currentStepIndex + 1} di {totalSteps}
+          {esameMode && '📝 Esame - '}Step {currentStepIndex + 1} di {totalSteps}
         </div>
       </div>
 
@@ -427,8 +448,8 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
         </div>
 
         <div className="intent-section">
-          {/* Profilassi: sostituisce il pannello laterale (la scacchiera resta visibile) */}
-          {showProfilassi && pendingMove ? (
+          {/* Profilassi: sostituisce il pannello laterale (non in esame mode) */}
+          {showProfilassi && pendingMove && !esameMode ? (
             <ProfilassiRadar
               position={position}
               move={pendingMove}
@@ -448,13 +469,15 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
             />
           ) : (
             <>
-              <IntentPanel
-                question={currentStep.domanda}
-                options={currentStep.opzioni_risposta}
-                onSelect={handleIntentSelection}
-                disabled={intentSelected || cooldownActive}
-                cooldownActive={cooldownActive}
-              />
+              {!esameMode && (
+                <IntentPanel
+                  question={currentStep.domanda}
+                  options={currentStep.opzioni_risposta}
+                  onSelect={handleIntentSelection}
+                  disabled={intentSelected || cooldownActive}
+                  cooldownActive={cooldownActive}
+                />
+              )}
 
               {/* v4.0: Riflessione post-errore */}
               {showReflection && reflectionContext ? (
