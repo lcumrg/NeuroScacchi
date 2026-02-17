@@ -11,6 +11,7 @@ import SequencePlayer from './components/SequencePlayer'
 import ReflectionPrompt from './components/ReflectionPrompt'
 import LessonSummary from './components/LessonSummary'
 import { getLessons, saveLesson, deleteLesson, getSettings, saveLessonProgress, createSession, saveSession } from './utils/storageManager'
+import { generateConfrontation } from './utils/confrontation'
 import lezione01 from './data/lezione01.json'
 import testMetaV4 from './data/test_metacognizione_v4.json'
 import './App.css'
@@ -338,7 +339,9 @@ function App() {
     return result
   }
 
-  const executeMove = (sourceSquare, targetSquare, promotion = 'q') => {
+  const executeMove = (sourceSquare, targetSquare, promotion = 'q', confidenceLevel = null) => {
+    const preMoveFen = position
+
     try {
       const move = game.move({
         from: sourceSquare,
@@ -352,19 +355,39 @@ function App() {
         const moveNotation = sourceSquare + targetSquare
         const isCorrect = currentLesson.mosse_corrette?.includes(moveNotation)
 
+        // Genera confronto metacognitivo se la profilassi ha raccolto la fiducia
+        let confrontation = null
+        if (confidenceLevel) {
+          confrontation = generateConfrontation(confidenceLevel, isCorrect, preMoveFen)
+
+          // v4.0: salva dati calibrazione nella sessione
+          if (sessionRef.current) {
+            if (!sessionRef.current.calibrations) sessionRef.current.calibrations = []
+            sessionRef.current.calibrations.push({
+              move: moveNotation,
+              confidence: confidenceLevel,
+              correct: isCorrect,
+              confrontation: confrontation.message,
+              timestamp: Date.now()
+            })
+          }
+        }
+
         if (isCorrect) {
           setFeedback({
             type: 'positive',
-            message: '✅ Eccellente! Hai eseguito la mossa migliore.'
+            message: '✅ Eccellente! Hai eseguito la mossa migliore.',
+            confrontation
           })
 
           safeTimeout(() => {
             completeLesson()
-          }, 2000)
+          }, confrontation ? 3500 : 2000)
         } else {
           setFeedback({
             type: 'positive',
-            message: 'Mossa accettabile, ma ce n\'era una migliore.'
+            message: 'Mossa accettabile, ma ce n\'era una migliore.',
+            confrontation
           })
         }
 
@@ -494,10 +517,10 @@ function App() {
               <ProfilassiRadar
                 position={position}
                 move={pendingMove}
-                onConfirm={() => {
+                onConfirm={(confidenceLevel) => {
                   setShowProfilassi(false)
                   setProfilassiSquareStyles({})
-                  executeMove(pendingMove.from, pendingMove.to, pendingMove.promotion || 'q')
+                  executeMove(pendingMove.from, pendingMove.to, pendingMove.promotion || 'q', confidenceLevel)
                   setPendingMove(null)
                 }}
                 onCancel={() => {
@@ -530,6 +553,7 @@ function App() {
                   <FeedbackBox
                     type={feedback.type}
                     message={feedback.message}
+                    confrontation={feedback.confrontation}
                     onReset={handleReset}
                     showReset={lessonComplete && !showSummary}
                   />

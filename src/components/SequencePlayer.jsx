@@ -7,6 +7,7 @@ import ProfilassiRadar from './ProfilassiRadar'
 import ReflectionPrompt from './ReflectionPrompt'
 import LessonSummary from './LessonSummary'
 import { createSession, saveSession } from '../utils/storageManager'
+import { generateConfrontation } from '../utils/confrontation'
 import './SequencePlayer.css'
 
 function SequencePlayer({ lesson, onComplete, onExit }) {
@@ -276,7 +277,9 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
     return result
   }
 
-  const executeMove = (sourceSquare, targetSquare, promotion = 'q') => {
+  const executeMove = (sourceSquare, targetSquare, promotion = 'q', confidenceLevel = null) => {
+    const preMoveFen = position
+
     try {
       const move = game.move({
         from: sourceSquare,
@@ -291,6 +294,27 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
         const moveNotation = sourceSquare + targetSquare
         const isCorrect = currentStep.mosse_corrette?.includes(moveNotation)
 
+        // Genera confronto metacognitivo se la profilassi ha raccolto la fiducia
+        let confrontation = null
+        if (confidenceLevel) {
+          confrontation = generateConfrontation(confidenceLevel, isCorrect, preMoveFen)
+
+          // v4.0: salva dati calibrazione nella sessione
+          if (sessionRef.current) {
+            if (!sessionRef.current.calibrations) sessionRef.current.calibrations = []
+            sessionRef.current.calibrations.push({
+              step: currentStepIndex + 1,
+              move: moveNotation,
+              confidence: confidenceLevel,
+              correct: isCorrect,
+              confrontation: confrontation.message,
+              timestamp: Date.now()
+            })
+          }
+        }
+
+        const extraDelay = confrontation ? 1500 : 0
+
         if (isCorrect) {
           // Mossa corretta
           if (isLastStep) {
@@ -298,7 +322,8 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
             setFeedback({
               type: 'positive',
               message: lesson.feedback_finale || currentStep.feedback_finale ||
-                      '🎉 Sequenza completata! Hai dimostrato ottima pianificazione strategica.'
+                      'Sequenza completata! Hai dimostrato ottima pianificazione strategica.',
+              confrontation
             })
 
             // v4.0: finalizza e salva sessione
@@ -314,27 +339,29 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
               setSequenceComplete(true)
               setShowSummary(true)
               onComplete()
-            }, 2000)
+            }, 2000 + extraDelay)
           } else {
             // Step intermedio - passa al prossimo
             setFeedback({
               type: 'positive',
-              message: currentStep.feedback || 'Ottimo! Prossimo step...'
+              message: currentStep.feedback || 'Ottimo! Prossimo step...',
+              confrontation
             })
             safeTimeout(() => {
               setCurrentStepIndex(currentStepIndex + 1)
-            }, 2000)
+            }, 2000 + extraDelay)
           }
         } else {
           // Mossa accettabile ma non ottima
           setFeedback({
             type: 'positive',
-            message: 'Mossa accettabile, ma ce n\'era una migliore.'
+            message: 'Mossa accettabile, ma ce n\'era una migliore.',
+            confrontation
           })
           if (!isLastStep) {
             safeTimeout(() => {
               setCurrentStepIndex(currentStepIndex + 1)
-            }, 2500)
+            }, 2500 + extraDelay)
           }
         }
 
@@ -404,10 +431,10 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
             <ProfilassiRadar
               position={position}
               move={pendingMove}
-              onConfirm={() => {
+              onConfirm={(confidenceLevel) => {
                 setShowProfilassi(false)
                 setProfilassiSquareStyles({})
-                executeMove(pendingMove.from, pendingMove.to, pendingMove.promotion || 'q')
+                executeMove(pendingMove.from, pendingMove.to, pendingMove.promotion || 'q', confidenceLevel)
                 setPendingMove(null)
               }}
               onCancel={() => {
@@ -438,6 +465,7 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
                 <FeedbackBox
                   type={feedback.type}
                   message={feedback.message}
+                  confrontation={feedback.confrontation}
                   onReset={handleReset}
                   showReset={sequenceComplete && !showSummary}
                 />

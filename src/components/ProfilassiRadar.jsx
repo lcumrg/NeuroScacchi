@@ -8,7 +8,15 @@ const PROFILASSI_QUESTIONS = [
   { id: 'threats', text: 'Ci sono pezzi minacciati?', icon: '⚔️' }
 ]
 
+// Domanda pre-profilassi sulla fiducia
+const CONFIDENCE_OPTIONS = [
+  { id: 'sicuro', label: 'Sono sicuro', icon: '💪', color: '#4CAF50' },
+  { id: 'dubbio', label: 'Ho un dubbio', icon: '🤔', color: '#FF9800' },
+  { id: 'non_so', label: 'Non lo so', icon: '❓', color: '#F44336' }
+]
+
 function ProfilassiRadar({ position, move, onConfirm, onCancel, onHighlightChange }) {
+  const [confidenceLevel, setConfidenceLevel] = useState(null)
   const [checkedItems, setCheckedItems] = useState([])
   const [currentQuestion, setCurrentQuestion] = useState(0)
 
@@ -45,9 +53,15 @@ function ProfilassiRadar({ position, move, onConfirm, onCancel, onHighlightChang
     }
   }, [position])
 
-  // Aggiorna evidenziazione sulla scacchiera quando cambia la domanda corrente
+  // Aggiorna evidenziazione sulla scacchiera (solo durante fase checklist)
   useEffect(() => {
     if (!onHighlightChange) return
+
+    // Nessuna evidenziazione durante la fase confidence
+    if (!confidenceLevel) {
+      onHighlightChange({})
+      return
+    }
 
     const question = PROFILASSI_QUESTIONS[currentQuestion]
     if (!question || checkedItems.includes(currentQuestion)) {
@@ -78,7 +92,7 @@ function ProfilassiRadar({ position, move, onConfirm, onCancel, onHighlightChang
     }
 
     onHighlightChange(styles)
-  }, [currentQuestion, checkedItems, analysis, onHighlightChange])
+  }, [currentQuestion, checkedItems, analysis, onHighlightChange, confidenceLevel])
 
   // Pulisci evidenziazione al dismount
   useEffect(() => {
@@ -86,6 +100,10 @@ function ProfilassiRadar({ position, move, onConfirm, onCancel, onHighlightChang
       if (onHighlightChange) onHighlightChange({})
     }
   }, [onHighlightChange])
+
+  const handleConfidenceSelect = (level) => {
+    setConfidenceLevel(level)
+  }
 
   const handleCheckStep = () => {
     const newChecked = [...checkedItems, currentQuestion]
@@ -97,7 +115,9 @@ function ProfilassiRadar({ position, move, onConfirm, onCancel, onHighlightChang
   }
 
   const allChecked = checkedItems.length === PROFILASSI_QUESTIONS.length
-  const progressPercent = (checkedItems.length / PROFILASSI_QUESTIONS.length) * 100
+  const totalSteps = PROFILASSI_QUESTIONS.length + 1 // confidence + 2 domande
+  const completedSteps = (confidenceLevel ? 1 : 0) + checkedItems.length
+  const progressPercent = (completedSteps / totalSteps) * 100
 
   return (
     <div className="profilassi-panel">
@@ -118,41 +138,67 @@ function ProfilassiRadar({ position, move, onConfirm, onCancel, onHighlightChang
           />
         </div>
         <span className="profilassi-progress-text">
-          {checkedItems.length}/{PROFILASSI_QUESTIONS.length}
+          {completedSteps}/{totalSteps}
         </span>
       </div>
 
       <div className="profilassi-content">
-        {/* CHECKLIST step-by-step — le 2 domande fisse */}
-        <div className="profilassi-checklist">
-          <div className="checklist-items">
-            {PROFILASSI_QUESTIONS.map((question, index) => {
-              const isChecked = checkedItems.includes(index)
-              const isCurrent = index === currentQuestion && !isChecked
-              const isLocked = index > currentQuestion && !isChecked
-
-              return (
-                <div
-                  key={question.id}
-                  className={`checklist-item-v4 ${isChecked ? 'checked' : ''} ${isCurrent ? 'current' : ''} ${isLocked ? 'locked' : ''}`}
+        {/* FASE 0: Domanda sulla fiducia */}
+        {!confidenceLevel ? (
+          <div className="confidence-section">
+            <h4 className="confidence-question">Come ti senti su questa mossa?</h4>
+            <div className="confidence-options">
+              {CONFIDENCE_OPTIONS.map(option => (
+                <button
+                  key={option.id}
+                  className="confidence-btn"
+                  style={{ '--confidence-color': option.color }}
+                  onClick={() => handleConfidenceSelect(option.id)}
                 >
-                  <span className="checklist-status">
-                    {isChecked ? '✅' : isCurrent ? question.icon : '🔒'}
-                  </span>
-                  <span className="checklist-text">{question.text}</span>
-                  {isCurrent && (
-                    <button
-                      className="btn-check-step"
-                      onClick={handleCheckStep}
-                    >
-                      Verificato
-                    </button>
-                  )}
-                </div>
-              )
-            })}
+                  <span className="confidence-icon">{option.icon}</span>
+                  <span className="confidence-label">{option.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          /* FASE 1-2: Checklist step-by-step */
+          <div className="profilassi-checklist">
+            {/* Badge fiducia selezionata */}
+            <div className={`confidence-badge confidence-${confidenceLevel}`}>
+              <span>{CONFIDENCE_OPTIONS.find(o => o.id === confidenceLevel)?.icon}</span>
+              <span>{CONFIDENCE_OPTIONS.find(o => o.id === confidenceLevel)?.label}</span>
+            </div>
+
+            <div className="checklist-items">
+              {PROFILASSI_QUESTIONS.map((question, index) => {
+                const isChecked = checkedItems.includes(index)
+                const isCurrent = index === currentQuestion && !isChecked
+                const isLocked = index > currentQuestion && !isChecked
+
+                return (
+                  <div
+                    key={question.id}
+                    className={`checklist-item-v4 ${isChecked ? 'checked' : ''} ${isCurrent ? 'current' : ''} ${isLocked ? 'locked' : ''}`}
+                  >
+                    <span className="checklist-status">
+                      {isChecked ? '✅' : isCurrent ? question.icon : '🔒'}
+                    </span>
+                    <span className="checklist-text">{question.text}</span>
+                    {isCurrent && (
+                      <button
+                        className="btn-check-step"
+                        onClick={handleCheckStep}
+                      >
+                        Verificato
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="profilassi-actions">
@@ -163,11 +209,13 @@ function ProfilassiRadar({ position, move, onConfirm, onCancel, onHighlightChang
           ✗ Annulla
         </button>
         <button
-          className={`btn-profilassi btn-confirm ${!allChecked ? 'disabled' : ''}`}
-          onClick={onConfirm}
-          disabled={!allChecked}
+          className={`btn-profilassi btn-confirm ${!allChecked || !confidenceLevel ? 'disabled' : ''}`}
+          onClick={() => onConfirm(confidenceLevel)}
+          disabled={!allChecked || !confidenceLevel}
         >
-          {allChecked ? '✓ Confermo la mossa' : `${checkedItems.length}/${PROFILASSI_QUESTIONS.length} verifiche`}
+          {allChecked && confidenceLevel
+            ? '✓ Confermo la mossa'
+            : `${completedSteps}/${totalSteps} verifiche`}
         </button>
       </div>
     </div>
