@@ -1,0 +1,36 @@
+{
+  "id": "test_metacognizione_v4",
+  "titolo": "v4.0 Test: Il Giuoco Piano",
+  "descrizione": "Il Bianco muove nella posizione del Giuoco Piano (1.e4 e5 2.Cf3 Cc6 3.Ac4 Ac5). Trova il piano migliore e verifica le minacce prima di confermare!",
+  "autori": ["NeuroScacchi v4.0"],
+  "tipo_modulo": "intent",
+  "categoria": "aperture",
+  "difficolta": "facile",
+  "tempo_stimato": "3 min",
+  "fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+  "parametri": {
+    "tempo_freeze": 2500,
+    "orientamento_scacchiera": "white",
+    "usa_profilassi": true,
+    "domande_checklist": [
+      "Il mio Re sara al sicuro dopo questa mossa?",
+      "L'avversario puo creare minacce immediate?",
+      "Sto sviluppando i pezzi in modo armonioso?"
+    ],
+    "mostra_chunk_visivo": ["e1", "g1", "f1"],
+    "frecce_pattern": [
+      { "from": "e1", "to": "g1" }
+    ]
+  },
+  "domanda": "Quale piano strategico e corretto per il Bianco in questa posizione?",
+  "opzioni_risposta": [
+    "Attaccare f7 con Cg5 (Attacco immediato)",
+    "Arroccare per mettere il Re al sicuro (Sviluppo)",
+    "Catturare al centro con d4 subito"
+  ],
+  "risposta_corretta": "Arroccare per mettere il Re al sicuro (Sviluppo)",
+  "mosse_consentite": ["e1g1", "f3g5", "d2d3"],
+  "mosse_corrette": ["e1g1"],
+  "feedback_positivo": "Ottimo! L'arrocco mette il Re al sicuro e collega le Torri. Sempre sicurezza prima dell'attacco!",
+  "feedback_negativo": "Attenzione: attaccare o spingere pedoni senza aver messo il Re al sicuro e rischioso. Pensa alla sicurezza prima!"
+}

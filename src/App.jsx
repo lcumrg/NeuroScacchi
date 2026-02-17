@@ -12,6 +12,7 @@ import ReflectionPrompt from './components/ReflectionPrompt'
 import LessonSummary from './components/LessonSummary'
 import { getLessons, saveLesson, deleteLesson, getSettings, saveLessonProgress, createSession, saveSession } from './utils/storageManager'
 import lezione01 from './data/lezione01.json'
+import testMetaV4 from './data/test_metacognizione_v4.json'
 import './App.css'
 
 function App() {
@@ -58,12 +59,22 @@ function App() {
   // Carica lezioni al mount
   useEffect(() => {
     const stored = getLessons()
-    // Aggiungi lezione di test se non ci sono lezioni
+    // Aggiungi lezioni di test se non ci sono lezioni
     if (stored.length === 0) {
-      const testLesson = { ...lezione01, categoria: 'test' }
-      saveLesson(testLesson)
-      setLessons([testLesson])
+      const defaultLessons = [
+        { ...lezione01, categoria: 'test' },
+        { ...testMetaV4, categoria: 'test' }
+      ]
+      defaultLessons.forEach(l => saveLesson(l))
+      setLessons(defaultLessons)
     } else {
+      // v4.0: assicurati che la lezione test metacognizione sia presente
+      const hasMetaTest = stored.some(l => l.id === 'test_metacognizione_v4')
+      if (!hasMetaTest) {
+        const metaLesson = { ...testMetaV4, categoria: 'test' }
+        saveLesson(metaLesson)
+        stored.push(metaLesson)
+      }
       setLessons(stored)
     }
   }, [])
