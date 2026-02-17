@@ -45,7 +45,23 @@
 
 .header-controls {
   display: flex;
+  align-items: center;
   gap: 6px;
+}
+
+.header-user-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-right: 4px;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logout-btn {
+  font-size: 18px;
 }
 
 .icon-btn {
