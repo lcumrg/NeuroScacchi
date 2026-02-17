@@ -11,7 +11,8 @@ function ChessboardComponent({
   boardOrientation = 'white',
   arrows = [],
   onPromotionPieceSelect,
-  onPromotionCheck
+  onPromotionCheck,
+  profilassiSquareStyles = {}
 }) {
 
   // Custom square styles per highlighting
@@ -25,6 +26,9 @@ function ChessboardComponent({
       zIndex: 1
     }
   })
+
+  // Profilassi: sovrascrive con stili dedicati (blu re, rosso avversari)
+  Object.assign(customSquareStyles, profilassiSquareStyles)
 
   // Converti le frecce nel formato corretto per react-chessboard
   const customArrows = arrows.map(arrow => [arrow.from, arrow.to])

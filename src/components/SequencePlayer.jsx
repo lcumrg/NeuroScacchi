@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Chess } from 'chess.js'
 import ChessboardComponent from './ChessboardComponent'
 import IntentPanel from './IntentPanel'
@@ -23,6 +23,7 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
   const [cooldownActive, setCooldownActive] = useState(true)
   const [showProfilassi, setShowProfilassi] = useState(false)
   const [pendingMove, setPendingMove] = useState(null)
+  const [profilassiSquareStyles, setProfilassiSquareStyles] = useState({})
   const timersRef = useRef([])
   const promotionHandledRef = useRef(false)
 
@@ -345,6 +346,11 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
     return false
   }
 
+  // Callback stabile per evidenziazione profilassi sulla scacchiera
+  const handleProfilassiHighlight = useCallback((styles) => {
+    setProfilassiSquareStyles(styles)
+  }, [])
+
   const handleReset = () => {
     clearAllTimers()
     setShowSummary(false)
@@ -388,53 +394,58 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
             arrows={arrows}
             onPromotionPieceSelect={handlePromotionPieceSelect}
             onPromotionCheck={handlePromotionCheck}
+            profilassiSquareStyles={profilassiSquareStyles}
           />
         </div>
 
         <div className="intent-section">
-          <IntentPanel
-            question={currentStep.domanda}
-            options={currentStep.opzioni_risposta}
-            onSelect={handleIntentSelection}
-            disabled={intentSelected || cooldownActive}
-            cooldownActive={cooldownActive}
-          />
-
-          {/* v4.0: Riflessione post-errore */}
-          {showReflection && reflectionContext ? (
-            <ReflectionPrompt
-              onReflect={handleReflection}
-              onSkip={handleReflectionSkip}
-              errorContext={reflectionContext}
+          {/* Profilassi: sostituisce il pannello laterale (la scacchiera resta visibile) */}
+          {showProfilassi && pendingMove ? (
+            <ProfilassiRadar
+              position={position}
+              move={pendingMove}
+              onConfirm={() => {
+                setShowProfilassi(false)
+                setProfilassiSquareStyles({})
+                executeMove(pendingMove.from, pendingMove.to, pendingMove.promotion || 'q')
+                setPendingMove(null)
+              }}
+              onCancel={() => {
+                setShowProfilassi(false)
+                setProfilassiSquareStyles({})
+                setPendingMove(null)
+              }}
+              onHighlightChange={handleProfilassiHighlight}
             />
           ) : (
-            <FeedbackBox
-              type={feedback.type}
-              message={feedback.message}
-              onReset={handleReset}
-              showReset={sequenceComplete && !showSummary}
-            />
+            <>
+              <IntentPanel
+                question={currentStep.domanda}
+                options={currentStep.opzioni_risposta}
+                onSelect={handleIntentSelection}
+                disabled={intentSelected || cooldownActive}
+                cooldownActive={cooldownActive}
+              />
+
+              {/* v4.0: Riflessione post-errore */}
+              {showReflection && reflectionContext ? (
+                <ReflectionPrompt
+                  onReflect={handleReflection}
+                  onSkip={handleReflectionSkip}
+                  errorContext={reflectionContext}
+                />
+              ) : (
+                <FeedbackBox
+                  type={feedback.type}
+                  message={feedback.message}
+                  onReset={handleReset}
+                  showReset={sequenceComplete && !showSummary}
+                />
+              )}
+            </>
           )}
         </div>
       </main>
-
-      {/* Profilassi */}
-      {showProfilassi && pendingMove && (
-        <ProfilassiRadar
-          position={position}
-          move={pendingMove}
-          onConfirm={() => {
-            setShowProfilassi(false)
-            executeMove(pendingMove.from, pendingMove.to, pendingMove.promotion || 'q')
-            setPendingMove(null)
-          }}
-          onCancel={() => {
-            setShowProfilassi(false)
-            setPendingMove(null)
-          }}
-          checklistQuestions={lesson.parametri?.domande_checklist}
-        />
-      )}
 
       {/* v4.0: Schermata riepilogo post-lezione */}
       {showSummary && completedSession && (
