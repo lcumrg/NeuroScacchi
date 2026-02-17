@@ -384,6 +384,13 @@ function SequencePlayer({ lesson, esameMode = false, onComplete, onExit }) {
             safeTimeout(() => {
               setCurrentStepIndex(currentStepIndex + 1)
             }, 2500 + extraDelay)
+          } else {
+            // Ultimo step: completa la sequenza anche con mossa accettabile
+            safeTimeout(() => {
+              setSequenceComplete(true)
+              setShowSummary(true)
+              onComplete()
+            }, 2500 + extraDelay)
           }
         }
 
