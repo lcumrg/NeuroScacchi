@@ -11,9 +11,9 @@ export const validateLesson = (lessonData) => {
   if (!lessonData.fen) errors.push('Campo "fen" (posizione) mancante')
 
   // Valida tipo modulo
-  const validTypes = ['intent', 'detective', 'intent_sequenza', 'candidate']
+  const validTypes = ['intent', 'detective', 'intent_sequenza', 'candidate', 'candidate_sequenza']
   if (lessonData.tipo_modulo && !validTypes.includes(lessonData.tipo_modulo)) {
-    errors.push(`tipo_modulo deve essere "intent", "detective", "intent_sequenza" o "candidate", ricevuto: "${lessonData.tipo_modulo}"`)
+    errors.push(`tipo_modulo deve essere "intent", "detective", "intent_sequenza", "candidate" o "candidate_sequenza", ricevuto: "${lessonData.tipo_modulo}"`)
   }
 
   // Valida parametri
@@ -79,6 +79,27 @@ export const validateLesson = (lessonData) => {
     }
     if (!lessonData.mossa_migliore) {
       errors.push('Lezione Candidate: campo "mossa_migliore" mancante')
+    }
+  }
+
+  // Validazione specifica per Candidate Sequenza
+  if (lessonData.tipo_modulo === 'candidate_sequenza') {
+    if (!lessonData.steps || !Array.isArray(lessonData.steps)) {
+      errors.push('Lezione Candidate Sequenza: campo "steps" deve essere un array')
+    } else {
+      if (lessonData.steps.length < 2) {
+        errors.push('Lezione Candidate Sequenza: servono almeno 2 steps')
+      }
+      lessonData.steps.forEach((step, idx) => {
+        if (!step.mosse_candidate || !Array.isArray(step.mosse_candidate)) {
+          errors.push(`Step ${idx + 1}: campo "mosse_candidate" deve essere un array`)
+        } else if (step.mosse_candidate.length < 2) {
+          errors.push(`Step ${idx + 1}: servono almeno 2 mosse candidate`)
+        }
+        if (!step.mossa_migliore) {
+          errors.push(`Step ${idx + 1}: campo "mossa_migliore" mancante`)
+        }
+      })
     }
   }
 
@@ -151,6 +172,9 @@ const estimateTime = (lesson) => {
     seconds += 8 // Osservazione + click
   } else if (lesson.tipo_modulo === 'candidate') {
     seconds += 20 // Selezione candidate + valutazione
+  } else if (lesson.tipo_modulo === 'candidate_sequenza') {
+    const numSteps = lesson.steps?.length || 3
+    seconds += numSteps * 25 // Selezione candidate + valutazione + mossa per step
   }
 
   // Tempo per mossa

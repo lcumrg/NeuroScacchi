@@ -8,6 +8,7 @@ function LessonCard({ lesson, onSelect, onSelectEsame, onDelete }) {
   const getTypeIcon = () => {
     if (lesson.tipo_modulo === 'detective') return '🔍'
     if (lesson.tipo_modulo === 'candidate') return '🎯'
+    if (lesson.tipo_modulo === 'candidate_sequenza') return '🎯'
     if (lesson.tipo_modulo === 'intent_sequenza') return '📋'
     return '♟️'
   }
@@ -23,7 +24,8 @@ function LessonCard({ lesson, onSelect, onSelectEsame, onDelete }) {
       intent: 'Intent',
       detective: 'Detective',
       intent_sequenza: 'Sequenza',
-      candidate: 'Candidate'
+      candidate: 'Candidate',
+      candidate_sequenza: 'Candidate Seq.'
     }
     return labels[lesson.tipo_modulo] || lesson.tipo_modulo
   }
