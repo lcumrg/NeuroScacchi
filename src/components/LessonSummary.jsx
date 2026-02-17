@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { saveFeelingToFirebase } from '../utils/firebaseService'
 import './LessonSummary.css'
 
 const FEELING_OPTIONS = [
@@ -36,6 +37,8 @@ function LessonSummary({ session, lessonTitle, onRepeat, onExit }) {
   const handleFeeling = (feelingId) => {
     setFeeling(feelingId)
     setFeelingSubmitted(true)
+    // Salva feeling su Firebase (fire-and-forget)
+    saveFeelingToFirebase(session.lessonId, feelingId, session).catch(() => {})
   }
 
   // Calcola "stelle" di valutazione (1-3)
