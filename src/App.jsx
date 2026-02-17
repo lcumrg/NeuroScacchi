@@ -10,6 +10,7 @@ import ProfilassiRadar from './components/ProfilassiRadar'
 import SequencePlayer from './components/SequencePlayer'
 import CandidateMode from './components/CandidateMode'
 import CandidateSequencePlayer from './components/CandidateSequencePlayer'
+import MixedSequencePlayer from './components/MixedSequencePlayer'
 import ReflectionPrompt from './components/ReflectionPrompt'
 import MetacognitivePrompt from './components/MetacognitivePrompt'
 import LessonSummary from './components/LessonSummary'
@@ -19,6 +20,7 @@ import lezione01 from './data/lezione01.json'
 import testMetaV4 from './data/test_metacognizione_v4.json'
 import testCandidate from './data/test_candidate.json'
 import testCandidateSequenza from './data/test_candidate_sequenza.json'
+import testMista from './data/test_sequenza_mista.json'
 import './App.css'
 
 function App() {
@@ -131,7 +133,8 @@ function App() {
         { ...lezione01, categoria: 'test' },
         { ...testMetaV4, categoria: 'test' },
         { ...testCandidate, categoria: 'test' },
-        { ...testCandidateSequenza, categoria: 'test' }
+        { ...testCandidateSequenza, categoria: 'test' },
+        { ...testMista, categoria: 'test' }
       ]
       defaultLessons.forEach(l => saveLesson(l))
       setLessons(defaultLessons)
@@ -147,6 +150,7 @@ function App() {
       ensureLesson('test_metacognizione_v4', testMetaV4)
       ensureLesson('test_candidate_01', testCandidate)
       ensureLesson('test_candidate_seq_01', testCandidateSequenza)
+      ensureLesson('test_mista_01', testMista)
       setLessons(stored)
     }
   }, [])
@@ -601,6 +605,13 @@ function App() {
         />
       ) : currentLesson?.tipo_modulo === 'candidate_sequenza' ? (
         <CandidateSequencePlayer
+          lesson={currentLesson}
+          esameMode={esameMode}
+          onComplete={handleSequenceComplete}
+          onExit={handleExit}
+        />
+      ) : currentLesson?.tipo_modulo === 'mista' ? (
+        <MixedSequencePlayer
           lesson={currentLesson}
           esameMode={esameMode}
           onComplete={handleSequenceComplete}

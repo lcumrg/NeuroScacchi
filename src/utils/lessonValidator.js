@@ -11,9 +11,9 @@ export const validateLesson = (lessonData) => {
   if (!lessonData.fen) errors.push('Campo "fen" (posizione) mancante')
 
   // Valida tipo modulo
-  const validTypes = ['intent', 'detective', 'intent_sequenza', 'candidate', 'candidate_sequenza']
+  const validTypes = ['intent', 'detective', 'intent_sequenza', 'candidate', 'candidate_sequenza', 'mista']
   if (lessonData.tipo_modulo && !validTypes.includes(lessonData.tipo_modulo)) {
-    errors.push(`tipo_modulo deve essere "intent", "detective", "intent_sequenza", "candidate" o "candidate_sequenza", ricevuto: "${lessonData.tipo_modulo}"`)
+    errors.push(`tipo_modulo non valido: "${lessonData.tipo_modulo}". Valori ammessi: ${validTypes.join(', ')}`)
   }
 
   // Valida parametri
@@ -103,6 +103,45 @@ export const validateLesson = (lessonData) => {
     }
   }
 
+  // Validazione specifica per Sequenza Mista
+  if (lessonData.tipo_modulo === 'mista') {
+    if (!lessonData.steps || !Array.isArray(lessonData.steps)) {
+      errors.push('Lezione Mista: campo "steps" deve essere un array')
+    } else {
+      if (lessonData.steps.length < 2) {
+        errors.push('Lezione Mista: servono almeno 2 steps')
+      }
+      const validStepTypes = ['intent', 'detective', 'candidate']
+      lessonData.steps.forEach((step, idx) => {
+        if (!step.tipo_step || !validStepTypes.includes(step.tipo_step)) {
+          errors.push(`Step ${idx + 1}: "tipo_step" deve essere "intent", "detective" o "candidate", ricevuto: "${step.tipo_step}"`)
+        }
+        if (step.tipo_step === 'intent') {
+          if (!step.domanda) errors.push(`Step ${idx + 1} (intent): campo "domanda" mancante`)
+          if (!step.opzioni_risposta || step.opzioni_risposta.length < 2) {
+            errors.push(`Step ${idx + 1} (intent): servono almeno 2 opzioni di risposta`)
+          }
+          if (!step.risposta_corretta) errors.push(`Step ${idx + 1} (intent): "risposta_corretta" mancante`)
+          if (!step.mosse_corrette || !Array.isArray(step.mosse_corrette)) {
+            warnings.push(`Step ${idx + 1} (intent): "mosse_corrette" mancante`)
+          }
+        }
+        if (step.tipo_step === 'detective') {
+          if (!step.domanda) errors.push(`Step ${idx + 1} (detective): campo "domanda" mancante`)
+          if (!step.risposta_corretta_casa) errors.push(`Step ${idx + 1} (detective): "risposta_corretta_casa" mancante`)
+        }
+        if (step.tipo_step === 'candidate') {
+          if (!step.mosse_candidate || !Array.isArray(step.mosse_candidate)) {
+            errors.push(`Step ${idx + 1} (candidate): campo "mosse_candidate" deve essere un array`)
+          } else if (step.mosse_candidate.length < 2) {
+            errors.push(`Step ${idx + 1} (candidate): servono almeno 2 mosse candidate`)
+          }
+          if (!step.mossa_migliore) errors.push(`Step ${idx + 1} (candidate): "mossa_migliore" mancante`)
+        }
+      })
+    }
+  }
+
   // Validazione specifica per Detective
   if (lessonData.tipo_modulo === 'detective') {
     if (!lessonData.modalita_detective) {
@@ -175,6 +214,13 @@ const estimateTime = (lesson) => {
   } else if (lesson.tipo_modulo === 'candidate_sequenza') {
     const numSteps = lesson.steps?.length || 3
     seconds += numSteps * 25 // Selezione candidate + valutazione + mossa per step
+  } else if (lesson.tipo_modulo === 'mista') {
+    const steps = lesson.steps || []
+    steps.forEach(s => {
+      if (s.tipo_step === 'intent') seconds += 15
+      else if (s.tipo_step === 'detective') seconds += 10
+      else if (s.tipo_step === 'candidate') seconds += 25
+    })
   }
 
   // Tempo per mossa
