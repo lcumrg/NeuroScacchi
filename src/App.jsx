@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Chess } from 'chess.js'
 import Header from './components/Header'
 import LessonSelector from './components/LessonSelector'
@@ -34,6 +34,7 @@ function App() {
   const [cooldownActive, setCooldownActive] = useState(true)
   const [showProfilassi, setShowProfilassi] = useState(false)
   const [pendingMove, setPendingMove] = useState(null)
+  const [profilassiSquareStyles, setProfilassiSquareStyles] = useState({})
   const [lessonComplete, setLessonComplete] = useState(false)
   const timersRef = useRef([])
   const promotionHandledRef = useRef(false)
@@ -420,6 +421,11 @@ function App() {
     setLessons(lessons.filter(l => l.id !== lessonId))
   }
 
+  // Callback stabile per evidenziazione profilassi sulla scacchiera
+  const handleProfilassiHighlight = useCallback((styles) => {
+    setProfilassiSquareStyles(styles)
+  }, [])
+
   // v4.0: callback per SequencePlayer completeLesson
   const handleSequenceComplete = () => {
     saveLessonProgress(currentLesson.id, { completed: true })
@@ -476,6 +482,7 @@ function App() {
                   arrows={arrows}
                   onPromotionPieceSelect={handlePromotionPieceSelect}
                   onPromotionCheck={handlePromotionCheck}
+                  profilassiSquareStyles={profilassiSquareStyles}
                 />
               </>
             )}
@@ -489,14 +496,16 @@ function App() {
                 move={pendingMove}
                 onConfirm={() => {
                   setShowProfilassi(false)
+                  setProfilassiSquareStyles({})
                   executeMove(pendingMove.from, pendingMove.to, pendingMove.promotion || 'q')
                   setPendingMove(null)
                 }}
                 onCancel={() => {
                   setShowProfilassi(false)
+                  setProfilassiSquareStyles({})
                   setPendingMove(null)
                 }}
-                checklistQuestions={currentLesson.parametri?.domande_checklist}
+                onHighlightChange={handleProfilassiHighlight}
               />
             ) : (
               <>

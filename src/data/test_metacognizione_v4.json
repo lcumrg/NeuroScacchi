@@ -12,11 +12,6 @@
     "tempo_freeze": 2500,
     "orientamento_scacchiera": "white",
     "usa_profilassi": true,
-    "domande_checklist": [
-      "Il mio Re sara al sicuro dopo questa mossa?",
-      "L'avversario puo creare minacce immediate?",
-      "Sto sviluppando i pezzi in modo armonioso?"
-    ],
     "mostra_chunk_visivo": ["e1", "g1", "f1"],
     "frecce_pattern": [
       { "from": "e1", "to": "g1" }

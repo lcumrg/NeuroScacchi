@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Chess } from 'chess.js'
 import ChessboardComponent from './ChessboardComponent'
 import IntentPanel from './IntentPanel'
@@ -23,6 +23,7 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
   const [cooldownActive, setCooldownActive] = useState(true)
   const [showProfilassi, setShowProfilassi] = useState(false)
   const [pendingMove, setPendingMove] = useState(null)
+  const [profilassiSquareStyles, setProfilassiSquareStyles] = useState({})
   const timersRef = useRef([])
   const promotionHandledRef = useRef(false)
 
@@ -345,6 +346,11 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
     return false
   }
 
+  // Callback stabile per evidenziazione profilassi sulla scacchiera
+  const handleProfilassiHighlight = useCallback((styles) => {
+    setProfilassiSquareStyles(styles)
+  }, [])
+
   const handleReset = () => {
     clearAllTimers()
     setShowSummary(false)
@@ -388,6 +394,7 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
             arrows={arrows}
             onPromotionPieceSelect={handlePromotionPieceSelect}
             onPromotionCheck={handlePromotionCheck}
+            profilassiSquareStyles={profilassiSquareStyles}
           />
         </div>
 
@@ -399,14 +406,16 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
               move={pendingMove}
               onConfirm={() => {
                 setShowProfilassi(false)
+                setProfilassiSquareStyles({})
                 executeMove(pendingMove.from, pendingMove.to, pendingMove.promotion || 'q')
                 setPendingMove(null)
               }}
               onCancel={() => {
                 setShowProfilassi(false)
+                setProfilassiSquareStyles({})
                 setPendingMove(null)
               }}
-              checklistQuestions={lesson.parametri?.domande_checklist}
+              onHighlightChange={handleProfilassiHighlight}
             />
           ) : (
             <>
