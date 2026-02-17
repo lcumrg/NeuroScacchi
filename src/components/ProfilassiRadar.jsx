@@ -45,99 +45,99 @@ function ProfilassiRadar({
   const progressPercent = (checkedItems.length / checklistQuestions.length) * 100
 
   return (
-    <div className="profilassi-overlay">
-      <div className="profilassi-modal">
-        <div className="profilassi-header">
+    <div className="profilassi-panel">
+      <div className="profilassi-header">
+        <div className="profilassi-header-row">
           <span className="profilassi-icon">🛡️</span>
           <h3>Controllo Profilassi</h3>
-          <p className="profilassi-hint">Controlla prima di confermare la mossa</p>
         </div>
+        <p className="profilassi-hint">Guarda la scacchiera e verifica prima di confermare</p>
+      </div>
 
-        {/* v4.0: Progress indicator */}
-        <div className="profilassi-progress">
-          <div className="profilassi-progress-bar">
-            <div
-              className="profilassi-progress-fill"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-          <span className="profilassi-progress-text">
-            {checkedItems.length}/{checklistQuestions.length} verifiche
-          </span>
+      {/* v4.0: Progress indicator */}
+      <div className="profilassi-progress">
+        <div className="profilassi-progress-bar">
+          <div
+            className="profilassi-progress-fill"
+            style={{ width: `${progressPercent}%` }}
+          />
         </div>
+        <span className="profilassi-progress-text">
+          {checkedItems.length}/{checklistQuestions.length}
+        </span>
+      </div>
 
-        <div className="profilassi-content">
-          {/* RADAR VISIVO */}
-          {threats.length > 0 && (
-            <div className="profilassi-radar">
-              <h4>Attenzione!</h4>
-              <div className="radar-warnings">
-                {threats.map((threat, idx) => (
-                  <div key={idx} className="radar-warning">
-                    <span className="radar-warning-icon">⚠️</span>
-                    <span>{threat}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {threats.length === 0 && (
-            <div className="profilassi-radar radar-safe-block">
-              <div className="radar-safe">
-                ✅ Nessuna minaccia immediata rilevata
-              </div>
-            </div>
-          )}
-
-          {/* v4.0: CHECKLIST step-by-step */}
-          <div className="profilassi-checklist">
-            <h4>Verifica passo per passo:</h4>
-            <div className="checklist-items">
-              {checklistQuestions.map((question, index) => {
-                const isChecked = checkedItems.includes(index)
-                const isCurrent = index === currentQuestion && !isChecked
-                const isLocked = index > currentQuestion && !isChecked
-
-                return (
-                  <div
-                    key={index}
-                    className={`checklist-item-v4 ${isChecked ? 'checked' : ''} ${isCurrent ? 'current' : ''} ${isLocked ? 'locked' : ''}`}
-                  >
-                    <span className="checklist-status">
-                      {isChecked ? '✅' : isCurrent ? '👉' : '🔒'}
-                    </span>
-                    <span className="checklist-text">{question}</span>
-                    {isCurrent && !isChecked && (
-                      <button
-                        className="btn-check-step"
-                        onClick={handleCheckStep}
-                      >
-                        Fatto
-                      </button>
-                    )}
-                  </div>
-                )
-              })}
+      <div className="profilassi-content">
+        {/* RADAR VISIVO */}
+        {threats.length > 0 && (
+          <div className="profilassi-radar">
+            <h4>Attenzione!</h4>
+            <div className="radar-warnings">
+              {threats.map((threat, idx) => (
+                <div key={idx} className="radar-warning">
+                  <span className="radar-warning-icon">⚠️</span>
+                  <span>{threat}</span>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        )}
 
-        <div className="profilassi-actions">
-          <button
-            className="btn-profilassi btn-cancel"
-            onClick={onCancel}
-          >
-            ✗ Annulla
-          </button>
-          <button
-            className={`btn-profilassi btn-confirm ${!allChecked ? 'disabled' : ''}`}
-            onClick={onConfirm}
-            disabled={!allChecked}
-          >
-            {allChecked ? '✓ Confermo la mossa' : `Completa le verifiche (${checkedItems.length}/${checklistQuestions.length})`}
-          </button>
+        {threats.length === 0 && (
+          <div className="profilassi-radar radar-safe-block">
+            <div className="radar-safe">
+              ✅ Nessuna minaccia immediata
+            </div>
+          </div>
+        )}
+
+        {/* v4.0: CHECKLIST step-by-step */}
+        <div className="profilassi-checklist">
+          <h4>Verifica passo per passo:</h4>
+          <div className="checklist-items">
+            {checklistQuestions.map((question, index) => {
+              const isChecked = checkedItems.includes(index)
+              const isCurrent = index === currentQuestion && !isChecked
+              const isLocked = index > currentQuestion && !isChecked
+
+              return (
+                <div
+                  key={index}
+                  className={`checklist-item-v4 ${isChecked ? 'checked' : ''} ${isCurrent ? 'current' : ''} ${isLocked ? 'locked' : ''}`}
+                >
+                  <span className="checklist-status">
+                    {isChecked ? '✅' : isCurrent ? '👉' : '🔒'}
+                  </span>
+                  <span className="checklist-text">{question}</span>
+                  {isCurrent && !isChecked && (
+                    <button
+                      className="btn-check-step"
+                      onClick={handleCheckStep}
+                    >
+                      Fatto
+                    </button>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
+      </div>
+
+      <div className="profilassi-actions">
+        <button
+          className="btn-profilassi btn-cancel"
+          onClick={onCancel}
+        >
+          ✗ Annulla
+        </button>
+        <button
+          className={`btn-profilassi btn-confirm ${!allChecked ? 'disabled' : ''}`}
+          onClick={onConfirm}
+          disabled={!allChecked}
+        >
+          {allChecked ? '✓ Confermo' : `${checkedItems.length}/${checklistQuestions.length} verifiche`}
+        </button>
       </div>
     </div>
   )

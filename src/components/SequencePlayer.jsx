@@ -392,49 +392,51 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
         </div>
 
         <div className="intent-section">
-          <IntentPanel
-            question={currentStep.domanda}
-            options={currentStep.opzioni_risposta}
-            onSelect={handleIntentSelection}
-            disabled={intentSelected || cooldownActive}
-            cooldownActive={cooldownActive}
-          />
-
-          {/* v4.0: Riflessione post-errore */}
-          {showReflection && reflectionContext ? (
-            <ReflectionPrompt
-              onReflect={handleReflection}
-              onSkip={handleReflectionSkip}
-              errorContext={reflectionContext}
+          {/* Profilassi: sostituisce il pannello laterale (la scacchiera resta visibile) */}
+          {showProfilassi && pendingMove ? (
+            <ProfilassiRadar
+              position={position}
+              move={pendingMove}
+              onConfirm={() => {
+                setShowProfilassi(false)
+                executeMove(pendingMove.from, pendingMove.to, pendingMove.promotion || 'q')
+                setPendingMove(null)
+              }}
+              onCancel={() => {
+                setShowProfilassi(false)
+                setPendingMove(null)
+              }}
+              checklistQuestions={lesson.parametri?.domande_checklist}
             />
           ) : (
-            <FeedbackBox
-              type={feedback.type}
-              message={feedback.message}
-              onReset={handleReset}
-              showReset={sequenceComplete && !showSummary}
-            />
+            <>
+              <IntentPanel
+                question={currentStep.domanda}
+                options={currentStep.opzioni_risposta}
+                onSelect={handleIntentSelection}
+                disabled={intentSelected || cooldownActive}
+                cooldownActive={cooldownActive}
+              />
+
+              {/* v4.0: Riflessione post-errore */}
+              {showReflection && reflectionContext ? (
+                <ReflectionPrompt
+                  onReflect={handleReflection}
+                  onSkip={handleReflectionSkip}
+                  errorContext={reflectionContext}
+                />
+              ) : (
+                <FeedbackBox
+                  type={feedback.type}
+                  message={feedback.message}
+                  onReset={handleReset}
+                  showReset={sequenceComplete && !showSummary}
+                />
+              )}
+            </>
           )}
         </div>
       </main>
-
-      {/* Profilassi */}
-      {showProfilassi && pendingMove && (
-        <ProfilassiRadar
-          position={position}
-          move={pendingMove}
-          onConfirm={() => {
-            setShowProfilassi(false)
-            executeMove(pendingMove.from, pendingMove.to, pendingMove.promotion || 'q')
-            setPendingMove(null)
-          }}
-          onCancel={() => {
-            setShowProfilassi(false)
-            setPendingMove(null)
-          }}
-          checklistQuestions={lesson.parametri?.domande_checklist}
-        />
-      )}
 
       {/* v4.0: Schermata riepilogo post-lezione */}
       {showSummary && completedSession && (

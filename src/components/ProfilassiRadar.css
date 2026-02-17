@@ -1,61 +1,57 @@
-.profilassi-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease;
-}
+/* ===================================
+   ProfilassiRadar v4.1 — sidebar card
+   Vive nel pannello destro, la scacchiera
+   resta completamente visibile a sinistra.
+   =================================== */
 
-.profilassi-modal {
+.profilassi-panel {
+  display: flex;
+  flex-direction: column;
   background: var(--bg-card);
   border-radius: 16px;
   box-shadow: var(--shadow-lg);
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  animation: slideUp 0.4s ease;
+  border: 2px solid #FFB74D;
+  overflow: hidden;
+  animation: slideUp 0.35s ease;
 }
 
+/* ---- Header compatto ---- */
 .profilassi-header {
   background: linear-gradient(135deg, #FF6B6B 0%, #FFE66D 100%);
-  padding: 20px;
-  border-radius: 16px 16px 0 0;
+  padding: 14px 18px;
   text-align: center;
   color: #2C3E50;
 }
 
+.profilassi-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 .profilassi-icon {
-  font-size: 36px;
-  display: block;
-  margin-bottom: 8px;
+  font-size: 24px;
 }
 
 .profilassi-header h3 {
   margin: 0;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
 }
 
-/* v4.0 */
 .profilassi-hint {
-  font-size: 13px;
+  font-size: 12px;
   margin-top: 4px;
   opacity: 0.8;
 }
 
-/* v4.0: Progress bar */
+/* ---- Progress bar ---- */
 .profilassi-progress {
-  padding: 12px 24px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -82,15 +78,17 @@
   white-space: nowrap;
 }
 
+/* ---- Content area ---- */
 .profilassi-content {
-  padding: 24px;
+  padding: 14px 16px;
 }
 
+/* Radar minacce — compatto */
 .profilassi-radar {
-  margin-bottom: 24px;
-  padding: 16px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
   background: var(--bg-main);
-  border-radius: 12px;
+  border-radius: 10px;
   border-left: 4px solid var(--color-attack);
 }
 
@@ -99,61 +97,62 @@
 }
 
 .profilassi-radar h4 {
-  margin: 0 0 12px 0;
-  font-size: 16px;
+  margin: 0 0 8px 0;
+  font-size: 14px;
   color: var(--text-primary);
 }
 
 .radar-safe {
   color: var(--color-develop);
   font-weight: 600;
-  padding: 12px;
+  padding: 8px 10px;
   background: var(--feedback-positive);
   border-radius: 8px;
+  font-size: 13px;
 }
 
 .radar-warnings {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .radar-warning {
-  padding: 10px 12px;
+  padding: 8px 10px;
   background: var(--feedback-negative);
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .radar-warning-icon {
-  font-size: 16px;
+  font-size: 14px;
   flex-shrink: 0;
 }
 
+/* ---- Checklist step-by-step ---- */
 .profilassi-checklist h4 {
-  margin: 0 0 16px 0;
-  font-size: 16px;
+  margin: 0 0 10px 0;
+  font-size: 14px;
   color: var(--text-primary);
 }
 
 .checklist-items {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
-/* v4.0: Checklist step-by-step items */
 .checklist-item-v4 {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 10px;
+  padding: 10px 12px;
   background: var(--bg-main);
-  border-radius: 12px;
+  border-radius: 10px;
   border: 2px solid transparent;
   transition: all var(--transition-fast);
 }
@@ -170,31 +169,31 @@
 }
 
 .checklist-item-v4.locked {
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
 .checklist-status {
-  font-size: 18px;
+  font-size: 16px;
   flex-shrink: 0;
-  width: 24px;
+  width: 22px;
   text-align: center;
 }
 
 .checklist-text {
   flex: 1;
-  font-size: 15px;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.35;
   color: var(--text-primary);
 }
 
 .btn-check-step {
-  padding: 6px 16px;
+  padding: 5px 14px;
   background: #FFB74D;
   border: none;
   border-radius: 8px;
   color: #2C3E50;
   font-family: var(--font-main);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -206,27 +205,28 @@
   transform: scale(1.05);
 }
 
+/* ---- Action buttons ---- */
 .profilassi-actions {
-  padding: 20px 24px;
+  padding: 14px 16px;
   border-top: 1px solid var(--border-color);
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
 .btn-profilassi {
   flex: 1;
-  padding: 14px 24px;
+  padding: 12px 14px;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   font-family: var(--font-main);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-fast);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .btn-cancel {
@@ -254,40 +254,41 @@
 .btn-confirm.disabled {
   opacity: 0.4;
   cursor: not-allowed;
-  font-size: 13px;
+  font-size: 12px;
 }
 
+/* ---- Responsive ---- */
 @media (max-width: 768px) {
-  .profilassi-modal {
-    max-width: 95%;
-  }
-
-  .profilassi-header h3 {
-    font-size: 18px;
-  }
-
-  .profilassi-icon {
-    font-size: 32px;
-  }
-
-  .profilassi-content {
-    padding: 16px;
-  }
-
-  .btn-profilassi {
-    font-size: 14px;
-    padding: 12px 20px;
-  }
-
-  .btn-confirm.disabled {
-    font-size: 12px;
-  }
-
-  .checklist-item-v4 {
+  .profilassi-header {
     padding: 12px 14px;
   }
 
+  .profilassi-header h3 {
+    font-size: 16px;
+  }
+
+  .profilassi-icon {
+    font-size: 20px;
+  }
+
+  .profilassi-content {
+    padding: 12px 14px;
+  }
+
+  .btn-profilassi {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
+  .btn-confirm.disabled {
+    font-size: 11px;
+  }
+
+  .checklist-item-v4 {
+    padding: 8px 10px;
+  }
+
   .profilassi-progress {
-    padding: 10px 16px;
+    padding: 8px 14px;
   }
 }
