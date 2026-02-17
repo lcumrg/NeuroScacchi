@@ -2,23 +2,45 @@ import { useState, useMemo, useEffect } from 'react'
 import { Chess } from 'chess.js'
 import './ProfilassiRadar.css'
 
-// Le due domande fisse della profilassi
-const PROFILASSI_QUESTIONS = [
+// Default per le due domande fisse della profilassi
+const DEFAULT_QUESTIONS = [
   { id: 'king', text: 'Il Re è sotto attacco?', icon: '♔' },
   { id: 'threats', text: 'Ci sono pezzi minacciati?', icon: '⚔️' }
 ]
 
-// Domanda pre-profilassi sulla fiducia
-const CONFIDENCE_OPTIONS = [
-  { id: 'sicuro', label: 'Sono sicuro', icon: '💪', color: '#4CAF50' },
-  { id: 'dubbio', label: 'Ho un dubbio', icon: '🤔', color: '#FF9800' },
-  { id: 'non_so', label: 'Non lo so', icon: '❓', color: '#F44336' }
-]
+// Default per la domanda pre-profilassi sulla fiducia
+const DEFAULT_CONFIDENCE = {
+  domanda: 'Come ti senti su questa mossa?',
+  opzioni: [
+    { id: 'sicuro', label: 'Sono sicuro', icon: '💪', color: '#4CAF50' },
+    { id: 'dubbio', label: 'Ho un dubbio', icon: '🤔', color: '#FF9800' },
+    { id: 'non_so', label: 'Non lo so', icon: '❓', color: '#F44336' }
+  ]
+}
 
-function ProfilassiRadar({ position, move, onConfirm, onCancel, onHighlightChange }) {
+/**
+ * config (opzionale, da parametri.profilassi nel JSON della lezione):
+ * {
+ *   domanda_fiducia: "Come ti senti?",
+ *   opzioni_fiducia: [
+ *     { id: "sicuro", label: "Sicurissimo!", icon: "🔥" },
+ *     ...
+ *   ],
+ *   domande_verifica: [
+ *     { id: "king", text: "Controlla il tuo Re!", icon: "♔" },
+ *     { id: "threats", text: "Guarda i pezzi nemici!", icon: "⚔️" }
+ *   ]
+ * }
+ */
+function ProfilassiRadar({ position, move, onConfirm, onCancel, onHighlightChange, config }) {
   const [confidenceLevel, setConfidenceLevel] = useState(null)
   const [checkedItems, setCheckedItems] = useState([])
   const [currentQuestion, setCurrentQuestion] = useState(0)
+
+  // Risolvi configurazione: custom dalla lezione oppure default
+  const confidenceQuestion = config?.domanda_fiducia || DEFAULT_CONFIDENCE.domanda
+  const confidenceOptions = config?.opzioni_fiducia || DEFAULT_CONFIDENCE.opzioni
+  const questions = config?.domande_verifica || DEFAULT_QUESTIONS
 
   // Analizza la posizione: trova il re del giocatore e i pezzi avversari
   const analysis = useMemo(() => {
@@ -63,7 +85,7 @@ function ProfilassiRadar({ position, move, onConfirm, onCancel, onHighlightChang
       return
     }
 
-    const question = PROFILASSI_QUESTIONS[currentQuestion]
+    const question = questions[currentQuestion]
     if (!question || checkedItems.includes(currentQuestion)) {
       onHighlightChange({})
       return
@@ -92,7 +114,7 @@ function ProfilassiRadar({ position, move, onConfirm, onCancel, onHighlightChang
     }
 
     onHighlightChange(styles)
-  }, [currentQuestion, checkedItems, analysis, onHighlightChange, confidenceLevel])
+  }, [currentQuestion, checkedItems, analysis, onHighlightChange, confidenceLevel, questions])
 
   // Pulisci evidenziazione al dismount
   useEffect(() => {
@@ -109,15 +131,18 @@ function ProfilassiRadar({ position, move, onConfirm, onCancel, onHighlightChang
     const newChecked = [...checkedItems, currentQuestion]
     setCheckedItems(newChecked)
 
-    if (currentQuestion < PROFILASSI_QUESTIONS.length - 1) {
+    if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1)
     }
   }
 
-  const allChecked = checkedItems.length === PROFILASSI_QUESTIONS.length
-  const totalSteps = PROFILASSI_QUESTIONS.length + 1 // confidence + 2 domande
+  const allChecked = checkedItems.length === questions.length
+  const totalSteps = questions.length + 1 // confidence + N domande
   const completedSteps = (confidenceLevel ? 1 : 0) + checkedItems.length
   const progressPercent = (completedSteps / totalSteps) * 100
+
+  // Trova l'opzione selezionata per il badge
+  const selectedOption = confidenceOptions.find(o => o.id === confidenceLevel)
 
   return (
     <div className="profilassi-panel">
@@ -146,13 +171,13 @@ function ProfilassiRadar({ position, move, onConfirm, onCancel, onHighlightChang
         {/* FASE 0: Domanda sulla fiducia */}
         {!confidenceLevel ? (
           <div className="confidence-section">
-            <h4 className="confidence-question">Come ti senti su questa mossa?</h4>
+            <h4 className="confidence-question">{confidenceQuestion}</h4>
             <div className="confidence-options">
-              {CONFIDENCE_OPTIONS.map(option => (
+              {confidenceOptions.map(option => (
                 <button
                   key={option.id}
                   className="confidence-btn"
-                  style={{ '--confidence-color': option.color }}
+                  style={{ '--confidence-color': option.color || '#607D8B' }}
                   onClick={() => handleConfidenceSelect(option.id)}
                 >
                   <span className="confidence-icon">{option.icon}</span>
@@ -166,12 +191,12 @@ function ProfilassiRadar({ position, move, onConfirm, onCancel, onHighlightChang
           <div className="profilassi-checklist">
             {/* Badge fiducia selezionata */}
             <div className={`confidence-badge confidence-${confidenceLevel}`}>
-              <span>{CONFIDENCE_OPTIONS.find(o => o.id === confidenceLevel)?.icon}</span>
-              <span>{CONFIDENCE_OPTIONS.find(o => o.id === confidenceLevel)?.label}</span>
+              <span>{selectedOption?.icon}</span>
+              <span>{selectedOption?.label}</span>
             </div>
 
             <div className="checklist-items">
-              {PROFILASSI_QUESTIONS.map((question, index) => {
+              {questions.map((question, index) => {
                 const isChecked = checkedItems.includes(index)
                 const isCurrent = index === currentQuestion && !isChecked
                 const isLocked = index > currentQuestion && !isChecked

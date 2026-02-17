@@ -15,7 +15,27 @@
     "mostra_chunk_visivo": ["e1", "g1", "f1"],
     "frecce_pattern": [
       { "from": "e1", "to": "g1" }
-    ]
+    ],
+    "profilassi": {
+      "domanda_fiducia": "Come ti senti su questa mossa?",
+      "opzioni_fiducia": [
+        { "id": "sicuro", "label": "Sono sicuro", "icon": "💪", "color": "#4CAF50" },
+        { "id": "dubbio", "label": "Ho un dubbio", "icon": "🤔", "color": "#FF9800" },
+        { "id": "non_so", "label": "Non lo so", "icon": "❓", "color": "#F44336" }
+      ],
+      "domande_verifica": [
+        { "id": "king", "text": "Il Re e sotto attacco?", "icon": "♔" },
+        { "id": "threats", "text": "Ci sono pezzi minacciati?", "icon": "⚔️" }
+      ],
+      "messaggi_confronto": {
+        "sicuro_corretto": "Bravo! Eri sicuro e l'arrocco era la mossa giusta. Ottima consapevolezza!",
+        "sicuro_sbagliato": "Eri sicuro, ma l'arrocco era la priorita qui. La sicurezza del Re viene prima!",
+        "dubbio_corretto": "Avevi un dubbio, ma hai scelto bene! L'arrocco mette il Re al sicuro.",
+        "dubbio_sbagliato": "Avevi un dubbio e in effetti l'arrocco era la mossa migliore. Buon istinto!",
+        "non_so_corretto": "Non eri sicuro, ma hai trovato la mossa giusta! Stai imparando!",
+        "non_so_sbagliato": "Non eri sicuro e c'era una mossa migliore: l'arrocco. Ricorda: sicurezza del Re prima di tutto!"
+      }
+    }
   },
   "domanda": "Quale piano strategico e corretto per il Bianco in questa posizione?",
   "opzioni_risposta": [
