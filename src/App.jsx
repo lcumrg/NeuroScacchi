@@ -8,12 +8,14 @@ import IntentPanel from './components/IntentPanel'
 import FeedbackBox from './components/FeedbackBox'
 import ProfilassiRadar from './components/ProfilassiRadar'
 import SequencePlayer from './components/SequencePlayer'
+import CandidateMode from './components/CandidateMode'
 import ReflectionPrompt from './components/ReflectionPrompt'
 import LessonSummary from './components/LessonSummary'
 import { getLessons, saveLesson, deleteLesson, getSettings, saveLessonProgress, createSession, saveSession } from './utils/storageManager'
 import { generateConfrontation } from './utils/confrontation'
 import lezione01 from './data/lezione01.json'
 import testMetaV4 from './data/test_metacognizione_v4.json'
+import testCandidate from './data/test_candidate.json'
 import './App.css'
 
 function App() {
@@ -47,6 +49,9 @@ function App() {
   const [showSummary, setShowSummary] = useState(false)
   const [completedSession, setCompletedSession] = useState(null)
 
+  // v4.1 Esame Mode
+  const [esameMode, setEsameMode] = useState(false)
+
   // Cancella tutti i timer attivi (cleanup)
   const clearAllTimers = () => {
     timersRef.current.forEach(id => clearTimeout(id))
@@ -65,27 +70,32 @@ function App() {
     if (stored.length === 0) {
       const defaultLessons = [
         { ...lezione01, categoria: 'test' },
-        { ...testMetaV4, categoria: 'test' }
+        { ...testMetaV4, categoria: 'test' },
+        { ...testCandidate, categoria: 'test' }
       ]
       defaultLessons.forEach(l => saveLesson(l))
       setLessons(defaultLessons)
     } else {
-      // v4.0: assicurati che la lezione test metacognizione sia presente
-      const hasMetaTest = stored.some(l => l.id === 'test_metacognizione_v4')
-      if (!hasMetaTest) {
-        const metaLesson = { ...testMetaV4, categoria: 'test' }
-        saveLesson(metaLesson)
-        stored.push(metaLesson)
+      // Assicurati che le lezioni di test siano presenti
+      const ensureLesson = (id, data) => {
+        if (!stored.some(l => l.id === id)) {
+          const lesson = { ...data, categoria: 'test' }
+          saveLesson(lesson)
+          stored.push(lesson)
+        }
       }
+      ensureLesson('test_metacognizione_v4', testMetaV4)
+      ensureLesson('test_candidate_01', testCandidate)
       setLessons(stored)
     }
   }, [])
 
   // Inizializza lezione
-  const startLesson = (lesson) => {
+  const startLesson = (lesson, isEsame = false) => {
     clearAllTimers()
     setCurrentLesson(lesson)
     setCurrentScreen('lesson')
+    setEsameMode(isEsame)
 
     // Fix #6: gestione FEN invalida
     try {
@@ -96,13 +106,21 @@ function App() {
       return
     }
 
-    setIsFrozen(lesson.tipo_modulo === 'intent')
-    setIntentSelected(false)
+    // In esame mode: niente freeze, niente intent panel, scacchiera subito attiva
+    if (isEsame) {
+      setIsFrozen(false)
+      setIntentSelected(true)
+      setCooldownActive(false)
+    } else {
+      setIsFrozen(lesson.tipo_modulo === 'intent')
+      setIntentSelected(false)
+      setCooldownActive(true)
+    }
+
     setLessonComplete(false)
     setFeedback({ type: 'neutral', message: '' })
     setHighlightedSquares([])
     setArrows([])
-    setCooldownActive(true)
     setShowReflection(false)
     setReflectionContext(null)
     setShowSummary(false)
@@ -110,6 +128,9 @@ function App() {
 
     // v4.0: crea sessione di tracciamento
     sessionRef.current = createSession(lesson.id)
+    if (isEsame && sessionRef.current) {
+      sessionRef.current.isEsame = true
+    }
 
     // Imposta orientamento
     if (lesson.parametri?.orientamento_scacchiera) {
@@ -117,12 +138,26 @@ function App() {
     }
 
     // Debug mode: auto-complete
-    if (settings.debugMode) {
+    if (settings.debugMode && !isEsame) {
       safeTimeout(() => {
         if (lesson.tipo_modulo === 'intent') {
           handleIntentSelection(lesson.risposta_corretta)
         }
       }, 500)
+    }
+
+    // In esame mode: niente freeze, messaggio diretto
+    if (isEsame) {
+      if (sessionRef.current) {
+        sessionRef.current.phases.freeze.end = Date.now()
+        sessionRef.current.phases.intent.end = Date.now()
+        sessionRef.current.phases.move.start = Date.now()
+      }
+      setFeedback({
+        type: 'neutral',
+        message: 'Modalita Esame: esegui la mossa corretta senza aiuti.'
+      })
+      return
     }
 
     // Freeze iniziale
@@ -164,13 +199,13 @@ function App() {
         message: currentLesson.feedback_positivo
       })
 
-      // Mostra chunk visivi
-      if (currentLesson.parametri?.mostra_chunk_visivo) {
+      // Mostra chunk visivi (non in esame mode)
+      if (currentLesson.parametri?.mostra_chunk_visivo && !esameMode) {
         setHighlightedSquares(currentLesson.parametri.mostra_chunk_visivo)
       }
 
-      // Mostra frecce
-      if (currentLesson.parametri?.frecce_pattern) {
+      // Mostra frecce (non in esame mode)
+      if (currentLesson.parametri?.frecce_pattern && !esameMode) {
         setArrows(currentLesson.parametri.frecce_pattern)
       }
 
@@ -308,8 +343,8 @@ function App() {
       return false
     }
 
-    // Profilassi attiva?
-    if (currentLesson.parametri?.usa_profilassi) {
+    // Profilassi attiva? (non in esame mode)
+    if (currentLesson.parametri?.usa_profilassi && !esameMode) {
       setPendingMove({ from: sourceSquare, to: targetSquare })
       setShowProfilassi(true)
       return false
@@ -326,8 +361,8 @@ function App() {
     }
     const promotionPiece = piece[1].toLowerCase()
 
-    // Se c'e' la profilassi, salva la mossa come pending
-    if (currentLesson.parametri?.usa_profilassi) {
+    // Se c'e' la profilassi, salva la mossa come pending (non in esame mode)
+    if (currentLesson.parametri?.usa_profilassi && !esameMode) {
       setPendingMove({ from: promoteFromSquare, to: promoteToSquare, promotion: promotionPiece })
       setShowProfilassi(true)
       promotionHandledRef.current = true
@@ -469,13 +504,24 @@ function App() {
         <LessonSelector
           lessons={lessons}
           onSelectLesson={startLesson}
+          onSelectEsame={(lesson) => startLesson(lesson, true)}
           onUploadLesson={handleUploadLesson}
           onDeleteLesson={handleDeleteLesson}
         />
       ) : currentLesson?.tipo_modulo === 'intent_sequenza' ? (
         <SequencePlayer
           lesson={currentLesson}
+          esameMode={esameMode}
           onComplete={handleSequenceComplete}
+          onExit={handleExit}
+        />
+      ) : currentLesson?.tipo_modulo === 'candidate' && !esameMode ? (
+        <CandidateMode
+          lesson={currentLesson}
+          onComplete={() => {
+            saveLessonProgress(currentLesson.id, { completed: true })
+            setLessonComplete(true)
+          }}
           onExit={handleExit}
         />
       ) : (
@@ -514,7 +560,7 @@ function App() {
 
           <div className="intent-section">
             {/* Profilassi: sostituisce il pannello laterale (la scacchiera resta visibile) */}
-            {showProfilassi && pendingMove ? (
+            {showProfilassi && pendingMove && !esameMode ? (
               <ProfilassiRadar
                 position={position}
                 move={pendingMove}
@@ -534,7 +580,7 @@ function App() {
               />
             ) : (
               <>
-                {currentLesson?.tipo_modulo === 'intent' && (
+                {currentLesson?.tipo_modulo === 'intent' && !esameMode && (
                   <IntentPanel
                     question={currentLesson.domanda}
                     options={currentLesson.opzioni_risposta}

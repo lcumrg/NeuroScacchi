@@ -3,22 +3,22 @@ import LessonCard from './LessonCard'
 import UploadLesson from './UploadLesson'
 import './LessonSelector.css'
 
-function LessonSelector({ lessons, onSelectLesson, onUploadLesson, onDeleteLesson }) {
+function LessonSelector({ lessons, onSelectLesson, onSelectEsame, onUploadLesson, onDeleteLesson }) {
   const [showUpload, setShowUpload] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
 
   // Organizza lezioni per categoria
   const categories = ['all', 'aperture', 'mediogioco', 'finali', 'tattica', 'altro']
-  
-  const filteredLessons = selectedCategory === 'all' 
-    ? lessons 
+
+  const filteredLessons = selectedCategory === 'all'
+    ? lessons
     : lessons.filter(l => (l.categoria || 'altro') === selectedCategory)
 
   return (
     <div className="lesson-selector">
       <div className="selector-header">
         <h2>Le Mie Lezioni</h2>
-        <button 
+        <button
           className="btn-upload"
           onClick={() => setShowUpload(true)}
         >
@@ -45,7 +45,7 @@ function LessonSelector({ lessons, onSelectLesson, onUploadLesson, onDeleteLesso
           <div className="no-lessons">
             <div className="no-lessons-icon">📚</div>
             <p>Nessuna lezione disponibile</p>
-            <button 
+            <button
               className="btn-upload-empty"
               onClick={() => setShowUpload(true)}
             >
@@ -58,6 +58,7 @@ function LessonSelector({ lessons, onSelectLesson, onUploadLesson, onDeleteLesso
               key={lesson.id}
               lesson={lesson}
               onSelect={() => onSelectLesson(lesson)}
+              onSelectEsame={() => onSelectEsame(lesson)}
               onDelete={() => onDeleteLesson(lesson.id)}
             />
           ))
