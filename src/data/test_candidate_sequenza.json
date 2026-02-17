@@ -1,0 +1,54 @@
+{
+  "id": "test_candidate_seq_01",
+  "titolo": "Candidate in Sequenza: Italiana",
+  "descrizione": "Trova le mosse candidate in 3 posizioni progressive della Partita Italiana. Ad ogni step, identifica le mosse migliori e gioca quella ottimale.",
+  "autori": ["NeuroScacchi v4.2"],
+  "tipo_modulo": "candidate_sequenza",
+  "categoria": "aperture",
+  "difficolta": "medio",
+  "tempo_stimato": "5 min",
+  "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+  "parametri": {
+    "orientamento_scacchiera": "white",
+    "tempo_freeze": 2500,
+    "num_candidate": 2
+  },
+  "steps": [
+    {
+      "numero": 1,
+      "descrizione_step": "Il Bianco deve sviluppare un pezzo. Quali sono le mosse candidate?",
+      "fen_aggiornata": "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+      "mosse_candidate": ["f1c4", "f1b5", "d2d4", "b1c3"],
+      "mossa_migliore": "f1c4",
+      "num_candidate": 2,
+      "feedback": "Ac4 punta su f7, il punto debole del Nero. Ottima scelta di sviluppo!",
+      "feedback_positivo": "Ac4 e' la scelta classica della Partita Italiana: sviluppo attivo con pressione su f7.",
+      "feedback_negativo": "Riprova. Pensa a quale pezzo sviluppare per controllare il centro e mirare ai punti deboli."
+    },
+    {
+      "numero": 2,
+      "descrizione_step": "Il Nero ha giocato Ac5. Come continua il Bianco?",
+      "fen_aggiornata": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+      "mosse_candidate": ["e1g1", "c2c3", "d2d3", "b2b4"],
+      "mossa_migliore": "c2c3",
+      "num_candidate": 2,
+      "feedback": "c3 prepara d4 per conquistare il centro. Piano classico del Giuoco Piano!",
+      "feedback_positivo": "c3 prepara l'espansione centrale con d4. E' il piano tipico del Giuoco Piano.",
+      "feedback_negativo": "Cerca la mossa che prepara il colpo centrale d4."
+    },
+    {
+      "numero": 3,
+      "descrizione_step": "Dopo c3, il Nero ha giocato Cf6. Qual e' la mossa candidata migliore?",
+      "fen_aggiornata": "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2P2N2/PP1P1PPP/RNBQK2R w KQkq - 1 5",
+      "mosse_candidate": ["d2d4", "e1g1", "d2d3", "b1d2"],
+      "mossa_migliore": "d2d4",
+      "num_candidate": 2,
+      "feedback_positivo": "d4! Il colpo centrale che apre la posizione a favore del Bianco. Sequenza completata!",
+      "feedback_negativo": "Pensa al piano preparato con c3: ora e' il momento di colpire al centro!",
+      "feedback_finale": "Eccellente! Hai completato la sequenza dell'Italiana: Ac4, c3, d4. Questo e' il piano strategico classico del Giuoco Piano: sviluppo attivo + espansione centrale."
+    }
+  ],
+  "feedback_positivo": "Sequenza completata con successo!",
+  "feedback_negativo": "Riprova la sequenza con piu' attenzione al piano strategico.",
+  "feedback_finale": "Eccellente! Hai completato la sequenza dell'Italiana: Ac4, c3, d4. Sviluppo attivo e conquista del centro!"
+}
