@@ -297,7 +297,8 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
         // Genera confronto metacognitivo se la profilassi ha raccolto la fiducia
         let confrontation = null
         if (confidenceLevel) {
-          confrontation = generateConfrontation(confidenceLevel, isCorrect, preMoveFen)
+          const customMessages = lesson.parametri?.profilassi?.messaggi_confronto || null
+          confrontation = generateConfrontation(confidenceLevel, isCorrect, preMoveFen, customMessages)
 
           // v4.0: salva dati calibrazione nella sessione
           if (sessionRef.current) {
@@ -431,6 +432,7 @@ function SequencePlayer({ lesson, onComplete, onExit }) {
             <ProfilassiRadar
               position={position}
               move={pendingMove}
+              config={lesson.parametri?.profilassi}
               onConfirm={(confidenceLevel) => {
                 setShowProfilassi(false)
                 setProfilassiSquareStyles({})

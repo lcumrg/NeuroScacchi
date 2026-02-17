@@ -1,4 +1,7 @@
 // Storage Manager - Gestione localStorage per NeuroScacchi v4.0
+// Dual-write: localStorage (sempre) + Firebase (quando configurato)
+import { saveSessionToFirebase } from './firebaseService'
+
 const STORAGE_KEYS = {
   LESSONS: 'neuroscacchi_lessons',
   PLAYLISTS: 'neuroscacchi_playlists',
@@ -195,6 +198,10 @@ export const saveSession = (session) => {
     // Mantieni solo le ultime 100 sessioni
     const trimmed = sessions.slice(-100)
     localStorage.setItem(STORAGE_KEYS.SESSIONS, JSON.stringify(trimmed))
+
+    // Dual-write: salva anche su Firebase (fire-and-forget)
+    saveSessionToFirebase(session).catch(() => {})
+
     return true
   } catch (e) {
     console.error('Failed to save session:', e)

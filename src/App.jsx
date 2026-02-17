@@ -358,7 +358,8 @@ function App() {
         // Genera confronto metacognitivo se la profilassi ha raccolto la fiducia
         let confrontation = null
         if (confidenceLevel) {
-          confrontation = generateConfrontation(confidenceLevel, isCorrect, preMoveFen)
+          const customMessages = currentLesson.parametri?.profilassi?.messaggi_confronto || null
+          confrontation = generateConfrontation(confidenceLevel, isCorrect, preMoveFen, customMessages)
 
           // v4.0: salva dati calibrazione nella sessione
           if (sessionRef.current) {
@@ -517,6 +518,7 @@ function App() {
               <ProfilassiRadar
                 position={position}
                 move={pendingMove}
+                config={currentLesson.parametri?.profilassi}
                 onConfirm={(confidenceLevel) => {
                   setShowProfilassi(false)
                   setProfilassiSquareStyles({})
