@@ -186,6 +186,7 @@ export const createSession = (lessonId) => {
     moveAttempts: 0,
     moveErrors: [],
     reflections: [],
+    metacognitive: [],
     completed: false,
     completedAt: null
   }

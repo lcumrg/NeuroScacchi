@@ -8,6 +8,15 @@
   "difficolta": "facile",
   "tempo_stimato": "3 min",
   "fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+  "metacognizione": {
+    "domande": [
+      "Hai ragionato o hai risposto d'istinto?",
+      "Hai controllato le minacce del Nero prima di scegliere?",
+      "Ti sei fermato a guardare tutta la scacchiera?",
+      "Hai considerato cosa farebbe il tuo avversario dopo la tua mossa?"
+    ],
+    "trigger": "post_intent"
+  },
   "parametri": {
     "tempo_freeze": 2500,
     "orientamento_scacchiera": "white",
