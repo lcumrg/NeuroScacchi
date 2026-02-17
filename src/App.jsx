@@ -10,6 +10,7 @@ import ProfilassiRadar from './components/ProfilassiRadar'
 import SequencePlayer from './components/SequencePlayer'
 import CandidateMode from './components/CandidateMode'
 import ReflectionPrompt from './components/ReflectionPrompt'
+import MetacognitivePrompt from './components/MetacognitivePrompt'
 import LessonSummary from './components/LessonSummary'
 import { getLessons, saveLesson, deleteLesson, getSettings, saveLessonProgress, createSession, saveSession } from './utils/storageManager'
 import { generateConfrontation } from './utils/confrontation'
@@ -49,6 +50,11 @@ function App() {
   const [showSummary, setShowSummary] = useState(false)
   const [completedSession, setCompletedSession] = useState(null)
 
+  // v5.0 Metacognitive questions (coach-configurable)
+  const [showMetacognitive, setShowMetacognitive] = useState(false)
+  const [metacognitiveQuestion, setMetacognitiveQuestion] = useState(null)
+  const [metacognitivePendingAction, setMetacognitivePendingAction] = useState(null)
+
   // v4.1 Esame Mode
   const [esameMode, setEsameMode] = useState(false)
 
@@ -61,6 +67,57 @@ function App() {
     const id = setTimeout(fn, ms)
     timersRef.current.push(id)
     return id
+  }
+
+  // v5.0: Seleziona una domanda metacognitiva random dal pool
+  const pickMetacognitiveQuestion = (lesson) => {
+    const domande = lesson.metacognizione?.domande
+    if (!domande || domande.length === 0) return null
+    return domande[Math.floor(Math.random() * domande.length)]
+  }
+
+  // v5.0: Mostra domanda metacognitiva se configurata per il trigger
+  const tryShowMetacognitive = (lesson, trigger, pendingAction) => {
+    const lessonTrigger = lesson.metacognizione?.trigger
+    if (lessonTrigger !== trigger) return false
+    if (esameMode) return false
+
+    const question = pickMetacognitiveQuestion(lesson)
+    if (!question) return false
+
+    setMetacognitiveQuestion(question)
+    setMetacognitivePendingAction(() => pendingAction)
+    setShowMetacognitive(true)
+    return true
+  }
+
+  // v5.0: Gestione risposta metacognitiva
+  const handleMetacognitiveAnswer = (answer) => {
+    if (sessionRef.current) {
+      if (!sessionRef.current.metacognitive) sessionRef.current.metacognitive = []
+      sessionRef.current.metacognitive.push({
+        question: metacognitiveQuestion,
+        answer,
+        trigger: currentLesson?.metacognizione?.trigger,
+        timestamp: Date.now()
+      })
+    }
+    setShowMetacognitive(false)
+    setMetacognitiveQuestion(null)
+    // Esegui l'azione in sospeso
+    if (metacognitivePendingAction) {
+      metacognitivePendingAction()
+      setMetacognitivePendingAction(null)
+    }
+  }
+
+  const handleMetacognitiveSkip = () => {
+    setShowMetacognitive(false)
+    setMetacognitiveQuestion(null)
+    if (metacognitivePendingAction) {
+      metacognitivePendingAction()
+      setMetacognitivePendingAction(null)
+    }
   }
 
   // Carica lezioni al mount
@@ -123,6 +180,9 @@ function App() {
     setArrows([])
     setShowReflection(false)
     setReflectionContext(null)
+    setShowMetacognitive(false)
+    setMetacognitiveQuestion(null)
+    setMetacognitivePendingAction(null)
     setShowSummary(false)
     setCompletedSession(null)
 
@@ -209,11 +269,16 @@ function App() {
         setArrows(currentLesson.parametri.frecce_pattern)
       }
 
-      // Sblocca scacchiera
-      safeTimeout(() => {
+      // v5.0: Domanda metacognitiva post-intent?
+      const unlockBoard = () => {
         setIsFrozen(false)
         setIntentSelected(true)
-      }, 800)
+      }
+
+      const shown = tryShowMetacognitive(currentLesson, 'post_intent', unlockBoard)
+      if (!shown) {
+        safeTimeout(unlockBoard, 800)
+      }
 
     } else {
       // v4.0: traccia errore intent
@@ -456,9 +521,14 @@ function App() {
       setCompletedSession({ ...sessionRef.current })
     }
 
-    safeTimeout(() => {
+    // v5.0: Domanda metacognitiva post-move prima del summary
+    const showSummaryFn = () => {
       setShowSummary(true)
-    }, 1500)
+    }
+    const shown = tryShowMetacognitive(currentLesson, 'post_move', showSummaryFn)
+    if (!shown) {
+      safeTimeout(showSummaryFn, 1500)
+    }
   }
 
   // Reset lezione
@@ -471,6 +541,9 @@ function App() {
     clearAllTimers()
     setShowSummary(false)
     setShowReflection(false)
+    setShowMetacognitive(false)
+    setMetacognitiveQuestion(null)
+    setMetacognitivePendingAction(null)
     setCurrentScreen('selector')
     setCurrentLesson(null)
   }
@@ -597,8 +670,14 @@ function App() {
                   />
                 )}
 
-                {/* v4.0: Riflessione post-errore */}
-                {showReflection && reflectionContext ? (
+                {/* v5.0: Domanda metacognitiva */}
+                {showMetacognitive && metacognitiveQuestion ? (
+                  <MetacognitivePrompt
+                    question={metacognitiveQuestion}
+                    onAnswer={handleMetacognitiveAnswer}
+                    onSkip={handleMetacognitiveSkip}
+                  />
+                ) : showReflection && reflectionContext ? (
                   <ReflectionPrompt
                     onReflect={handleReflection}
                     onSkip={handleReflectionSkip}

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Chess } from 'chess.js'
 import { Chessboard } from 'react-chessboard'
 import FeedbackBox from './FeedbackBox'
+import MetacognitivePrompt from './MetacognitivePrompt'
 import LessonSummary from './LessonSummary'
 import { createSession, saveSession } from '../utils/storageManager'
 import './CandidateMode.css'
@@ -23,6 +24,54 @@ function CandidateMode({ lesson, onComplete, onExit }) {
   const [completedSession, setCompletedSession] = useState(null)
   const sessionRef = useRef(null)
   const timersRef = useRef([])
+
+  // v5.0 Metacognitive
+  const [showMetacognitive, setShowMetacognitive] = useState(false)
+  const [metacognitiveQuestion, setMetacognitiveQuestion] = useState(null)
+  const [metacognitivePendingAction, setMetacognitivePendingAction] = useState(null)
+
+  const pickMetacognitiveQuestion = () => {
+    const domande = lesson.metacognizione?.domande
+    if (!domande || domande.length === 0) return null
+    return domande[Math.floor(Math.random() * domande.length)]
+  }
+
+  const tryShowMetacognitive = (pendingAction) => {
+    if (lesson.metacognizione?.trigger !== 'post_move') return false
+    const question = pickMetacognitiveQuestion()
+    if (!question) return false
+    setMetacognitiveQuestion(question)
+    setMetacognitivePendingAction(() => pendingAction)
+    setShowMetacognitive(true)
+    return true
+  }
+
+  const handleMetacognitiveAnswer = (answer) => {
+    if (sessionRef.current) {
+      if (!sessionRef.current.metacognitive) sessionRef.current.metacognitive = []
+      sessionRef.current.metacognitive.push({
+        question: metacognitiveQuestion,
+        answer,
+        trigger: 'post_move',
+        timestamp: Date.now()
+      })
+    }
+    setShowMetacognitive(false)
+    setMetacognitiveQuestion(null)
+    if (metacognitivePendingAction) {
+      metacognitivePendingAction()
+      setMetacognitivePendingAction(null)
+    }
+  }
+
+  const handleMetacognitiveSkip = () => {
+    setShowMetacognitive(false)
+    setMetacognitiveQuestion(null)
+    if (metacognitivePendingAction) {
+      metacognitivePendingAction()
+      setMetacognitivePendingAction(null)
+    }
+  }
 
   const numRequired = lesson.parametri?.num_candidate || 2
   const goodMoves = lesson.mosse_candidate || []
@@ -226,9 +275,13 @@ function CandidateMode({ lesson, onComplete, onExit }) {
       setCompletedSession({ ...sessionRef.current })
     }
 
-    safeTimeout(() => {
+    const showSummaryFn = () => {
       setShowSummary(true)
       onComplete()
+    }
+    safeTimeout(() => {
+      const shown = tryShowMetacognitive(showSummaryFn)
+      if (!shown) showSummaryFn()
     }, 2000)
   }
 
@@ -240,6 +293,9 @@ function CandidateMode({ lesson, onComplete, onExit }) {
     setLegalTargets([])
     setFeedback({ type: 'neutral', message: '' })
     setShowSummary(false)
+    setShowMetacognitive(false)
+    setMetacognitiveQuestion(null)
+    setMetacognitivePendingAction(null)
     setCompletedSession(null)
 
     game.load(lesson.fen)
@@ -432,12 +488,20 @@ function CandidateMode({ lesson, onComplete, onExit }) {
             )}
           </div>
 
-          <FeedbackBox
-            type={feedback.type}
-            message={feedback.message}
-            onReset={handleReset}
-            showReset={completedSession && !showSummary}
-          />
+          {showMetacognitive && metacognitiveQuestion ? (
+            <MetacognitivePrompt
+              question={metacognitiveQuestion}
+              onAnswer={handleMetacognitiveAnswer}
+              onSkip={handleMetacognitiveSkip}
+            />
+          ) : (
+            <FeedbackBox
+              type={feedback.type}
+              message={feedback.message}
+              onReset={handleReset}
+              showReset={completedSession && !showSummary}
+            />
+          )}
         </div>
       </main>
 

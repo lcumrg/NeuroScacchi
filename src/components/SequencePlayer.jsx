@@ -5,6 +5,7 @@ import IntentPanel from './IntentPanel'
 import FeedbackBox from './FeedbackBox'
 import ProfilassiRadar from './ProfilassiRadar'
 import ReflectionPrompt from './ReflectionPrompt'
+import MetacognitivePrompt from './MetacognitivePrompt'
 import LessonSummary from './LessonSummary'
 import { createSession, saveSession } from '../utils/storageManager'
 import { generateConfrontation } from '../utils/confrontation'
@@ -36,6 +37,11 @@ function SequencePlayer({ lesson, esameMode = false, onComplete, onExit }) {
   const [completedSession, setCompletedSession] = useState(null)
   const [sequenceComplete, setSequenceComplete] = useState(false)
 
+  // v5.0 Metacognitive questions
+  const [showMetacognitive, setShowMetacognitive] = useState(false)
+  const [metacognitiveQuestion, setMetacognitiveQuestion] = useState(null)
+  const [metacognitivePendingAction, setMetacognitivePendingAction] = useState(null)
+
   const clearAllTimers = () => {
     timersRef.current.forEach(id => clearTimeout(id))
     timersRef.current = []
@@ -50,6 +56,51 @@ function SequencePlayer({ lesson, esameMode = false, onComplete, onExit }) {
   useEffect(() => {
     return () => clearAllTimers()
   }, [])
+
+  // v5.0: Seleziona domanda metacognitiva random
+  const pickMetacognitiveQuestion = () => {
+    const domande = lesson.metacognizione?.domande
+    if (!domande || domande.length === 0) return null
+    return domande[Math.floor(Math.random() * domande.length)]
+  }
+
+  const tryShowMetacognitiveForStep = (step, pendingAction) => {
+    if (!step.mostra_metacognitiva || esameMode) return false
+    const question = pickMetacognitiveQuestion()
+    if (!question) return false
+
+    setMetacognitiveQuestion(question)
+    setMetacognitivePendingAction(() => pendingAction)
+    setShowMetacognitive(true)
+    return true
+  }
+
+  const handleMetacognitiveAnswer = (answer) => {
+    if (sessionRef.current) {
+      if (!sessionRef.current.metacognitive) sessionRef.current.metacognitive = []
+      sessionRef.current.metacognitive.push({
+        question: metacognitiveQuestion,
+        answer,
+        step: currentStepIndex + 1,
+        timestamp: Date.now()
+      })
+    }
+    setShowMetacognitive(false)
+    setMetacognitiveQuestion(null)
+    if (metacognitivePendingAction) {
+      metacognitivePendingAction()
+      setMetacognitivePendingAction(null)
+    }
+  }
+
+  const handleMetacognitiveSkip = () => {
+    setShowMetacognitive(false)
+    setMetacognitiveQuestion(null)
+    if (metacognitivePendingAction) {
+      metacognitivePendingAction()
+      setMetacognitivePendingAction(null)
+    }
+  }
 
   const currentStep = lesson.steps[currentStepIndex]
   const totalSteps = lesson.steps.length
@@ -357,10 +408,15 @@ function SequencePlayer({ lesson, esameMode = false, onComplete, onExit }) {
               setCompletedSession({ ...sessionRef.current })
             }
 
-            safeTimeout(() => {
+            // v5.0: metacognitive dopo ultimo step
+            const finishFn = () => {
               setSequenceComplete(true)
               setShowSummary(true)
               onComplete()
+            }
+            safeTimeout(() => {
+              const shown = tryShowMetacognitiveForStep(currentStep, finishFn)
+              if (!shown) finishFn()
             }, 2000 + extraDelay)
           } else {
             // Step intermedio - passa al prossimo
@@ -369,8 +425,13 @@ function SequencePlayer({ lesson, esameMode = false, onComplete, onExit }) {
               message: currentStep.feedback || 'Ottimo! Prossimo step...',
               confrontation
             })
-            safeTimeout(() => {
+            // v5.0: metacognitive dopo step intermedio
+            const nextStepFn = () => {
               setCurrentStepIndex(currentStepIndex + 1)
+            }
+            safeTimeout(() => {
+              const shown = tryShowMetacognitiveForStep(currentStep, nextStepFn)
+              if (!shown) nextStepFn()
             }, 2000 + extraDelay)
           }
         } else {
@@ -381,15 +442,23 @@ function SequencePlayer({ lesson, esameMode = false, onComplete, onExit }) {
             confrontation
           })
           if (!isLastStep) {
-            safeTimeout(() => {
+            const nextStepFn = () => {
               setCurrentStepIndex(currentStepIndex + 1)
+            }
+            safeTimeout(() => {
+              const shown = tryShowMetacognitiveForStep(currentStep, nextStepFn)
+              if (!shown) nextStepFn()
             }, 2500 + extraDelay)
           } else {
             // Ultimo step: completa la sequenza anche con mossa accettabile
-            safeTimeout(() => {
+            const finishFn = () => {
               setSequenceComplete(true)
               setShowSummary(true)
               onComplete()
+            }
+            safeTimeout(() => {
+              const shown = tryShowMetacognitiveForStep(currentStep, finishFn)
+              if (!shown) finishFn()
             }, 2500 + extraDelay)
           }
         }
@@ -411,6 +480,9 @@ function SequencePlayer({ lesson, esameMode = false, onComplete, onExit }) {
     clearAllTimers()
     setShowSummary(false)
     setShowReflection(false)
+    setShowMetacognitive(false)
+    setMetacognitiveQuestion(null)
+    setMetacognitivePendingAction(null)
     setCompletedSession(null)
     setSequenceComplete(false)
     // v4.0: nuova sessione
@@ -486,8 +558,14 @@ function SequencePlayer({ lesson, esameMode = false, onComplete, onExit }) {
                 />
               )}
 
-              {/* v4.0: Riflessione post-errore */}
-              {showReflection && reflectionContext ? (
+              {/* v5.0: Domanda metacognitiva */}
+              {showMetacognitive && metacognitiveQuestion ? (
+                <MetacognitivePrompt
+                  question={metacognitiveQuestion}
+                  onAnswer={handleMetacognitiveAnswer}
+                  onSkip={handleMetacognitiveSkip}
+                />
+              ) : showReflection && reflectionContext ? (
                 <ReflectionPrompt
                   onReflect={handleReflection}
                   onSkip={handleReflectionSkip}

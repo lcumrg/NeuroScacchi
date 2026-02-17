@@ -2,16 +2,25 @@ import { useState } from 'react'
 import { saveFeelingToFirebase } from '../utils/firebaseService'
 import './LessonSummary.css'
 
-const FEELING_OPTIONS = [
-  { id: 'ottimo', label: 'Benissimo!', icon: '🌟' },
-  { id: 'bene', label: 'Bene', icon: '😊' },
-  { id: 'cosi_cosi', label: 'Cosi cosi', icon: '😐' },
-  { id: 'difficile', label: 'Era difficile', icon: '😤' }
+const DIFFICULTY_OPTIONS = [
+  { id: 'difficile', label: 'Difficile', icon: '😓' },
+  { id: 'normale', label: 'Normale', icon: '😊' },
+  { id: 'facile', label: 'Facile', icon: '😎' }
+]
+
+const TEMPO_OPTIONS = [
+  { id: 'calma', label: 'Con calma', icon: '🐢' },
+  { id: 'fretta', label: 'In fretta', icon: '🐇' }
 ]
 
 function LessonSummary({ session, lessonTitle, onRepeat, onExit }) {
-  const [feeling, setFeeling] = useState(null)
-  const [feelingSubmitted, setFeelingSubmitted] = useState(false)
+  const [currentQuestion, setCurrentQuestion] = useState(0) // 0, 1, 2
+  const [answers, setAnswers] = useState({
+    difficolta: null,
+    tempo: null,
+    autocorrezione: null
+  })
+  const [allSubmitted, setAllSubmitted] = useState(false)
 
   // Calcola statistiche dalla sessione
   const totalTimeMs = session.completedAt - session.startedAt
@@ -34,11 +43,21 @@ function LessonSummary({ session, lessonTitle, onRepeat, onExit }) {
   const totalErrors = session.intentErrors.length + session.moveErrors.length
   const isPerfect = totalErrors === 0
 
-  const handleFeeling = (feelingId) => {
-    setFeeling(feelingId)
-    setFeelingSubmitted(true)
-    // Salva feeling su Firebase (fire-and-forget)
-    saveFeelingToFirebase(session.lessonId, feelingId, session).catch(() => {})
+  const handleAnswer = (key, value) => {
+    const newAnswers = { ...answers, [key]: value }
+    setAnswers(newAnswers)
+
+    if (currentQuestion < 2) {
+      // Passa alla prossima domanda con un piccolo delay
+      setTimeout(() => {
+        setCurrentQuestion(currentQuestion + 1)
+      }, 400)
+    } else {
+      // Tutte le domande risposte
+      setAllSubmitted(true)
+      // Salva su Firebase (fire-and-forget)
+      saveFeelingToFirebase(session.lessonId, newAnswers, session).catch(() => {})
+    }
   }
 
   // Calcola "stelle" di valutazione (1-3)
@@ -130,28 +149,99 @@ function LessonSummary({ session, lessonTitle, onRepeat, onExit }) {
               </div>
             </div>
           )}
+
+          {/* Risposte metacognitive raccolte */}
+          {session.metacognitive && session.metacognitive.length > 0 && (
+            <div className="summary-reflections">
+              <h4>Auto-osservazione</h4>
+              <div className="reflection-tags">
+                {session.metacognitive.map((m, i) => (
+                  <span key={i} className="reflection-tag metacognitive-tag">
+                    🪞 {m.answer ? 'Si' : 'No'}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Come ti sei sentito? */}
-        {!feelingSubmitted ? (
+        {/* 3 Domande post-lezione */}
+        {!allSubmitted ? (
           <div className="summary-feeling">
-            <h4>Come ti sei sentito durante la lezione?</h4>
-            <div className="feeling-options">
-              {FEELING_OPTIONS.map((opt) => (
-                <button
-                  key={opt.id}
-                  className="feeling-button"
-                  onClick={() => handleFeeling(opt.id)}
-                >
-                  <span className="feeling-icon">{opt.icon}</span>
-                  <span className="feeling-label">{opt.label}</span>
-                </button>
+            {/* Indicatore progresso domande */}
+            <div className="post-lesson-progress">
+              {[0, 1, 2].map(i => (
+                <span
+                  key={i}
+                  className={`progress-dot ${i < currentQuestion ? 'done' : ''} ${i === currentQuestion ? 'active' : ''}`}
+                />
               ))}
             </div>
+
+            {/* Domanda 1: Difficolta */}
+            {currentQuestion === 0 && (
+              <div className="post-lesson-question fade-in">
+                <h4>Com'era questa lezione?</h4>
+                <div className="feeling-options">
+                  {DIFFICULTY_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.id}
+                      className="feeling-button"
+                      onClick={() => handleAnswer('difficolta', opt.id)}
+                    >
+                      <span className="feeling-icon">{opt.icon}</span>
+                      <span className="feeling-label">{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Domanda 2: Tempo */}
+            {currentQuestion === 1 && (
+              <div className="post-lesson-question fade-in">
+                <h4>Come hai usato il tempo?</h4>
+                <div className="feeling-options">
+                  {TEMPO_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.id}
+                      className="feeling-button"
+                      onClick={() => handleAnswer('tempo', opt.id)}
+                    >
+                      <span className="feeling-icon">{opt.icon}</span>
+                      <span className="feeling-label">{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Domanda 3: Auto-correzione */}
+            {currentQuestion === 2 && (
+              <div className="post-lesson-question fade-in">
+                <h4>C'e un momento in cui hai capito da solo un errore?</h4>
+                <div className="feeling-options autocorrezione-options">
+                  <button
+                    className="feeling-button autocorrezione-btn"
+                    onClick={() => handleAnswer('autocorrezione', true)}
+                  >
+                    <span className="feeling-icon">👍</span>
+                    <span className="feeling-label">Si</span>
+                  </button>
+                  <button
+                    className="feeling-button autocorrezione-btn"
+                    onClick={() => handleAnswer('autocorrezione', false)}
+                  >
+                    <span className="feeling-icon">👎</span>
+                    <span className="feeling-label">No</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="summary-feeling-done fade-in">
-            <p>Grazie per la tua risposta! 👍</p>
+            <p>Grazie per le tue risposte! 👍</p>
           </div>
         )}
 

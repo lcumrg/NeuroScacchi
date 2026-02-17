@@ -7,6 +7,14 @@
   "categoria": "aperture",
   "difficolta": "facile",
   "tempo_stimato": "4 min",
+  "metacognizione": {
+    "domande": [
+      "Hai guardato cosa minaccia l'avversario prima di muovere?",
+      "Stai seguendo un piano o stai improvvisando?",
+      "Hai considerato almeno due mosse possibili?",
+      "Ti sei chiesto perche questa mossa e meglio delle altre?"
+    ]
+  },
   "parametri": {
     "tempo_freeze": 1500,
     "orientamento_scacchiera": "black",
@@ -47,7 +55,8 @@
         { "from": "f6", "to": "d5" },
         { "from": "f6", "to": "e4" }
       ],
-      "feedback": "Perfetto! Il Cavallo controlla case centrali. Ora l'alfiere..."
+      "feedback": "Perfetto! Il Cavallo controlla case centrali. Ora l'alfiere...",
+      "mostra_metacognitiva": true
     },
     {
       "numero": 3,
@@ -76,7 +85,8 @@
       "risposta_corretta": "0-0 (Arrocco corto)",
       "mosse_consentite": ["e8g8", "e8c8", "e8f8"],
       "mosse_corrette": ["e8g8"],
-      "feedback_finale": "🎉 ECCELLENTE! Hai completato lo sviluppo ideale: e6 → Cf6 → Ae7 → 0-0. Posizione solida e pronta per il medio gioco!"
+      "feedback_finale": "🎉 ECCELLENTE! Hai completato lo sviluppo ideale: e6 → Cf6 → Ae7 → 0-0. Posizione solida e pronta per il medio gioco!",
+      "mostra_metacognitiva": true
     }
   ],
   "feedback_positivo": "Sequenza completata con successo!",

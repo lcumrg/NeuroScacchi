@@ -1,0 +1,136 @@
+.metacognitive-prompt {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid #42A5F5;
+  text-align: center;
+}
+
+.metacognitive-header {
+  margin-bottom: 16px;
+}
+
+.metacognitive-icon {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.metacognitive-header h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.metacognitive-question {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.5;
+  margin-bottom: 20px;
+  padding: 0 8px;
+}
+
+.metacognitive-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.btn-metacognitive {
+  flex: 1;
+  max-width: 140px;
+  padding: 14px 24px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  font-family: var(--font-main);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-si {
+  background: #E8F5E9;
+  color: #2E7D32;
+  border-color: #A5D6A7;
+}
+
+.btn-si:hover {
+  background: #C8E6C9;
+  border-color: #66BB6A;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-no {
+  background: #FFF3E0;
+  color: #E65100;
+  border-color: #FFCC80;
+}
+
+.btn-no:hover {
+  background: #FFE0B2;
+  border-color: #FFA726;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.metacognitive-thanks {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px;
+}
+
+.metacognitive-thanks span {
+  font-size: 28px;
+}
+
+.metacognitive-thanks p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.btn-metacognitive-skip {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 6px 16px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-main);
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.btn-metacognitive-skip:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .metacognitive-prompt {
+    padding: 16px;
+  }
+
+  .metacognitive-icon {
+    font-size: 28px;
+  }
+
+  .metacognitive-question {
+    font-size: 15px;
+  }
+
+  .btn-metacognitive {
+    padding: 12px 20px;
+    font-size: 15px;
+  }
+}
