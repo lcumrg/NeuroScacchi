@@ -1,0 +1,472 @@
+.mixed-sequence-player {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ---- Progress bar ---- */
+.mixed-sequence-player .sequence-progress {
+  background: var(--bg-card);
+  padding: 16px 32px;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.mixed-sequence-player .step-type-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.mixed-sequence-player .step-indicator {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.06);
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.mixed-sequence-player .step-indicator.intent {
+  border-color: rgba(76, 175, 80, 0.3);
+}
+.mixed-sequence-player .step-indicator.detective {
+  border-color: rgba(255, 152, 0, 0.3);
+}
+.mixed-sequence-player .step-indicator.candidate {
+  border-color: rgba(33, 150, 243, 0.3);
+}
+
+.mixed-sequence-player .step-indicator.active {
+  transform: scale(1.2);
+  box-shadow: var(--shadow-sm);
+}
+.mixed-sequence-player .step-indicator.active.intent {
+  background: rgba(76, 175, 80, 0.2);
+  border-color: rgba(76, 175, 80, 0.8);
+  color: #2e7d32;
+}
+.mixed-sequence-player .step-indicator.active.detective {
+  background: rgba(255, 152, 0, 0.2);
+  border-color: rgba(255, 152, 0, 0.8);
+  color: #e65100;
+}
+.mixed-sequence-player .step-indicator.active.candidate {
+  background: rgba(33, 150, 243, 0.2);
+  border-color: rgba(33, 150, 243, 0.8);
+  color: #1565c0;
+}
+
+.mixed-sequence-player .step-indicator.done {
+  background: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+  border-color: rgba(76, 175, 80, 0.4);
+}
+
+.mixed-sequence-player .progress-bar {
+  height: 8px;
+  background: var(--bg-main);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.mixed-sequence-player .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-develop) 0%, var(--color-defend) 100%);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  position: relative;
+}
+
+.mixed-sequence-player .progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: mixedShimmer 2s infinite;
+}
+
+@keyframes mixedShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.mixed-sequence-player .progress-text {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+/* ---- Main layout ---- */
+.mixed-sequence-player .main-content {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 32px;
+  padding: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.mixed-sequence-player .chess-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.mixed-sequence-player .intent-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ---- Lesson title ---- */
+.mixed-sequence-player .lesson-title h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.mixed-sequence-player .lesson-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ---- Chessboard wrapper ---- */
+.mixed-sequence-player .chessboard-wrapper {
+  position: relative;
+}
+
+.mixed-sequence-player .chessboard-wrapper.frozen {
+  pointer-events: none;
+}
+
+.mixed-sequence-player .freeze-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 8px;
+  animation: fadeIn 0.3s ease;
+}
+
+.mixed-sequence-player .freeze-message {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-lg);
+  animation: pulse 2s infinite;
+}
+
+/* ---- Detective badge on board ---- */
+.mixed-sequence-player .detective-badge {
+  position: absolute;
+  top: -36px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  z-index: 5;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---- Detective side panel ---- */
+.mixed-sequence-player .detective-side-panel {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  animation: fadeIn 0.6s ease 0.2s backwards;
+}
+
+.mixed-sequence-player .detective-icon-large {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: white;
+  font-size: 32px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.mixed-sequence-player .detective-side-panel h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.mixed-sequence-player .detective-attempts-info {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+/* ---- Candidate panel ---- */
+.mixed-sequence-player .candidate-panel {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  animation: fadeIn 0.6s ease 0.2s backwards;
+}
+
+.mixed-sequence-player .candidate-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.mixed-sequence-player .candidate-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.mixed-sequence-player .candidate-instruction {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.mixed-sequence-player .candidate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  min-height: 60px;
+}
+
+.mixed-sequence-player .candidate-empty {
+  text-align: center;
+  padding: 20px 16px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-style: italic;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 12px;
+  border: 2px dashed rgba(0, 0, 0, 0.1);
+}
+
+.mixed-sequence-player .candidate-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(33, 150, 243, 0.08);
+  border: 2px solid rgba(33, 150, 243, 0.2);
+  animation: fadeIn 0.3s ease;
+}
+
+.mixed-sequence-player .candidate-item.best {
+  background: rgba(255, 193, 7, 0.15);
+  border-color: rgba(255, 193, 7, 0.5);
+}
+.mixed-sequence-player .candidate-item.good {
+  background: rgba(76, 175, 80, 0.1);
+  border-color: rgba(76, 175, 80, 0.4);
+}
+.mixed-sequence-player .candidate-item.bad {
+  background: rgba(244, 67, 54, 0.1);
+  border-color: rgba(244, 67, 54, 0.4);
+}
+
+.mixed-sequence-player .candidate-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(33, 150, 243, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.mixed-sequence-player .candidate-item.best .candidate-number {
+  background: rgba(255, 193, 7, 0.3);
+}
+.mixed-sequence-player .candidate-item.good .candidate-number {
+  background: rgba(76, 175, 80, 0.2);
+}
+.mixed-sequence-player .candidate-item.bad .candidate-number {
+  background: rgba(244, 67, 54, 0.2);
+}
+
+.mixed-sequence-player .candidate-move {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.mixed-sequence-player .candidate-verdict {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mixed-sequence-player .candidate-remove {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(244, 67, 54, 0.15);
+  color: #e53935;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.mixed-sequence-player .candidate-remove:hover {
+  background: rgba(244, 67, 54, 0.3);
+  transform: scale(1.1);
+}
+
+/* ---- Counter ---- */
+.mixed-sequence-player .candidate-counter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.mixed-sequence-player .counter-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.mixed-sequence-player .counter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2196F3, #1976D2);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* ---- Evaluate button ---- */
+.mixed-sequence-player .btn-evaluate {
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-main);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+  animation: fadeIn 0.4s ease;
+}
+
+.mixed-sequence-player .btn-evaluate:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.mixed-sequence-player .btn-evaluate:active {
+  transform: translateY(0);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1024px) {
+  .mixed-sequence-player .sequence-progress {
+    padding: 12px 24px;
+  }
+  .mixed-sequence-player .main-content {
+    grid-template-columns: 1fr 350px;
+    gap: 24px;
+    padding: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mixed-sequence-player .sequence-progress {
+    padding: 12px 16px;
+  }
+  .mixed-sequence-player .progress-text {
+    font-size: 12px;
+  }
+  .mixed-sequence-player .step-indicator {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+  .mixed-sequence-player .main-content {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 24px;
+  }
+  .mixed-sequence-player .candidate-panel {
+    padding: 20px;
+  }
+  .mixed-sequence-player .candidate-header h3 {
+    font-size: 16px;
+  }
+  .mixed-sequence-player .candidate-item {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .mixed-sequence-player .candidate-move {
+    font-size: 14px;
+  }
+  .mixed-sequence-player .candidate-verdict {
+    font-size: 12px;
+  }
+  .mixed-sequence-player .btn-evaluate {
+    padding: 12px 20px;
+    font-size: 15px;
+  }
+  .mixed-sequence-player .detective-side-panel {
+    padding: 24px 20px;
+  }
+}

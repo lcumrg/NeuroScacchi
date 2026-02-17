@@ -1,0 +1,86 @@
+{
+  "id": "test_mista_01",
+  "titolo": "Sequenza Mista: Italiana Completa",
+  "descrizione": "Una lezione che combina Intent, Detective e Candidate nella stessa sequenza sulla Partita Italiana.",
+  "autori": ["NeuroScacchi v6.0"],
+  "tipo_modulo": "mista",
+  "categoria": "aperture",
+  "difficolta": "medio",
+  "tempo_stimato": "5 min",
+  "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+  "parametri": {
+    "orientamento_scacchiera": "white",
+    "tempo_freeze": 2000
+  },
+  "metacognizione": {
+    "domande": [
+      "Hai considerato le minacce dell'avversario prima di decidere?",
+      "Stai seguendo un piano o stai improvvisando?"
+    ]
+  },
+  "steps": [
+    {
+      "numero": 1,
+      "tipo_step": "intent",
+      "fen_aggiornata": "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+      "domanda": "Qual e' il piano migliore per il Bianco in questa posizione?",
+      "opzioni_risposta": [
+        "Sviluppare l'Alfiere verso f7 (Attacco al punto debole)",
+        "Spingere d3 per difendere e4 (Troppo passivo)",
+        "Giocare a3 per prepararsi (Perdita di tempo)"
+      ],
+      "risposta_corretta": "Sviluppare l'Alfiere verso f7 (Attacco al punto debole)",
+      "mosse_consentite": ["f1c4", "d2d3", "a2a3"],
+      "mosse_corrette": ["f1c4"],
+      "feedback": "Ac4 punta su f7, il punto piu' debole nella posizione del Nero.",
+      "feedback_negativo": "Pensa a quale pezzo sviluppare per mirare ai punti deboli del Nero.",
+      "mostra_chunk_visivo": ["c4", "f7"],
+      "frecce_pattern": [
+        { "from": "c4", "to": "f7" }
+      ]
+    },
+    {
+      "numero": 2,
+      "tipo_step": "detective",
+      "fen_aggiornata": "r1bqkb1r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+      "domanda": "Il Nero ha giocato Ac5 e Cf6. Quale casa e' il punto debole critico del Nero che il Bianco deve mirare?",
+      "risposta_corretta_casa": "f7",
+      "max_tentativi": 3,
+      "feedback_positivo": "Esatto! f7 e' il punto piu' debole nella posizione del Nero, difeso solo dal Re.",
+      "feedback_negativo": "Non proprio. Cerca la casa difesa solo dal Re del Nero."
+    },
+    {
+      "numero": 3,
+      "tipo_step": "candidate",
+      "fen_aggiornata": "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2P2N2/PP1P1PPP/RNBQK2R w KQkq - 0 5",
+      "descrizione_step": "Dopo c3, quali sono le mosse candidate per il Bianco?",
+      "mosse_candidate": ["d2d4", "e1g1", "d2d3", "b1d2"],
+      "mossa_migliore": "d2d4",
+      "num_candidate": 2,
+      "feedback_positivo": "d4! Il colpo centrale che apre la posizione a favore del Bianco.",
+      "feedback_negativo": "Pensa al piano preparato con c3: ora e' il momento di colpire al centro!",
+      "feedback": "Buona mossa, ma d4 era il colpo tematico."
+    },
+    {
+      "numero": 4,
+      "tipo_step": "intent",
+      "fen_aggiornata": "r1bqk2r/pppp1ppp/2n2n2/2b5/2BpP3/2P2N2/PP3PPP/RNBQK2R w KQkq - 0 6",
+      "domanda": "Il Nero ha catturato d4. Come deve riprendere il Bianco?",
+      "opzioni_risposta": [
+        "cxd4 per mantenere il centro forte",
+        "Cd4 per centralizzare il Cavallo",
+        "e5 per attaccare il Cavallo in f6"
+      ],
+      "risposta_corretta": "cxd4 per mantenere il centro forte",
+      "mosse_consentite": ["c3d4", "f3d4", "e4e5"],
+      "mosse_corrette": ["c3d4"],
+      "feedback": "cxd4 mantiene la coppia di pedoni centrali forte.",
+      "feedback_negativo": "Pensa a quale ripresa mantiene la struttura di pedoni centrali piu' solida.",
+      "feedback_finale": "Eccellente! Hai completato la sequenza mista dell'Italiana: sviluppo, analisi tattica, selezione candidate e decisione strategica.",
+      "mostra_metacognitiva": true
+    }
+  ],
+  "feedback_positivo": "Sequenza completata con successo!",
+  "feedback_negativo": "Riprova la sequenza con piu' attenzione.",
+  "feedback_finale": "Ottimo lavoro! Hai padroneggiato i concetti chiave della Partita Italiana con una varieta' di approcci didattici."
+}
