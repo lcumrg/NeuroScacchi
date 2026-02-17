@@ -18,7 +18,10 @@ const getDeviceId = () => {
 
 // Salva sessione completa su Firestore
 export const saveSessionToFirebase = async (session) => {
-  if (!isConfigured || !db) return null
+  if (!isConfigured || !db) {
+    console.warn('Firebase: non configurato (isConfigured=%s, db=%s)', isConfigured, !!db)
+    return null
+  }
 
   try {
     const docRef = await addDoc(collection(db, 'sessions'), {
@@ -26,16 +29,20 @@ export const saveSessionToFirebase = async (session) => {
       deviceId: getDeviceId(),
       savedAt: serverTimestamp()
     })
+    console.log('Firebase: sessione salvata con ID', docRef.id)
     return docRef.id
   } catch (e) {
-    console.warn('Firebase: impossibile salvare sessione', e)
+    console.error('Firebase: ERRORE salvataggio sessione', e.code, e.message)
     return null
   }
 }
 
 // Salva feeling post-lezione su Firestore
 export const saveFeelingToFirebase = async (lessonId, feeling, sessionData) => {
-  if (!isConfigured || !db) return null
+  if (!isConfigured || !db) {
+    console.warn('Firebase: non configurato (isConfigured=%s, db=%s)', isConfigured, !!db)
+    return null
+  }
 
   try {
     const docRef = await addDoc(collection(db, 'feelings'), {
@@ -46,9 +53,10 @@ export const saveFeelingToFirebase = async (lessonId, feeling, sessionData) => {
       deviceId: getDeviceId(),
       savedAt: serverTimestamp()
     })
+    console.log('Firebase: feeling salvato con ID', docRef.id)
     return docRef.id
   } catch (e) {
-    console.warn('Firebase: impossibile salvare feeling', e)
+    console.error('Firebase: ERRORE salvataggio feeling', e.code, e.message)
     return null
   }
 }
