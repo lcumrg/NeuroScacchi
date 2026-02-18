@@ -167,6 +167,35 @@ export const deleteLessonFromFirebase = async (lessonId) => {
   }
 }
 
+// === SYNC: Scarica tutti i dati da Firebase (per nuovo dispositivo) ===
+
+export const syncFromFirebase = async () => {
+  if (!canWrite()) return null
+  try {
+    const uid = getUid()
+    const [lessons, progress, settings, sessions] = await Promise.all([
+      getDocs(collection(db, 'users', uid, 'lessons')),
+      getDocs(collection(db, 'users', uid, 'progress')),
+      getDoc(doc(db, 'users', uid, 'settings', 'main')),
+      getDocs(collection(db, 'users', uid, 'sessions'))
+    ])
+
+    const result = {
+      lessons: lessons.docs.map(d => d.data()),
+      progress: {},
+      settings: settings.exists() ? settings.data() : null,
+      sessions: sessions.docs.map(d => ({ _id: d.id, ...d.data() }))
+    }
+    progress.docs.forEach(d => { result.progress[d.id] = d.data() })
+
+    console.log(`Firebase sync: ${result.lessons.length} lezioni, ${Object.keys(result.progress).length} progressi, ${result.sessions.length} sessioni`)
+    return result
+  } catch (e) {
+    console.error('Firebase: errore sync da cloud', e.code, e.message)
+    return null
+  }
+}
+
 // === MIGRAZIONE localStorage → Firestore ===
 
 export const migrateLocalDataToFirebase = async () => {
