@@ -3,6 +3,11 @@
 > Questo file viene aggiornato ad ogni sessione di sviluppo.
 > Ultimo aggiornamento: 18 Febbraio 2026 (sessione 2)
 
+### Note ambiente di sviluppo
+- **Il coach lavora da Chromebook** (solo browser, nessun terminale locale)
+- Il deploy dell'app frontend avviene tramite **Netlify** (auto-deploy da GitHub)
+- Per operazioni che richiedono terminale (es. deploy Cloud Functions), usare **GitHub Actions** o **Google Cloud Shell** (shell.cloud.google.com)
+
 ---
 
 ## FASE 1: Completamento Metacognizione — COMPLETATA
@@ -58,7 +63,7 @@
 - [x] Cron settimanale che aggrega le sessioni e genera i pattern/insights
 - [x] Trigger che aggiorna le statistiche per lezione e utente dopo ogni sessione completata
 - **Completato:** `functions/index.js` con `onSessionComplete` (trigger) e `weeklyAggregation` (cron lunedi 03:00 CET)
-- **Nota deploy:** richiede Firebase Blaze plan + `firebase deploy --only functions` dalla console
+- **Nota deploy:** richiede Firebase Blaze plan. Deploy tramite GitHub Action (auto al merge su main) oppure Google Cloud Shell da browser
 
 ### Lezioni condivise (pubbliche)
 - [ ] Collezione `publicLessons` accessibile a tutti gli utenti (non solo al proprio account)
