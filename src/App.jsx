@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Chess } from 'chess.js'
+import { useAuth } from './contexts/AuthContext'
+import LoginScreen from './components/LoginScreen'
 import Header from './components/Header'
 import LessonSelector from './components/LessonSelector'
 import ChessboardComponent from './components/ChessboardComponent'
@@ -24,6 +26,7 @@ import testMista from './data/test_sequenza_mista.json'
 import './App.css'
 
 function App() {
+  const { user, loading, logout } = useAuth()
   const [currentScreen, setCurrentScreen] = useState('selector') // 'selector' | 'lesson'
   const [lessons, setLessons] = useState([])
   const [currentLesson, setCurrentLesson] = useState(null)
@@ -579,12 +582,30 @@ function App() {
     setLessonComplete(true)
   }
 
+  // Auth gating
+  if (loading) {
+    return (
+      <div className="app-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>&#9823;</div>
+          <div>Caricamento...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <LoginScreen />
+  }
+
   return (
     <div className="app-container">
       <Header
         showExit={currentScreen === 'lesson'}
         onExit={handleExit}
         onSettings={() => alert('Impostazioni (coming soon)')}
+        onLogout={logout}
+        userName={user.displayName || user.email?.split('@')[0]}
         lessonTitle={currentScreen === 'lesson' ? currentLesson?.titolo : null}
       />
 

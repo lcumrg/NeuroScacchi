@@ -1,6 +1,12 @@
-// Storage Manager - Gestione localStorage per NeuroScacchi v4.0
-// Dual-write: localStorage (sempre) + Firebase (quando configurato)
-import { saveSessionToFirebase } from './firebaseService'
+// Storage Manager - Gestione localStorage per NeuroScacchi v6.0
+// Dual-write: localStorage (cache locale) + Firebase (persistenza cloud)
+import {
+  saveSessionToFirebase,
+  saveProgressToFirebase,
+  saveSettingsToFirebase,
+  saveLessonToFirebase,
+  deleteLessonFromFirebase
+} from './firebaseService'
 
 const STORAGE_KEYS = {
   LESSONS: 'neuroscacchi_lessons',
@@ -30,6 +36,7 @@ export const getSettings = () => {
 export const saveSettings = (settings) => {
   try {
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings))
+    saveSettingsToFirebase(settings).catch(() => {})
     return true
   } catch (e) {
     console.error('Failed to save settings:', e)
@@ -52,14 +59,18 @@ export const saveLesson = (lesson) => {
   try {
     const lessons = getLessons()
     const existing = lessons.findIndex(l => l.id === lesson.id)
-    
+
     if (existing !== -1) {
       lessons[existing] = lesson
     } else {
       lessons.push(lesson)
     }
-    
+
     localStorage.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(lessons))
+    // Sync custom lessons to Firebase (skip test lessons)
+    if (lesson.categoria !== 'test') {
+      saveLessonToFirebase(lesson).catch(() => {})
+    }
     return true
   } catch (e) {
     console.error('Failed to save lesson:', e)
@@ -71,6 +82,7 @@ export const deleteLesson = (lessonId) => {
   try {
     const lessons = getLessons().filter(l => l.id !== lessonId)
     localStorage.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(lessons))
+    deleteLessonFromFirebase(lessonId).catch(() => {})
     return true
   } catch (e) {
     console.error('Failed to delete lesson:', e)
@@ -133,13 +145,15 @@ export const getProgress = () => {
 export const saveLessonProgress = (lessonId, progressData) => {
   try {
     const progress = getProgress()
-    progress[lessonId] = {
+    const updated = {
       ...progress[lessonId],
       ...progressData,
       lastPlayed: new Date().toISOString()
     }
-    
+    progress[lessonId] = updated
+
     localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(progress))
+    saveProgressToFirebase(lessonId, updated).catch(() => {})
     return true
   } catch (e) {
     console.error('Failed to save progress:', e)

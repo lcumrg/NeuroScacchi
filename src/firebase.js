@@ -2,6 +2,7 @@
 // Le credenziali vengono lette dalle variabili d'ambiente (.env)
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
+import { getAuth, GoogleAuthProvider } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -17,10 +18,14 @@ const isConfigured = firebaseConfig.apiKey && firebaseConfig.projectId
 
 let app = null
 let db = null
+let auth = null
+let googleProvider = null
 
 if (isConfigured) {
   app = initializeApp(firebaseConfig)
   db = getFirestore(app)
+  auth = getAuth(app)
+  googleProvider = new GoogleAuthProvider()
 }
 
-export { db, isConfigured }
+export { db, auth, googleProvider, isConfigured }
