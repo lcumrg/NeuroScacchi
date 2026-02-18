@@ -1,40 +1,38 @@
 # NeuroScacchi — Roadmap
 
 > Questo file viene aggiornato ad ogni sessione di sviluppo.
-> Ultimo aggiornamento: 18 Febbraio 2026
+> Ultimo aggiornamento: 18 Febbraio 2026 (sessione 2)
 
 ---
 
-## FASE 1: Completamento Metacognizione
+## FASE 1: Completamento Metacognizione — COMPLETATA
 
 ### Domande post-errore random con Si/No
-- [ ] Dopo un errore, mostrare domande metacognitive casuali tipo "Hai ragionato o hai risposto d'istinto?", "Hai controllato le minacce del Nero?" con semplice risposta Si/No
-- **Stato attuale:** dopo un errore chiede "Perche hai sbagliato?" con 4 opzioni (fretta/non guardato/non capito/altro)
-- **Obiettivo:** lo scopo non e capire il perche, ma provocare auto-osservazione senza giudizio
+- [x] Dopo un errore, mostrare domande metacognitive casuali con semplice risposta Si/No
+- **Completato**
 
 ### Schermata post-lezione con 3 domande
-- [ ] (1) Difficolta percepita (Difficile/Normale/Facile con emoji)
-- [ ] (2) "Come hai usato il tempo?" (con calma / in fretta)
-- [ ] (3) "C'e un momento in cui hai capito da solo l'errore?" (Si/No)
-- **Stato attuale:** dopo la lezione c'e 1 sola domanda "Come ti sei sentito?" con 4 emoji
-- **Obiettivo:** servono tutte e 3 per costruire i pattern settimanali futuri
+- [x] (1) Difficolta percepita (Difficile/Normale/Facile con emoji)
+- [x] (2) "Come hai usato il tempo?" (con calma / in fretta)
+- [x] (3) "C'e un momento in cui hai capito da solo l'errore?" (Si/No)
+- **Completato**
 
 ---
 
-## FASE 2: Completamento Modalita (~3h)
+## FASE 2: Completamento Modalita — COMPLETATA (tranne report esame)
 
 ### Candidate mode in sequenze
 - [x] Sequenze miste che mescolano step Intent + Detective + Candidate nello stesso esercizio
-- **Completato:** componente `MixedSequencePlayer` implementato, supporta step di tipo intent, detective, candidate, esame nella stessa lezione
+- **Completato:** componente `MixedSequencePlayer` implementato
 
 ### Report confronto Esame vs Guidato
 - [ ] Dopo l'esame, mostrare un report che confronti cosa l'allievo ha ricordato da solo vs cosa aveva sbagliato con gli aiuti
-- **Stato attuale:** l'Esame mode toglie gli aiuti e basta — alla fine non dice nulla sul confronto
-- **Obiettivo:** misurare l'interiorizzazione, es. "Nella versione guidata avevi sbagliato lo step 3, nell'esame lo hai azzeccato" oppure "Senza aiuti hai perso lo step 2 che prima avevi fatto giusto"
+- **Posticipato:** verra implementato in una fase successiva
+- **Obiettivo:** misurare l'interiorizzazione, es. "Nella versione guidata avevi sbagliato lo step 3, nell'esame lo hai azzeccato"
 
 ---
 
-## FASE 3: Firebase (~10-12h)
+## FASE 3: Firebase — COMPLETATA
 
 ### Creare progetto Firebase
 - [x] Aprire la console Firebase, creare il progetto "neuroscacchi", configurare le env vars (VITE_FIREBASE_*)
@@ -54,11 +52,17 @@
 
 ### Migrazione LocalStorage → Firestore
 - [x] Quando l'utente fa login, migrare i dati locali nel cloud. Sync bidirezionale per disponibilita su qualsiasi device
-- **Completato:** `firebaseService` e `storageManager` aggiornati per scrivere sotto percorsi per-utente
+- **Completato:** dual-write (localStorage + Firebase) + sync bidirezionale al login (scarica lezioni/progressi/sessioni dal cloud su nuovo dispositivo)
 
 ### Cloud Functions
-- [ ] Cron settimanale che aggrega le sessioni e genera i pattern/insights
-- [ ] Trigger che aggiorna il rating e il conteggio plays di ogni lezione dopo ogni sessione completata
+- [x] Cron settimanale che aggrega le sessioni e genera i pattern/insights
+- [x] Trigger che aggiorna le statistiche per lezione e utente dopo ogni sessione completata
+- **Completato:** `functions/index.js` con `onSessionComplete` (trigger) e `weeklyAggregation` (cron lunedi 03:00 CET)
+- **Nota deploy:** richiede Firebase Blaze plan + `firebase deploy --only functions` dalla console
+
+### Lezioni condivise (pubbliche)
+- [ ] Collezione `publicLessons` accessibile a tutti gli utenti (non solo al proprio account)
+- **Posticipato:** per ora il coach e gli studenti usano lo stesso account per i test
 
 ---
 

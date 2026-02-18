@@ -16,7 +16,7 @@ import MixedSequencePlayer from './components/MixedSequencePlayer'
 import ReflectionPrompt from './components/ReflectionPrompt'
 import MetacognitivePrompt from './components/MetacognitivePrompt'
 import LessonSummary from './components/LessonSummary'
-import { getLessons, saveLesson, deleteLesson, getSettings, saveLessonProgress, createSession, saveSession } from './utils/storageManager'
+import { getLessons, saveLesson, deleteLesson, getSettings, saveLessonProgress, createSession, saveSession, mergeFromCloud } from './utils/storageManager'
 import { generateConfrontation } from './utils/confrontation'
 import lezione01 from './data/lezione01.json'
 import testMetaV4 from './data/test_metacognizione_v4.json'
@@ -127,36 +127,46 @@ function App() {
     }
   }
 
-  // Carica lezioni al mount
+  // Carica lezioni al mount + sync da Firebase
   useEffect(() => {
-    const stored = getLessons()
-    // Aggiungi lezioni di test se non ci sono lezioni
-    if (stored.length === 0) {
-      const defaultLessons = [
-        { ...lezione01, categoria: 'test' },
-        { ...testMetaV4, categoria: 'test' },
-        { ...testCandidate, categoria: 'test' },
-        { ...testCandidateSequenza, categoria: 'test' },
-        { ...testMista, categoria: 'test' }
-      ]
-      defaultLessons.forEach(l => saveLesson(l))
-      setLessons(defaultLessons)
-    } else {
-      // Assicurati che le lezioni di test siano presenti
-      const ensureLesson = (id, data) => {
-        if (!stored.some(l => l.id === id)) {
-          const lesson = { ...data, categoria: 'test' }
-          saveLesson(lesson)
-          stored.push(lesson)
+    const loadLessons = async () => {
+      // 1. Se utente loggato, scarica lezioni dal cloud e unisci a quelle locali
+      if (user) {
+        const syncResult = await mergeFromCloud()
+        if (syncResult.lessonsAdded > 0) {
+          console.log(`Sync: ${syncResult.lessonsAdded} nuove lezioni dal cloud`)
         }
       }
-      ensureLesson('test_metacognizione_v4', testMetaV4)
-      ensureLesson('test_candidate_01', testCandidate)
-      ensureLesson('test_candidate_seq_01', testCandidateSequenza)
-      ensureLesson('test_mista_01', testMista)
-      setLessons(stored)
+
+      // 2. Carica lezioni da localStorage (ora include anche quelle dal cloud)
+      const stored = getLessons()
+      if (stored.length === 0) {
+        const defaultLessons = [
+          { ...lezione01, categoria: 'test' },
+          { ...testMetaV4, categoria: 'test' },
+          { ...testCandidate, categoria: 'test' },
+          { ...testCandidateSequenza, categoria: 'test' },
+          { ...testMista, categoria: 'test' }
+        ]
+        defaultLessons.forEach(l => saveLesson(l))
+        setLessons(defaultLessons)
+      } else {
+        const ensureLesson = (id, data) => {
+          if (!stored.some(l => l.id === id)) {
+            const lesson = { ...data, categoria: 'test' }
+            saveLesson(lesson)
+            stored.push(lesson)
+          }
+        }
+        ensureLesson('test_metacognizione_v4', testMetaV4)
+        ensureLesson('test_candidate_01', testCandidate)
+        ensureLesson('test_candidate_seq_01', testCandidateSequenza)
+        ensureLesson('test_mista_01', testMista)
+        setLessons(stored)
+      }
     }
-  }, [])
+    loadLessons()
+  }, [user])
 
   // Inizializza lezione
   const startLesson = (lesson, isEsame = false) => {

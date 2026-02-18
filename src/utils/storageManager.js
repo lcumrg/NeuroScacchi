@@ -5,7 +5,8 @@ import {
   saveProgressToFirebase,
   saveSettingsToFirebase,
   saveLessonToFirebase,
-  deleteLessonFromFirebase
+  deleteLessonFromFirebase,
+  syncFromFirebase
 } from './firebaseService'
 
 const STORAGE_KEYS = {
@@ -236,4 +237,70 @@ export const getSessions = () => {
 
 export const getSessionsByLesson = (lessonId) => {
   return getSessions().filter(s => s.lessonId === lessonId)
+}
+
+// === SYNC DA FIREBASE (per nuovo dispositivo / altro browser) ===
+// Scarica i dati dal cloud e li unisce a quelli locali senza sovrascrivere
+
+export const mergeFromCloud = async () => {
+  try {
+    const cloudData = await syncFromFirebase()
+    if (!cloudData) return { merged: false }
+
+    let lessonsAdded = 0
+    let progressMerged = 0
+    let sessionsMerged = 0
+
+    // Merge lezioni: aggiungi quelle cloud che non esistono in locale
+    if (cloudData.lessons.length > 0) {
+      const localLessons = getLessons()
+      const localIds = new Set(localLessons.map(l => l.id))
+      for (const lesson of cloudData.lessons) {
+        if (!localIds.has(lesson.id)) {
+          localLessons.push(lesson)
+          lessonsAdded++
+        }
+      }
+      if (lessonsAdded > 0) {
+        localStorage.setItem(STORAGE_KEYS.LESSONS, JSON.stringify(localLessons))
+      }
+    }
+
+    // Merge progresso: cloud vince se piu recente
+    if (Object.keys(cloudData.progress).length > 0) {
+      const localProgress = getProgress()
+      for (const [lessonId, cloudProg] of Object.entries(cloudData.progress)) {
+        const localProg = localProgress[lessonId]
+        if (!localProg || (cloudProg.updatedAt && (!localProg.lastPlayed || new Date(cloudProg.updatedAt.seconds * 1000) > new Date(localProg.lastPlayed)))) {
+          localProgress[lessonId] = { ...cloudProg, lastPlayed: cloudProg.updatedAt ? new Date(cloudProg.updatedAt.seconds * 1000).toISOString() : new Date().toISOString() }
+          progressMerged++
+        }
+      }
+      if (progressMerged > 0) {
+        localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(localProgress))
+      }
+    }
+
+    // Merge sessioni: aggiungi quelle cloud non presenti in locale
+    if (cloudData.sessions.length > 0) {
+      const localSessions = getSessions()
+      const localStartTimes = new Set(localSessions.map(s => s.startedAt))
+      for (const session of cloudData.sessions) {
+        if (!localStartTimes.has(session.startedAt)) {
+          localSessions.push(session)
+          sessionsMerged++
+        }
+      }
+      if (sessionsMerged > 0) {
+        const trimmed = localSessions.slice(-100)
+        localStorage.setItem(STORAGE_KEYS.SESSIONS, JSON.stringify(trimmed))
+      }
+    }
+
+    console.log(`Cloud sync: +${lessonsAdded} lezioni, +${progressMerged} progressi, +${sessionsMerged} sessioni`)
+    return { merged: true, lessonsAdded, progressMerged, sessionsMerged }
+  } catch (e) {
+    console.error('Cloud sync failed:', e)
+    return { merged: false }
+  }
 }
