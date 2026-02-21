@@ -17,6 +17,7 @@ import ReflectionPrompt from './components/ReflectionPrompt'
 import MetacognitivePrompt from './components/MetacognitivePrompt'
 import LessonSummary from './components/LessonSummary'
 import LessonWizard from './components/LessonWizard'
+import AILessonBuilder from './components/AILessonBuilder'
 import { getLessons, saveLesson, deleteLesson, getSettings, saveLessonProgress, createSession, saveSession, mergeFromCloud } from './utils/storageManager'
 import { generateConfrontation } from './utils/confrontation'
 import lezione01 from './data/lezione01.json'
@@ -28,7 +29,7 @@ import './App.css'
 
 function App() {
   const { user, loading, logout } = useAuth()
-  const [currentScreen, setCurrentScreen] = useState('selector') // 'selector' | 'lesson' | 'admin'
+  const [currentScreen, setCurrentScreen] = useState('selector') // 'selector' | 'lesson' | 'admin' | 'ai-builder'
   const [lessons, setLessons] = useState([])
   const [currentLesson, setCurrentLesson] = useState(null)
   const [editingLesson, setEditingLesson] = useState(null)
@@ -605,6 +606,26 @@ function App() {
     setCurrentScreen('selector')
   }
 
+  // AI Builder
+  const handleOpenAIBuilder = () => {
+    setCurrentScreen('ai-builder')
+  }
+
+  const handleAIBuilderSave = (savedLesson) => {
+    const existing = lessons.findIndex(l => l.id === savedLesson.id)
+    if (existing !== -1) {
+      const updated = [...lessons]
+      updated[existing] = savedLesson
+      setLessons(updated)
+    } else {
+      setLessons([...lessons, savedLesson])
+    }
+  }
+
+  const handleAIBuilderClose = () => {
+    setCurrentScreen('selector')
+  }
+
   // Callback stabile per evidenziazione profilassi sulla scacchiera
   const handleProfilassiHighlight = useCallback((styles) => {
     setProfilassiSquareStyles(styles)
@@ -643,7 +664,12 @@ function App() {
         lessonTitle={currentScreen === 'lesson' ? currentLesson?.titolo : null}
       />
 
-      {currentScreen === 'admin' ? (
+      {currentScreen === 'ai-builder' ? (
+        <AILessonBuilder
+          onSave={handleAIBuilderSave}
+          onClose={handleAIBuilderClose}
+        />
+      ) : currentScreen === 'admin' ? (
         <LessonWizard
           editLesson={editingLesson}
           onSave={handleAdminSave}
@@ -658,6 +684,7 @@ function App() {
           onDeleteLesson={handleDeleteLesson}
           onCreateLesson={() => handleOpenAdmin()}
           onEditLesson={(lesson) => handleOpenAdmin(lesson)}
+          onAIBuild={handleOpenAIBuilder}
         />
       ) : currentLesson?.tipo_modulo === 'intent_sequenza' ? (
         <SequencePlayer

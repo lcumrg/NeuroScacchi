@@ -22,6 +22,24 @@
   gap: 10px;
 }
 
+.btn-ai-build {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #7C4DFF, #536DFE);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-ai-build:hover {
+  background: linear-gradient(135deg, #651FFF, #448AFF);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
 .btn-create-lesson {
   padding: 12px 24px;
   background: var(--color-defend);
