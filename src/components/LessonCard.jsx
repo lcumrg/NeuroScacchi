@@ -1,7 +1,7 @@
 import { getProgress } from '../utils/storageManager'
 import './LessonCard.css'
 
-function LessonCard({ lesson, onSelect, onSelectEsame, onDelete }) {
+function LessonCard({ lesson, onSelect, onSelectEsame, onDelete, onEdit }) {
   const progress = getProgress()
   const isCompleted = progress[lesson.id]?.completed
 
@@ -57,17 +57,30 @@ function LessonCard({ lesson, onSelect, onSelectEsame, onDelete }) {
         </button>
       )}
 
-      <button
-        className="btn-delete-card"
-        onClick={(e) => {
-          e.stopPropagation()
-          if (confirm(`Eliminare "${lesson.titolo}"?`)) {
-            onDelete()
-          }
-        }}
-      >
-        🗑️
-      </button>
+      <div className="card-action-buttons">
+        {onEdit && (
+          <button
+            className="btn-edit-card"
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit()
+            }}
+          >
+            &#9998;
+          </button>
+        )}
+        <button
+          className="btn-delete-card"
+          onClick={(e) => {
+            e.stopPropagation()
+            if (confirm(`Eliminare "${lesson.titolo}"?`)) {
+              onDelete()
+            }
+          }}
+        >
+          🗑️
+        </button>
+      </div>
     </div>
   )
 }
