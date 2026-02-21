@@ -16,7 +16,7 @@ import MixedSequencePlayer from './components/MixedSequencePlayer'
 import ReflectionPrompt from './components/ReflectionPrompt'
 import MetacognitivePrompt from './components/MetacognitivePrompt'
 import LessonSummary from './components/LessonSummary'
-import AdminConsole from './components/AdminConsole'
+import LessonWizard from './components/LessonWizard'
 import { getLessons, saveLesson, deleteLesson, getSettings, saveLessonProgress, createSession, saveSession, mergeFromCloud } from './utils/storageManager'
 import { generateConfrontation } from './utils/confrontation'
 import lezione01 from './data/lezione01.json'
@@ -644,7 +644,7 @@ function App() {
       />
 
       {currentScreen === 'admin' ? (
-        <AdminConsole
+        <LessonWizard
           editLesson={editingLesson}
           onSave={handleAdminSave}
           onClose={handleAdminClose}
