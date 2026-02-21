@@ -48,23 +48,43 @@
   color: var(--text-secondary);
 }
 
-.btn-delete-card {
+.card-action-buttons {
   position: absolute;
   top: 12px;
   right: 12px;
-  background: var(--feedback-negative);
-  border: none;
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: all var(--transition-fast);
+}
+
+.lesson-card:hover .card-action-buttons {
+  opacity: 1;
+}
+
+.btn-edit-card,
+.btn-delete-card {
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
   width: 32px;
   height: 32px;
   border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
-  opacity: 0;
   transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.lesson-card:hover .btn-delete-card {
-  opacity: 1;
+.btn-edit-card:hover {
+  background: #E3F2FD;
+  border-color: #64B5F6;
+}
+
+.btn-delete-card {
+  background: var(--feedback-negative);
+  border: none;
 }
 
 .btn-delete-card:hover {

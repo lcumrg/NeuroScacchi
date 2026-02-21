@@ -16,6 +16,7 @@ import MixedSequencePlayer from './components/MixedSequencePlayer'
 import ReflectionPrompt from './components/ReflectionPrompt'
 import MetacognitivePrompt from './components/MetacognitivePrompt'
 import LessonSummary from './components/LessonSummary'
+import AdminConsole from './components/AdminConsole'
 import { getLessons, saveLesson, deleteLesson, getSettings, saveLessonProgress, createSession, saveSession, mergeFromCloud } from './utils/storageManager'
 import { generateConfrontation } from './utils/confrontation'
 import lezione01 from './data/lezione01.json'
@@ -27,9 +28,10 @@ import './App.css'
 
 function App() {
   const { user, loading, logout } = useAuth()
-  const [currentScreen, setCurrentScreen] = useState('selector') // 'selector' | 'lesson'
+  const [currentScreen, setCurrentScreen] = useState('selector') // 'selector' | 'lesson' | 'admin'
   const [lessons, setLessons] = useState([])
   const [currentLesson, setCurrentLesson] = useState(null)
+  const [editingLesson, setEditingLesson] = useState(null)
   const [settings] = useState(getSettings())
 
   // Lesson player state
@@ -581,6 +583,28 @@ function App() {
     setLessons(lessons.filter(l => l.id !== lessonId))
   }
 
+  // Admin Console
+  const handleOpenAdmin = (lessonToEdit = null) => {
+    setEditingLesson(lessonToEdit)
+    setCurrentScreen('admin')
+  }
+
+  const handleAdminSave = (savedLesson) => {
+    const existing = lessons.findIndex(l => l.id === savedLesson.id)
+    if (existing !== -1) {
+      const updated = [...lessons]
+      updated[existing] = savedLesson
+      setLessons(updated)
+    } else {
+      setLessons([...lessons, savedLesson])
+    }
+  }
+
+  const handleAdminClose = () => {
+    setEditingLesson(null)
+    setCurrentScreen('selector')
+  }
+
   // Callback stabile per evidenziazione profilassi sulla scacchiera
   const handleProfilassiHighlight = useCallback((styles) => {
     setProfilassiSquareStyles(styles)
@@ -619,13 +643,21 @@ function App() {
         lessonTitle={currentScreen === 'lesson' ? currentLesson?.titolo : null}
       />
 
-      {currentScreen === 'selector' ? (
+      {currentScreen === 'admin' ? (
+        <AdminConsole
+          editLesson={editingLesson}
+          onSave={handleAdminSave}
+          onClose={handleAdminClose}
+        />
+      ) : currentScreen === 'selector' ? (
         <LessonSelector
           lessons={lessons}
           onSelectLesson={startLesson}
           onSelectEsame={(lesson) => startLesson(lesson, true)}
           onUploadLesson={handleUploadLesson}
           onDeleteLesson={handleDeleteLesson}
+          onCreateLesson={() => handleOpenAdmin()}
+          onEditLesson={(lesson) => handleOpenAdmin(lesson)}
         />
       ) : currentLesson?.tipo_modulo === 'intent_sequenza' ? (
         <SequencePlayer

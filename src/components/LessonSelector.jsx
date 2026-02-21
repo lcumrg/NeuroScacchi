@@ -3,7 +3,7 @@ import LessonCard from './LessonCard'
 import UploadLesson from './UploadLesson'
 import './LessonSelector.css'
 
-function LessonSelector({ lessons, onSelectLesson, onSelectEsame, onUploadLesson, onDeleteLesson }) {
+function LessonSelector({ lessons, onSelectLesson, onSelectEsame, onUploadLesson, onDeleteLesson, onCreateLesson, onEditLesson }) {
   const [showUpload, setShowUpload] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
 
@@ -18,12 +18,16 @@ function LessonSelector({ lessons, onSelectLesson, onSelectEsame, onUploadLesson
     <div className="lesson-selector">
       <div className="selector-header">
         <h2>Le Mie Lezioni</h2>
-        <button
-          className="btn-upload"
-          onClick={() => setShowUpload(true)}
-        >
-          📤 Carica Lezione
-        </button>
+        <div className="selector-header-actions">
+          {onCreateLesson && (
+            <button className="btn-create-lesson" onClick={onCreateLesson}>
+              + Crea Lezione
+            </button>
+          )}
+          <button className="btn-upload" onClick={() => setShowUpload(true)}>
+            Carica JSON
+          </button>
+        </div>
       </div>
 
       {/* Filtri categoria */}
@@ -60,6 +64,7 @@ function LessonSelector({ lessons, onSelectLesson, onSelectEsame, onUploadLesson
               onSelect={() => onSelectLesson(lesson)}
               onSelectEsame={() => onSelectEsame(lesson)}
               onDelete={() => onDeleteLesson(lesson.id)}
+              onEdit={onEditLesson ? () => onEditLesson(lesson) : undefined}
             />
           ))
         )}
