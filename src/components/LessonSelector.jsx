@@ -3,7 +3,7 @@ import LessonCard from './LessonCard'
 import UploadLesson from './UploadLesson'
 import './LessonSelector.css'
 
-function LessonSelector({ lessons, onSelectLesson, onSelectEsame, onUploadLesson, onDeleteLesson, onCreateLesson, onEditLesson }) {
+function LessonSelector({ lessons, onSelectLesson, onSelectEsame, onUploadLesson, onDeleteLesson, onCreateLesson, onEditLesson, onAIBuild }) {
   const [showUpload, setShowUpload] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
 
@@ -19,6 +19,11 @@ function LessonSelector({ lessons, onSelectLesson, onSelectEsame, onUploadLesson
       <div className="selector-header">
         <h2>Le Mie Lezioni</h2>
         <div className="selector-header-actions">
+          {onAIBuild && (
+            <button className="btn-ai-build" onClick={onAIBuild}>
+              Costruisci con IA
+            </button>
+          )}
           {onCreateLesson && (
             <button className="btn-create-lesson" onClick={onCreateLesson}>
               + Crea Lezione

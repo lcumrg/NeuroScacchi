@@ -34,6 +34,11 @@ function LessonCard({ lesson, onSelect, onSelectEsame, onDelete, onEdit }) {
     <div className="lesson-card" onClick={onSelect}>
       <div className="card-header">
         <span className="card-type-icon">{getTypeIcon()}</span>
+        {lesson.stato && (
+          <span className={`card-stato card-stato-${lesson.stato}`}>
+            {lesson.stato === 'bozza_ia' ? 'Bozza IA' : lesson.stato === 'validata' ? 'Validata' : lesson.stato === 'in_revisione' ? 'In revisione' : lesson.stato}
+          </span>
+        )}
         <span className="card-difficulty">{getDifficultyStars()}</span>
       </div>
       <h3 className="card-title">{lesson.titolo}</h3>
