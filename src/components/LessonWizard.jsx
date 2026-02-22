@@ -22,6 +22,12 @@ import './LessonWizard.css'
   6. extras     → Profilassi? Metacognizione?
   7. continue   → Aggiungi un altro step o finisci?
   8. review     → Riepilogo, titolo, prova, salva
+
+  Modalita' fromAI:
+  - I dati sono pre-compilati da un JSON generato dall'IA
+  - Si parte da position, poi si va direttamente a review
+  - Da review si possono modificare o aggiungere step
+  - Il flusso di editing step: question → visuals → feedback → torna a review
 */
 
 const WIZARD_PAGES = ['position', 'task', 'question', 'visuals', 'feedback', 'extras', 'continue', 'review']
@@ -38,7 +44,7 @@ const PAGE_LABELS = {
   review: 'Riepilogo'
 }
 
-function LessonWizard({ onSave, onClose, editLesson = null }) {
+function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
   // Stato globale della lezione in costruzione
   const [lessonData, setLessonData] = useState(() => {
     if (editLesson) return { ...JSON.parse(JSON.stringify(editLesson)) }
@@ -80,13 +86,24 @@ function LessonWizard({ onSave, onClose, editLesson = null }) {
   })
 
   // Wizard navigation
-  const [currentPage, setCurrentPage] = useState(editLesson ? 'review' : 'position')
+  const getStartPage = () => {
+    if (fromAI) return 'position'
+    if (editLesson) return 'review'
+    return 'position'
+  }
+  const [currentPage, setCurrentPage] = useState(getStartPage)
 
   // Step corrente in costruzione (per sequenze multi-step)
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
 
   // Stato per capire se stiamo costruendo uno step di una sequenza
   const [buildingStep, setBuildingStep] = useState(null)
+
+  // Editing step: indice dello step esistente che stiamo modificando (null = nuovo)
+  const [editStepIndex, setEditStepIndex] = useState(null)
+
+  // Quando true, dopo feedback torniamo direttamente a review (skip extras/continue)
+  const [returnToReview, setReturnToReview] = useState(false)
 
   // Callback generico per aggiornare i dati della lezione
   const updateLesson = useCallback((updates) => {
@@ -174,33 +191,42 @@ function LessonWizard({ onSave, onClose, editLesson = null }) {
     goTo('question')
   }
 
-  // Finalizza lo step corrente e aggiungilo alla lezione
+  // Finalizza lo step corrente e aggiungilo/aggiornalo nella lezione
   const finalizeCurrentStep = () => {
     if (!buildingStep) return
 
-    const newSteps = [...(lessonData.steps || []), buildingStep]
+    let newSteps
+    if (editStepIndex !== null) {
+      // Stiamo modificando uno step esistente
+      newSteps = [...(lessonData.steps || [])]
+      newSteps[editStepIndex] = { ...buildingStep, numero: editStepIndex + 1 }
+    } else {
+      // Stiamo aggiungendo uno step nuovo
+      newSteps = [...(lessonData.steps || []), buildingStep]
+    }
+
     const tipoModulo = inferTipoModulo(newSteps)
 
     // Se e' il primo step e tipo singolo, copia i dati anche a livello root
     if (newSteps.length === 1 && ['intent', 'detective', 'candidate'].includes(tipoModulo)) {
       const rootUpdates = { steps: newSteps, tipo_modulo: tipoModulo }
       if (tipoModulo === 'intent') {
-        rootUpdates.domanda = buildingStep.domanda
-        rootUpdates.opzioni_risposta = buildingStep.opzioni_risposta
-        rootUpdates.risposta_corretta = buildingStep.risposta_corretta
-        rootUpdates.mosse_consentite = buildingStep.mosse_consentite
-        rootUpdates.mosse_corrette = buildingStep.mosse_corrette
+        rootUpdates.domanda = newSteps[0].domanda
+        rootUpdates.opzioni_risposta = newSteps[0].opzioni_risposta
+        rootUpdates.risposta_corretta = newSteps[0].risposta_corretta
+        rootUpdates.mosse_consentite = newSteps[0].mosse_consentite
+        rootUpdates.mosse_corrette = newSteps[0].mosse_corrette
       } else if (tipoModulo === 'detective') {
         rootUpdates.modalita_detective = {
-          domanda: buildingStep.domanda,
-          risposta_corretta_casa: buildingStep.risposta_corretta_casa,
-          feedback_positivo: buildingStep.feedback_positivo || buildingStep.feedback || '',
-          feedback_negativo: buildingStep.feedback_negativo || ''
+          domanda: newSteps[0].domanda,
+          risposta_corretta_casa: newSteps[0].risposta_corretta_casa,
+          feedback_positivo: newSteps[0].feedback_positivo || newSteps[0].feedback || '',
+          feedback_negativo: newSteps[0].feedback_negativo || ''
         }
       } else if (tipoModulo === 'candidate') {
-        rootUpdates.mosse_candidate = buildingStep.mosse_candidate
-        rootUpdates.mossa_migliore = buildingStep.mossa_migliore
-        rootUpdates.parametri = { ...lessonData.parametri, num_candidate: buildingStep.num_candidate || 2 }
+        rootUpdates.mosse_candidate = newSteps[0].mosse_candidate
+        rootUpdates.mossa_migliore = newSteps[0].mossa_migliore
+        rootUpdates.parametri = { ...lessonData.parametri, num_candidate: newSteps[0].num_candidate || 2 }
       }
       updateLesson(rootUpdates)
     } else {
@@ -209,6 +235,7 @@ function LessonWizard({ onSave, onClose, editLesson = null }) {
 
     setCurrentStepIndex(newSteps.length - 1)
     setBuildingStep(null)
+    setEditStepIndex(null)
   }
 
   // "Vuoi aggiungere un altro step?" → Si
@@ -223,12 +250,48 @@ function LessonWizard({ onSave, onClose, editLesson = null }) {
     goTo('review')
   }
 
+  // Dopo feedback, finalizza e torna a review (usato quando si edita/aggiunge da review)
+  const handleFinishAndReturnToReview = () => {
+    finalizeCurrentStep()
+    setReturnToReview(false)
+    goTo('review')
+  }
+
+  // Edit step: carica uno step esistente nel buildingStep e vai a question
+  const handleEditStep = (idx) => {
+    const step = lessonData.steps[idx]
+    if (!step) return
+    setBuildingStep({ ...JSON.parse(JSON.stringify(step)) })
+    setEditStepIndex(idx)
+    setReturnToReview(true)
+    goTo('question')
+  }
+
+  // Delete step
+  const handleDeleteStep = (idx) => {
+    const newSteps = (lessonData.steps || []).filter((_, i) => i !== idx).map((s, i) => ({ ...s, numero: i + 1 }))
+    const tipoModulo = inferTipoModulo(newSteps)
+    updateLesson({ steps: newSteps, tipo_modulo: tipoModulo })
+  }
+
+  // Add step from review: vai a task con returnToReview
+  const handleAddStepFromReview = () => {
+    setReturnToReview(true)
+    setEditStepIndex(null)
+    goTo('task')
+  }
+
   // Salva la lezione
   const handleSave = (titleAndMeta) => {
     const finalLesson = { ...lessonData, ...titleAndMeta }
     if (!finalLesson.id) {
       finalLesson.id = finalLesson.titolo
         .toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || `lezione_${Date.now()}`
+    }
+
+    // Se da IA, segna come validata
+    if (fromAI) {
+      finalLesson.stato = 'validata'
     }
 
     // Validazione
@@ -253,6 +316,25 @@ function LessonWizard({ onSave, onClose, editLesson = null }) {
     URL.revokeObjectURL(url)
   }
 
+  // Dove va il bottone "Avanti" dalla pagina position
+  const handlePositionNext = () => {
+    // Se da IA o editing con step esistenti, vai direttamente a review
+    if ((fromAI || editLesson) && (lessonData.steps || []).length > 0) {
+      goTo('review')
+    } else {
+      goTo('task')
+    }
+  }
+
+  // Dove va il bottone "Avanti" dalla pagina feedback
+  const handleFeedbackNext = () => {
+    if (returnToReview) {
+      handleFinishAndReturnToReview()
+    } else {
+      goTo('extras')
+    }
+  }
+
   // FEN corrente per il board (usa lo step in costruzione se presente)
   const currentFen = buildingStep?.fen_aggiornata || lessonData.fen
   const boardOrientation = lessonData.parametri?.orientamento_scacchiera || 'white'
@@ -261,13 +343,17 @@ function LessonWizard({ onSave, onClose, editLesson = null }) {
   const pageIndex = WIZARD_PAGES.indexOf(currentPage)
   const totalSteps = (lessonData.steps || []).length + (buildingStep ? 1 : 0)
 
+  // Header label per modalita' AI
+  const headerLabel = fromAI ? 'Revisione lezione IA' : (editLesson ? 'Modifica lezione' : null)
+
   return (
     <div className="lesson-wizard">
       {/* Header */}
       <div className="wizard-header">
         <button className="wizard-back-btn" onClick={onClose}>
-          &#8592; Torna alle lezioni
+          &#8592; {fromAI ? 'Torna all\'importazione' : 'Torna alle lezioni'}
         </button>
+        {headerLabel && <div className="wizard-header-label">{headerLabel}</div>}
         <div className="wizard-progress">
           {WIZARD_PAGES.map((page, i) => (
             <div key={page} className={`wizard-progress-dot ${i <= pageIndex ? 'active' : ''} ${page === currentPage ? 'current' : ''}`}>
@@ -290,7 +376,7 @@ function LessonWizard({ onSave, onClose, editLesson = null }) {
             orientation={boardOrientation}
             onFenChange={(fen) => updateLesson({ fen })}
             onOrientationChange={(o) => updateLesson({ parametri: { orientamento_scacchiera: o } })}
-            onNext={() => goTo('task')}
+            onNext={handlePositionNext}
           />
         )}
 
@@ -298,7 +384,7 @@ function LessonWizard({ onSave, onClose, editLesson = null }) {
           <WizardStepTask
             onChoose={handleTaskChosen}
             stepNumber={totalSteps + 1}
-            onBack={totalSteps === 0 ? () => goTo('position') : undefined}
+            onBack={returnToReview ? () => { setReturnToReview(false); goTo('review') } : (totalSteps === 0 ? () => goTo('position') : undefined)}
           />
         )}
 
@@ -309,7 +395,7 @@ function LessonWizard({ onSave, onClose, editLesson = null }) {
             boardOrientation={boardOrientation}
             onUpdate={updateBuildingStep}
             onNext={() => goTo('visuals')}
-            onBack={() => goTo('task')}
+            onBack={returnToReview ? () => { setBuildingStep(null); setEditStepIndex(null); setReturnToReview(false); goTo('review') } : () => goTo('task')}
           />
         )}
 
@@ -329,7 +415,7 @@ function LessonWizard({ onSave, onClose, editLesson = null }) {
           <WizardStepFeedback
             step={buildingStep}
             onUpdate={updateBuildingStep}
-            onNext={() => goTo('extras')}
+            onNext={handleFeedbackNext}
             onBack={() => goTo('visuals')}
           />
         )}
@@ -363,11 +449,11 @@ function LessonWizard({ onSave, onClose, editLesson = null }) {
             onSave={handleSave}
             onExport={handleExport}
             onClose={onClose}
-            onEditStep={(idx) => {
-              // Per ora torna alla task per aggiungerne di nuovi
-              goTo('task')
-            }}
-            onBack={() => goTo('continue')}
+            onEditStep={handleEditStep}
+            onDeleteStep={handleDeleteStep}
+            onAddStep={handleAddStepFromReview}
+            onBack={fromAI ? () => goTo('position') : () => goTo('continue')}
+            fromAI={fromAI}
           />
         )}
       </div>

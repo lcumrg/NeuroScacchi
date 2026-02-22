@@ -1,7 +1,7 @@
 # NeuroScacchi — Roadmap
 
 > Questo file viene aggiornato ad ogni sessione di sviluppo.
-> Ultimo aggiornamento: 18 Febbraio 2026 (sessione 2)
+> Ultimo aggiornamento: 22 Febbraio 2026 (sessione 3)
 
 ### Note ambiente di sviluppo
 - **Il coach lavora da Chromebook** (solo browser, nessun terminale locale)
@@ -96,41 +96,38 @@
 
 ---
 
-## FASE 5: Console Admin (~20-25h) — la killer feature
+## FASE 5: Console Admin — IN CORSO
 
-### Scacchiera interattiva
-- [ ] Scacchiera dove il coach puo costruire posizioni manualmente: drag-and-drop pezzi, rimuovere pezzi, importare da FEN
-- [ ] La scacchiera e sia lo strumento di costruzione che l'anteprima
+### Wizard guidato per creazione lezioni — COMPLETATO
+- [x] Wizard a 8 step: Posizione → Tipo → Domanda → Visivi → Feedback → Extra → Continua? → Riepilogo
+- [x] Scacchiera interattiva per costruire posizioni (drag-and-drop, FEN, PGN)
+- [x] Import PGN con navigazione mossa per mossa
+- [x] Editor step multi-modalita (Intent/Detective/Candidate) con form adattivo
+- [x] Chunking e frecce configurabili per step
+- [x] Validazione real-time con `lessonValidator.js`
+- [x] Export JSON + salvataggio in localStorage/Firestore
+- **Completato:** componente `LessonWizard` con 8 sotto-componenti in `wizard/`
 
-### Import PGN con navigazione mosse
-- [ ] Incollare una partita PGN (copiata da Chess.com/Lichess) e navigarla con frecce avanti/indietro
-- [ ] "Fermare" la posizione interessante e usarla come base per uno step
-- [ ] Serve un parser PGN → mosse
+### Costruisci con IA — COMPLETATO
+- [x] Prompt guidato (`docs/prompt-crea-lezione.md`) che istruisce un'IA (Claude, ChatGPT) a creare lezioni JSON passo passo
+- [x] Bottone "Copia prompt" che copia il prompt completo negli appunti
+- [x] Import JSON generato dall'IA con parsing automatico (supporta blocchi di codice markdown)
+- [x] Console di revisione passo-passo con sidebar di navigazione:
+  - Identita (titolo, descrizione, autori — modificabili inline)
+  - Posizione (scacchiera live + FEN)
+  - Attivita per ogni step (domanda, opzioni, mosse — con mini-scacchiera)
+  - Aiuti visivi (chunk e frecce visualizzati sulla scacchiera)
+  - Feedback (positivo/negativo per ogni step)
+  - Extra (profilassi, metacognizione)
+  - Approvazione finale (barra di progresso, salvataggio)
+- [x] Sistema di stati lezione: `bozza_ia` → `in_revisione` → `validata`
+- [x] Badge di stato visibile sulle card delle lezioni
+- **Completato:** componenti `AILessonBuilder`, `AIImportStep`, `AIReviewConsole`
 
-### Editor step multi-modalita
-- [ ] Form per configurare ogni step: scegliere tipo (Intent/Detective/Candidate), scrivere domanda, aggiungere opzioni risposta, specificare mosse corrette, scrivere feedback
-- [ ] La UI si adatta al tipo scelto
-
-### Chunking e frecce via click/drag
-- [ ] Click su una casa della scacchiera → la aggiunge alle case evidenziate (chunking)
-- [ ] Drag da una casa all'altra → crea una freccia pattern
-- [ ] Preview in tempo reale direttamente sulla scacchiera
-
-### Anteprima live
-- [ ] Modal che simula esattamente come l'allievo vedra la lezione: freeze, intent panel, scacchiera con aiuti visivi
-- [ ] Permette di testare senza uscire dall'editor
-
-### Validazione real-time
-- [ ] Barra laterale che mostra in tempo reale errori e warning: "Step 3: nessuna mossa corretta", "FEN non valida", "Consigliato 3-6 step"
-- [ ] Il coach sa subito se la lezione e valida
-
-### Export JSON + salvataggio Firestore
-- [ ] Tre opzioni: (1) salva nel cloud (se loggato), (2) scarica file .json, (3) carica direttamente nell'app
-- [ ] Elimina completamente la necessita di scrivere JSON a mano
-
-### Template pre-configurati
-- [ ] 5+ scheletri pronti: "Sviluppo Apertura" (3 step), "Attacco al Re" (5 step con profilassi), "Finale di pedoni" (4 step detective)
-- [ ] Il coach parte da un template e lo personalizza
+### Ancora da fare
+- [ ] Anteprima live completa: modal che simula l'esperienza studente (freeze, intent panel, mossa) senza uscire dall'editor
+- [ ] Template pre-configurati: 5+ scheletri pronti ("Sviluppo Apertura" 3 step, "Attacco al Re" 5 step con profilassi, "Finale di pedoni" 4 step detective)
+- [ ] Chunking e frecce via click/drag diretto sulla scacchiera (attualmente si configurano via form)
 
 ---
 
