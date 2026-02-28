@@ -159,18 +159,35 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
     return 'mista'
   }
 
-  // Quando il coach sceglie il tipo di task per un nuovo step
+  // Quando il coach sceglie il tipo di task per un nuovo step (o conferma/cambia tipo in editing)
   const handleTaskChosen = (taskType) => {
-    const stepNumber = (lessonData.steps || []).length + 1
+    // Se stiamo editando uno step esistente e il tipo e' lo stesso, vai avanti senza resettare
+    if (buildingStep && editStepIndex !== null && buildingStep.tipo_step === taskType) {
+      goTo('question')
+      return
+    }
+
+    // Se stiamo editando ma il tipo cambia, mantieni FEN e visivi ma resetta i campi specifici
+    const baseFen = buildingStep?.fen_aggiornata || nextStepFen || lessonData.fen
+    const baseChunks = buildingStep?.mostra_chunk_visivo || []
+    const baseArrows = buildingStep?.frecce_pattern || []
+    const baseTransizione = buildingStep?.transizione || undefined
+
+    const stepNumber = editStepIndex !== null
+      ? (editStepIndex + 1)
+      : ((lessonData.steps || []).length + 1)
+
     const newStep = {
       numero: stepNumber,
       tipo_step: taskType,
-      fen_aggiornata: nextStepFen || lessonData.fen,
-      mostra_chunk_visivo: [],
-      frecce_pattern: [],
+      fen_aggiornata: baseFen,
+      mostra_chunk_visivo: baseChunks,
+      frecce_pattern: baseArrows,
       feedback: '',
       feedback_negativo: ''
     }
+
+    if (baseTransizione) newStep.transizione = baseTransizione
 
     if (taskType === 'intent') {
       newStep.domanda = ''
@@ -269,14 +286,14 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
     goTo('review')
   }
 
-  // Edit step: carica uno step esistente nel buildingStep e vai a question
+  // Edit step: carica uno step esistente nel buildingStep e parti da task (scelta tipo)
   const handleEditStep = (idx) => {
     const step = lessonData.steps[idx]
     if (!step) return
     setBuildingStep({ ...JSON.parse(JSON.stringify(step)) })
     setEditStepIndex(idx)
     setReturnToReview(true)
-    goTo('question')
+    goTo('task')
   }
 
   // Delete step
@@ -292,6 +309,39 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
     setEditStepIndex(null)
     setContinueDirectAdvance(true)
     goTo('continue')
+  }
+
+  // Edit transizione tra step[idx] e step[idx+1]: riapre la board di avanzamento
+  const [editingTransitionIdx, setEditingTransitionIdx] = useState(null)
+
+  const handleEditTransition = (idx) => {
+    setEditingTransitionIdx(idx)
+    setContinueDirectAdvance(true)
+    setReturnToReview(false)
+    goTo('continue')
+  }
+
+  // Callback specifica per salvare la transizione editata
+  const handleSaveTransition = (transitionFen, transitionMoves) => {
+    if (editingTransitionIdx !== null) {
+      const newSteps = [...(lessonData.steps || [])]
+      // Aggiorna la transizione sullo step di partenza
+      newSteps[editingTransitionIdx] = {
+        ...newSteps[editingTransitionIdx],
+        transizione: { mosse: transitionMoves || [], fen_risultante: transitionFen }
+      }
+      // Aggiorna la FEN dello step successivo
+      if (editingTransitionIdx + 1 < newSteps.length) {
+        newSteps[editingTransitionIdx + 1] = {
+          ...newSteps[editingTransitionIdx + 1],
+          fen_aggiornata: transitionFen
+        }
+      }
+      updateLesson({ steps: newSteps })
+      setEditingTransitionIdx(null)
+      setContinueDirectAdvance(false)
+      goTo('review')
+    }
   }
 
   // Salva la lezione
@@ -404,8 +454,9 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
         {currentPage === 'task' && (
           <WizardStepTask
             onChoose={handleTaskChosen}
-            stepNumber={totalSteps + 1}
-            onBack={returnToReview ? () => { setReturnToReview(false); goTo('review') } : (totalSteps === 0 ? () => goTo('position') : undefined)}
+            stepNumber={editStepIndex !== null ? editStepIndex + 1 : totalSteps + 1}
+            currentType={editStepIndex !== null ? buildingStep?.tipo_step : undefined}
+            onBack={returnToReview ? () => { setBuildingStep(null); setEditStepIndex(null); setReturnToReview(false); goTo('review') } : (totalSteps === 0 ? () => goTo('position') : undefined)}
           />
         )}
 
@@ -457,11 +508,15 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
           <WizardStepContinue
             stepsCount={totalSteps}
             currentStep={buildingStep}
-            fen={buildingStep?.fen_aggiornata || (lessonData.steps?.length > 0 ? lessonData.steps[lessonData.steps.length - 1].fen_aggiornata : null) || lessonData.fen}
+            fen={editingTransitionIdx !== null
+              ? (lessonData.steps?.[editingTransitionIdx]?.fen_aggiornata || lessonData.fen)
+              : (buildingStep?.fen_aggiornata || (lessonData.steps?.length > 0 ? lessonData.steps[lessonData.steps.length - 1].fen_aggiornata : null) || lessonData.fen)}
             boardOrientation={boardOrientation}
-            onAddAnother={handleAddAnotherStep}
+            onAddAnother={editingTransitionIdx !== null ? handleSaveTransition : handleAddAnotherStep}
             onFinish={handleFinishLesson}
-            onBack={continueDirectAdvance ? () => { setContinueDirectAdvance(false); setReturnToReview(false); goTo('review') } : () => goTo('extras')}
+            onBack={continueDirectAdvance
+              ? () => { setContinueDirectAdvance(false); setReturnToReview(false); setEditingTransitionIdx(null); goTo('review') }
+              : () => goTo('extras')}
             directAdvance={continueDirectAdvance}
           />
         )}
@@ -476,6 +531,7 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
             onEditStep={handleEditStep}
             onDeleteStep={handleDeleteStep}
             onAddStep={handleAddStepFromReview}
+            onEditTransition={handleEditTransition}
             onBack={fromAI ? () => goTo('position') : () => goTo('continue')}
             fromAI={fromAI}
           />

@@ -220,6 +220,7 @@
   border: 2px solid var(--border-color);
   border-radius: 16px;
   cursor: pointer;
+  position: relative;
   transition: all var(--transition-fast);
   text-align: left;
   align-items: flex-start;
@@ -229,6 +230,27 @@
   border-color: var(--color-develop);
   transform: translateX(4px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.wizard-task-card-current {
+  border-color: var(--color-develop);
+  background: #E8F5E9;
+  position: relative;
+}
+
+.wizard-task-current-badge {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-develop);
+  background: white;
+  padding: 2px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--color-develop);
 }
 
 .wizard-task-card-icon {
@@ -959,6 +981,65 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ---- Transition connector between steps ---- */
+.wizard-review-transition {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0 2px 13px;
+}
+
+.wizard-review-transition-line {
+  flex: 0 0 1px;
+  width: 1px;
+  height: 10px;
+  background: var(--border-color);
+  margin-left: 0;
+}
+
+.wizard-review-transition-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px dashed var(--border-color);
+  min-height: 28px;
+}
+
+.wizard-review-transition-moves {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.wizard-review-transition-move {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--color-defend);
+  background: #E3F2FD;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.wizard-review-transition-empty {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+  flex: 1;
+}
+
+.wizard-review-transition-content .wizard-review-step-btn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  font-size: 12px;
 }
 
 .wizard-review-extras {

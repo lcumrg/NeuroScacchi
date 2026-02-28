@@ -7,7 +7,7 @@ const BOARD_SIZE = 340
 const STEP_TYPE_LABELS = { intent: 'Domanda strategica', detective: 'Trova la casa', candidate: 'Mosse candidate' }
 const STEP_TYPE_ICONS = { intent: '\u2753', detective: '\uD83D\uDD0D', candidate: '\uD83C\uDFAF' }
 
-function WizardStepReview({ lessonData, onUpdateLesson, onSave, onExport, onClose, onBack, onEditStep, onDeleteStep, onAddStep, fromAI }) {
+function WizardStepReview({ lessonData, onUpdateLesson, onSave, onExport, onClose, onBack, onEditStep, onDeleteStep, onAddStep, onEditTransition, fromAI }) {
   const [titolo, setTitolo] = useState(lessonData.titolo || '')
   const [descrizione, setDescrizione] = useState(lessonData.descrizione || '')
   const [categoria, setCategoria] = useState(lessonData.categoria || 'aperture')
@@ -158,29 +158,54 @@ function WizardStepReview({ lessonData, onUpdateLesson, onSave, onExport, onClos
                       Step della lezione ({steps.length})
                     </label>
                     {steps.map((s, i) => (
-                      <div key={i} className="wizard-review-step-card">
-                        <span className="wizard-review-step-num">{i + 1}</span>
-                        <div className="wizard-review-step-info">
-                          <span className="wizard-review-step-type">
-                            {STEP_TYPE_ICONS[s.tipo_step] || ''} {STEP_TYPE_LABELS[s.tipo_step] || s.tipo_step}
-                          </span>
-                          <span className="wizard-review-step-preview">
-                            {getStepPreviewText(s)}
-                          </span>
+                      <div key={i}>
+                        <div className="wizard-review-step-card">
+                          <span className="wizard-review-step-num">{i + 1}</span>
+                          <div className="wizard-review-step-info">
+                            <span className="wizard-review-step-type">
+                              {STEP_TYPE_ICONS[s.tipo_step] || ''} {STEP_TYPE_LABELS[s.tipo_step] || s.tipo_step}
+                            </span>
+                            <span className="wizard-review-step-preview">
+                              {getStepPreviewText(s)}
+                            </span>
+                          </div>
+                          {/* Azioni step */}
+                          <div className="wizard-review-step-actions">
+                            {onEditStep && (
+                              <button className="wizard-review-step-btn edit" onClick={() => onEditStep(i)} title="Modifica step">
+                                &#9998;
+                              </button>
+                            )}
+                            {onDeleteStep && steps.length > 1 && (
+                              <button className="wizard-review-step-btn delete" onClick={() => handleDeleteStepConfirm(i)} title="Elimina step">
+                                &#10005;
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        {/* Azioni step */}
-                        <div className="wizard-review-step-actions">
-                          {onEditStep && (
-                            <button className="wizard-review-step-btn edit" onClick={() => onEditStep(i)} title="Modifica step">
-                              &#9998;
-                            </button>
-                          )}
-                          {onDeleteStep && steps.length > 1 && (
-                            <button className="wizard-review-step-btn delete" onClick={() => handleDeleteStepConfirm(i)} title="Elimina step">
-                              &#10005;
-                            </button>
-                          )}
-                        </div>
+                        {/* Connettore transizione tra step */}
+                        {i < steps.length - 1 && (
+                          <div className="wizard-review-transition">
+                            <div className="wizard-review-transition-line" />
+                            <div className="wizard-review-transition-content">
+                              {s.transizione?.mosse?.length > 0 ? (
+                                <span className="wizard-review-transition-moves">
+                                  {s.transizione.mosse.map((m, mi) => (
+                                    <span key={mi} className="wizard-review-transition-move">{m}</span>
+                                  ))}
+                                </span>
+                              ) : (
+                                <span className="wizard-review-transition-empty">Nessuna mossa di transizione</span>
+                              )}
+                              {onEditTransition && (
+                                <button className="wizard-review-step-btn edit" onClick={() => onEditTransition(i)} title="Modifica transizione">
+                                  &#9998;
+                                </button>
+                              )}
+                            </div>
+                            <div className="wizard-review-transition-line" />
+                          </div>
+                        )}
                       </div>
                     ))}
 
