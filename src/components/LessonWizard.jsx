@@ -294,6 +294,39 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
     goTo('continue')
   }
 
+  // Edit transizione tra step[idx] e step[idx+1]: riapre la board di avanzamento
+  const [editingTransitionIdx, setEditingTransitionIdx] = useState(null)
+
+  const handleEditTransition = (idx) => {
+    setEditingTransitionIdx(idx)
+    setContinueDirectAdvance(true)
+    setReturnToReview(false)
+    goTo('continue')
+  }
+
+  // Callback specifica per salvare la transizione editata
+  const handleSaveTransition = (transitionFen, transitionMoves) => {
+    if (editingTransitionIdx !== null) {
+      const newSteps = [...(lessonData.steps || [])]
+      // Aggiorna la transizione sullo step di partenza
+      newSteps[editingTransitionIdx] = {
+        ...newSteps[editingTransitionIdx],
+        transizione: { mosse: transitionMoves || [], fen_risultante: transitionFen }
+      }
+      // Aggiorna la FEN dello step successivo
+      if (editingTransitionIdx + 1 < newSteps.length) {
+        newSteps[editingTransitionIdx + 1] = {
+          ...newSteps[editingTransitionIdx + 1],
+          fen_aggiornata: transitionFen
+        }
+      }
+      updateLesson({ steps: newSteps })
+      setEditingTransitionIdx(null)
+      setContinueDirectAdvance(false)
+      goTo('review')
+    }
+  }
+
   // Salva la lezione
   const handleSave = (titleAndMeta) => {
     const finalLesson = { ...lessonData, ...titleAndMeta }
@@ -457,11 +490,15 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
           <WizardStepContinue
             stepsCount={totalSteps}
             currentStep={buildingStep}
-            fen={buildingStep?.fen_aggiornata || (lessonData.steps?.length > 0 ? lessonData.steps[lessonData.steps.length - 1].fen_aggiornata : null) || lessonData.fen}
+            fen={editingTransitionIdx !== null
+              ? (lessonData.steps?.[editingTransitionIdx]?.fen_aggiornata || lessonData.fen)
+              : (buildingStep?.fen_aggiornata || (lessonData.steps?.length > 0 ? lessonData.steps[lessonData.steps.length - 1].fen_aggiornata : null) || lessonData.fen)}
             boardOrientation={boardOrientation}
-            onAddAnother={handleAddAnotherStep}
+            onAddAnother={editingTransitionIdx !== null ? handleSaveTransition : handleAddAnotherStep}
             onFinish={handleFinishLesson}
-            onBack={continueDirectAdvance ? () => { setContinueDirectAdvance(false); setReturnToReview(false); goTo('review') } : () => goTo('extras')}
+            onBack={continueDirectAdvance
+              ? () => { setContinueDirectAdvance(false); setReturnToReview(false); setEditingTransitionIdx(null); goTo('review') }
+              : () => goTo('extras')}
             directAdvance={continueDirectAdvance}
           />
         )}
@@ -476,6 +513,7 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
             onEditStep={handleEditStep}
             onDeleteStep={handleDeleteStep}
             onAddStep={handleAddStepFromReview}
+            onEditTransition={handleEditTransition}
             onBack={fromAI ? () => goTo('position') : () => goTo('continue')}
             fromAI={fromAI}
           />
