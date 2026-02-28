@@ -1,5 +1,6 @@
 # CLAUDE.md - Istruzioni per Claude Code
 
 ## Workflow
-- Dopo aver pushato, crea sempre la PR automaticamente con `gh pr create`
-- Dopo la creazione, mergia la PR con merge commit usando `gh pr merge --merge`
+- Dopo aver completato le modifiche, pusha sul branch claude/*
+- La GitHub Action `auto-merge-claude.yml` crea e mergia la PR automaticamente
+- Non serve fornire token GitHub: è tutto gestito dal workflow
