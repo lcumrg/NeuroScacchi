@@ -109,6 +109,8 @@
 
 .role-coach .role-icon {
   color: #2a4a7f;
+  display: flex;
+  justify-content: center;
 }
 
 /* ---- Icon ---- */
