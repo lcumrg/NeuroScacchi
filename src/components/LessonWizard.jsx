@@ -159,18 +159,35 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
     return 'mista'
   }
 
-  // Quando il coach sceglie il tipo di task per un nuovo step
+  // Quando il coach sceglie il tipo di task per un nuovo step (o conferma/cambia tipo in editing)
   const handleTaskChosen = (taskType) => {
-    const stepNumber = (lessonData.steps || []).length + 1
+    // Se stiamo editando uno step esistente e il tipo e' lo stesso, vai avanti senza resettare
+    if (buildingStep && editStepIndex !== null && buildingStep.tipo_step === taskType) {
+      goTo('question')
+      return
+    }
+
+    // Se stiamo editando ma il tipo cambia, mantieni FEN e visivi ma resetta i campi specifici
+    const baseFen = buildingStep?.fen_aggiornata || nextStepFen || lessonData.fen
+    const baseChunks = buildingStep?.mostra_chunk_visivo || []
+    const baseArrows = buildingStep?.frecce_pattern || []
+    const baseTransizione = buildingStep?.transizione || undefined
+
+    const stepNumber = editStepIndex !== null
+      ? (editStepIndex + 1)
+      : ((lessonData.steps || []).length + 1)
+
     const newStep = {
       numero: stepNumber,
       tipo_step: taskType,
-      fen_aggiornata: nextStepFen || lessonData.fen,
-      mostra_chunk_visivo: [],
-      frecce_pattern: [],
+      fen_aggiornata: baseFen,
+      mostra_chunk_visivo: baseChunks,
+      frecce_pattern: baseArrows,
       feedback: '',
       feedback_negativo: ''
     }
+
+    if (baseTransizione) newStep.transizione = baseTransizione
 
     if (taskType === 'intent') {
       newStep.domanda = ''
@@ -269,14 +286,14 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
     goTo('review')
   }
 
-  // Edit step: carica uno step esistente nel buildingStep e vai a question
+  // Edit step: carica uno step esistente nel buildingStep e parti da task (scelta tipo)
   const handleEditStep = (idx) => {
     const step = lessonData.steps[idx]
     if (!step) return
     setBuildingStep({ ...JSON.parse(JSON.stringify(step)) })
     setEditStepIndex(idx)
     setReturnToReview(true)
-    goTo('question')
+    goTo('task')
   }
 
   // Delete step
@@ -437,8 +454,9 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
         {currentPage === 'task' && (
           <WizardStepTask
             onChoose={handleTaskChosen}
-            stepNumber={totalSteps + 1}
-            onBack={returnToReview ? () => { setReturnToReview(false); goTo('review') } : (totalSteps === 0 ? () => goTo('position') : undefined)}
+            stepNumber={editStepIndex !== null ? editStepIndex + 1 : totalSteps + 1}
+            currentType={editStepIndex !== null ? buildingStep?.tipo_step : undefined}
+            onBack={returnToReview ? () => { setBuildingStep(null); setEditStepIndex(null); setReturnToReview(false); goTo('review') } : (totalSteps === 0 ? () => goTo('position') : undefined)}
           />
         )}
 

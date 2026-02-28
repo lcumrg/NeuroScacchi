@@ -220,6 +220,7 @@
   border: 2px solid var(--border-color);
   border-radius: 16px;
   cursor: pointer;
+  position: relative;
   transition: all var(--transition-fast);
   text-align: left;
   align-items: flex-start;
@@ -229,6 +230,27 @@
   border-color: var(--color-develop);
   transform: translateX(4px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.wizard-task-card-current {
+  border-color: var(--color-develop);
+  background: #E8F5E9;
+  position: relative;
+}
+
+.wizard-task-current-badge {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-develop);
+  background: white;
+  padding: 2px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--color-develop);
 }
 
 .wizard-task-card-icon {
