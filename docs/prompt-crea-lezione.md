@@ -120,7 +120,7 @@ La metacognizione serve a sviluppare il PENSIERO SUL PENSIERO. Nelle neuroscienz
 
 ## Lezioni a piu' step (sequenze)
 
-Una lezione puo' avere piu' step. Ogni step usa la posizione risultante dallo step precedente (o una posizione nuova specificata). I tipi possono essere mescolati liberamente.
+Una lezione puo' avere piu' step. Ogni step usa la posizione risultante dallo step precedente. I tipi possono essere mescolati liberamente.
 
 Esempio di una lezione sulla Partita Italiana in 4 step:
 1. **Intent**: "Qual e' il piano migliore?" → Ac4 (sviluppo sull'obiettivo f7)
@@ -132,6 +132,44 @@ Quando la lezione ha piu' step:
 - Se sono tutti intent → `tipo_modulo: "intent_sequenza"`
 - Se sono tutti candidate → `tipo_modulo: "candidate_sequenza"`
 - Se sono misti (intent + detective + candidate) → `tipo_modulo: "mista"`
+
+### Transizioni tra step e catena FEN
+
+Nelle sequenze multi-step, tra uno step e l'altro la posizione cambia perche':
+1. Lo studente esegue la mossa corretta dello step corrente
+2. L'avversario risponde con una o piu' mosse
+
+Questo "ponte" tra due step si chiama **transizione** e va specificato nel JSON con il campo `transizione` su ogni step (tranne l'ultimo):
+
+```json
+"transizione": {
+  "mosse": ["f1c4", "b8c6"],
+  "fen_risultante": "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4"
+}
+```
+
+- `mosse`: le mosse giocate in sequenza (mossa corretta dello studente + risposta dell'avversario)
+- `fen_risultante`: la FEN della posizione DOPO tutte le mosse della transizione
+
+**La catena FEN funziona cosi':**
+- `fen` (root) = posizione di partenza, usata dallo step 1
+- Step 1: `fen_aggiornata` = stessa del `fen` root (o omessa per lo step 1)
+- Step 1 → `transizione.fen_risultante` = posizione dopo le mosse
+- Step 2: `fen_aggiornata` = UGUALE a `transizione.fen_risultante` dello step 1
+- Step 2 → `transizione.fen_risultante` = posizione dopo le mosse
+- Step 3: `fen_aggiornata` = UGUALE a `transizione.fen_risultante` dello step 2
+- ...e cosi' via fino all'ultimo step (che non ha transizione)
+
+### Lezioni dal punto di vista del Nero
+
+Quando lo studente gioca con il Nero (`orientamento_scacchiera: "black"`):
+- La FEN iniziale deve avere `b` come colore attivo (nero muove): es. `...b KQkq...`
+- Le mosse dello studente sono mosse del Nero
+- Le risposte dell'avversario nelle transizioni sono mosse del Bianco
+- Nelle transizioni: lo studente (Nero) gioca la mossa corretta, poi il Bianco risponde
+- La FEN dello step successivo deve sempre avere `b` come colore attivo (tocca di nuovo al Nero)
+
+**ATTENZIONE**: quando generi FEN per le posizioni successive, devi calcolarle correttamente applicando le mosse alla posizione precedente. Non inventare FEN: parti dalla posizione dello step corrente, applica le mosse della transizione, e il risultato e' la FEN del prossimo step.
 
 ## Il flusso che devi seguire per guidarmi
 
@@ -315,17 +353,17 @@ Alla fine, genera il JSON completo seguendo ESATTAMENTE queste strutture. Non in
 }
 ```
 
-### Lezione multi-step (sequenza mista):
+### Lezione multi-step (sequenza mista - Bianco muove):
 ```json
 {
-  "id": "...",
-  "titolo": "...",
-  "descrizione": "...",
-  "autori": ["..."],
+  "id": "italiana_4step_mista",
+  "titolo": "Partita Italiana: Piano Completo",
+  "descrizione": "Sviluppa i pezzi, trova i punti deboli e colpisci al centro.",
+  "autori": ["Coach"],
   "tipo_modulo": "mista",
-  "categoria": "...",
-  "difficolta": "...",
-  "fen": "FEN DELLA POSIZIONE INIZIALE",
+  "categoria": "aperture",
+  "difficolta": "medio",
+  "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
   "parametri": {
     "orientamento_scacchiera": "white",
     "tempo_freeze": 2000
@@ -334,50 +372,70 @@ Alla fine, genera il JSON completo seguendo ESATTAMENTE queste strutture. Non in
     {
       "numero": 1,
       "tipo_step": "intent",
-      "fen_aggiornata": "FEN DI QUESTO STEP",
-      "domanda": "...",
-      "opzioni_risposta": ["A", "B", "C"],
-      "risposta_corretta": "B",
-      "mosse_consentite": ["f1c4", "d2d3"],
+      "fen_aggiornata": "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+      "domanda": "Qual e' il piano migliore per il Bianco?",
+      "opzioni_risposta": [
+        "Sviluppare l'Alfiere verso f7 (Attacco al punto debole)",
+        "Spingere d3 per difendere e4 (Troppo passivo)",
+        "Giocare a3 (Perdita di tempo)"
+      ],
+      "risposta_corretta": "Sviluppare l'Alfiere verso f7 (Attacco al punto debole)",
+      "mosse_consentite": ["f1c4", "d2d3", "a2a3"],
       "mosse_corrette": ["f1c4"],
-      "feedback": "Feedback positivo per questo step",
-      "feedback_negativo": "Feedback negativo per questo step",
+      "feedback": "Ac4 punta su f7, il punto piu' debole del Nero.",
+      "feedback_negativo": "Pensa a quale pezzo sviluppare per mirare ai punti deboli.",
       "mostra_chunk_visivo": ["c4", "f7"],
-      "frecce_pattern": [{ "from": "c4", "to": "f7" }]
+      "frecce_pattern": [{ "from": "c4", "to": "f7" }],
+      "transizione": {
+        "mosse": ["f1c4", "f8c5", "g8f6"],
+        "fen_risultante": "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 5"
+      }
     },
     {
       "numero": 2,
       "tipo_step": "detective",
-      "fen_aggiornata": "FEN AGGIORNATA DOPO STEP 1",
-      "domanda": "Quale casa e' critica?",
+      "fen_aggiornata": "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 5",
+      "domanda": "Il Nero ha giocato Ac5 e Cf6. Quale casa e' il punto debole critico?",
       "risposta_corretta_casa": "f7",
       "max_tentativi": 3,
-      "feedback_positivo": "...",
-      "feedback_negativo": "..."
+      "feedback_positivo": "Esatto! f7 e' difesa solo dal Re.",
+      "feedback_negativo": "Cerca la casa difesa solo dal Re del Nero.",
+      "transizione": {
+        "mosse": ["c2c3"],
+        "fen_risultante": "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2P2N2/PP1P1PPP/RNBQK2R b KQkq - 0 5"
+      }
     },
     {
       "numero": 3,
       "tipo_step": "candidate",
-      "fen_aggiornata": "FEN AGGIORNATA",
-      "descrizione_step": "Trova le mosse candidate per il Bianco",
-      "mosse_candidate": ["d2d4", "e1g1", "d2d3"],
+      "fen_aggiornata": "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2P2N2/PP1P1PPP/RNBQK2R w KQkq - 0 5",
+      "descrizione_step": "Dopo c3, trova le mosse candidate per il Bianco",
+      "mosse_candidate": ["d2d4", "e1g1", "d2d3", "b1d2"],
       "mossa_migliore": "d2d4",
       "num_candidate": 2,
-      "feedback_positivo": "...",
-      "feedback_negativo": "..."
+      "feedback_positivo": "d4! Il colpo centrale preparato con c3.",
+      "feedback_negativo": "Pensa al piano preparato con c3: ora e' il momento di colpire al centro!",
+      "transizione": {
+        "mosse": ["d2d4", "e5d4"],
+        "fen_risultante": "r1bqk2r/pppp1ppp/2n2n2/2b5/2BpP3/2P2N2/PP3PPP/RNBQK2R w KQkq - 0 6"
+      }
     },
     {
       "numero": 4,
       "tipo_step": "intent",
-      "fen_aggiornata": "FEN AGGIORNATA",
-      "domanda": "...",
-      "opzioni_risposta": ["A", "B", "C"],
-      "risposta_corretta": "A",
-      "mosse_consentite": ["c3d4", "f3d4"],
+      "fen_aggiornata": "r1bqk2r/pppp1ppp/2n2n2/2b5/2BpP3/2P2N2/PP3PPP/RNBQK2R w KQkq - 0 6",
+      "domanda": "Il Nero ha catturato d4. Come riprendere?",
+      "opzioni_risposta": [
+        "cxd4 per mantenere il centro forte",
+        "Cd4 per centralizzare il Cavallo",
+        "e5 per attaccare il Cavallo in f6"
+      ],
+      "risposta_corretta": "cxd4 per mantenere il centro forte",
+      "mosse_consentite": ["c3d4", "f3d4", "e4e5"],
       "mosse_corrette": ["c3d4"],
-      "feedback": "...",
-      "feedback_negativo": "...",
-      "feedback_finale": "Messaggio finale che appare dopo l'ultimo step",
+      "feedback": "cxd4 mantiene la coppia di pedoni centrali forte.",
+      "feedback_negativo": "Pensa a quale ripresa mantiene i pedoni centrali.",
+      "feedback_finale": "Eccellente! Hai completato la Partita Italiana.",
       "mostra_metacognitiva": true
     }
   ],
@@ -393,6 +451,123 @@ Alla fine, genera il JSON completo seguendo ESATTAMENTE queste strutture. Non in
 }
 ```
 
+### Lezione multi-step (intent_sequenza - Nero muove):
+```json
+{
+  "id": "gda_sviluppo_nero",
+  "titolo": "GDA: Sviluppo del Nero",
+  "descrizione": "Completa lo sviluppo nel Gambetto di Donna Accettato giocando col Nero.",
+  "autori": ["Coach"],
+  "tipo_modulo": "intent_sequenza",
+  "categoria": "aperture",
+  "difficolta": "facile",
+  "fen": "rnbqkbnr/ppp1pppp/8/8/2pP4/4P3/PP3PPP/RNBQKBNR b KQkq - 0 3",
+  "parametri": {
+    "orientamento_scacchiera": "black",
+    "tempo_freeze": 1500,
+    "usa_profilassi": false
+  },
+  "steps": [
+    {
+      "numero": 1,
+      "tipo_step": "intent",
+      "fen_aggiornata": "rnbqkbnr/ppp1pppp/8/8/2pP4/4P3/PP3PPP/RNBQKBNR b KQkq - 0 3",
+      "domanda": "Il Bianco minaccia il pedone c4. Qual e' la priorita'?",
+      "opzioni_risposta": [
+        "Difenderlo con b5 (Pericoloso)",
+        "Ignorarlo e preparare l'arrocco (Sviluppo)",
+        "Contrattaccare al centro subito"
+      ],
+      "risposta_corretta": "Ignorarlo e preparare l'arrocco (Sviluppo)",
+      "mosse_consentite": ["e7e6", "b7b5", "c7c6"],
+      "mosse_corrette": ["e7e6"],
+      "feedback": "Ottimo! e6 apre la strada all'Alfiere.",
+      "mostra_chunk_visivo": ["f8", "e6"],
+      "frecce_pattern": [{ "from": "e7", "to": "e6" }],
+      "transizione": {
+        "mosse": ["e7e6", "f1c4"],
+        "fen_risultante": "rnbqkbnr/ppp2ppp/4p3/8/2BP4/4P3/PP3PPP/RNBQK1NR b KQkq - 0 4"
+      }
+    },
+    {
+      "numero": 2,
+      "tipo_step": "intent",
+      "fen_aggiornata": "rnbqkbnr/ppp2ppp/4p3/8/2BP4/4P3/PP3PPP/RNBQK1NR b KQkq - 0 4",
+      "domanda": "Hai aperto la diagonale. Quale pezzo leggero sviluppare?",
+      "opzioni_risposta": [
+        "Il Cavallo in f6 per controllare il centro",
+        "La Regina in f6 (Troppo presto)",
+        "Spingere i pedoni laterali"
+      ],
+      "risposta_corretta": "Il Cavallo in f6 per controllare il centro",
+      "mosse_consentite": ["g8f6", "d8f6", "h7h6"],
+      "mosse_corrette": ["g8f6"],
+      "feedback": "Perfetto! Il Cavallo controlla case centrali.",
+      "mostra_chunk_visivo": ["d5", "e4", "f6"],
+      "frecce_pattern": [
+        { "from": "f6", "to": "d5" },
+        { "from": "f6", "to": "e4" }
+      ],
+      "transizione": {
+        "mosse": ["g8f6", "g1f3"],
+        "fen_risultante": "rnbqkb1r/ppp2ppp/4pn2/8/2BP4/4PN2/PP3PPP/RNBQK2R b KQkq - 0 5"
+      }
+    },
+    {
+      "numero": 3,
+      "tipo_step": "intent",
+      "fen_aggiornata": "rnbqkb1r/ppp2ppp/4pn2/8/2BP4/4PN2/PP3PPP/RNBQK2R b KQkq - 0 5",
+      "domanda": "Dove posizionare l'alfiere camposcuro?",
+      "opzioni_risposta": [
+        "Ae7 (Solido e prepara arrocco)",
+        "Ad6 (Attivo ma vulnerabile)",
+        "Ab4+ (Scacco inutile)"
+      ],
+      "risposta_corretta": "Ae7 (Solido e prepara arrocco)",
+      "mosse_consentite": ["f8e7", "f8d6", "f8b4"],
+      "mosse_corrette": ["f8e7"],
+      "feedback": "Ottimo! Ae7 e' solido. Ultimo passo: sicurezza del Re.",
+      "mostra_chunk_visivo": ["e7", "g8"],
+      "transizione": {
+        "mosse": ["f8e7", "e1g1"],
+        "fen_risultante": "rnbqk2r/ppp1bppp/4pn2/8/2BP4/4PN2/PP3PPP/RNBQ1RK1 b kq - 0 6"
+      }
+    },
+    {
+      "numero": 4,
+      "tipo_step": "intent",
+      "fen_aggiornata": "rnbqk2r/ppp1bppp/4pn2/8/2BP4/4PN2/PP3PPP/RNBQ1RK1 b kq - 0 6",
+      "domanda": "Come mettere il Re al sicuro?",
+      "opzioni_risposta": [
+        "0-0 (Arrocco corto)",
+        "0-0-0 (Arrocco lungo - prematuro)",
+        "Re in f8 (Troppo lento)"
+      ],
+      "risposta_corretta": "0-0 (Arrocco corto)",
+      "mosse_consentite": ["e8g8", "e8c8", "e8f8"],
+      "mosse_corrette": ["e8g8"],
+      "feedback_finale": "Eccellente! Hai completato lo sviluppo ideale: e6, Cf6, Ae7, 0-0.",
+      "mostra_metacognitiva": true
+    }
+  ],
+  "metacognizione": {
+    "domande": [
+      "Hai guardato cosa minaccia l'avversario prima di muovere?",
+      "Hai considerato almeno due mosse possibili?"
+    ],
+    "trigger": "post_intent"
+  },
+  "feedback_positivo": "Sequenza completata con successo!",
+  "feedback_negativo": "Riprova con piu' attenzione al piano."
+}
+```
+
+**NOTA**: Nell'esempio del Nero sopra, osserva come:
+- Ogni `fen_aggiornata` ha `b` come colore attivo (tocca al Nero)
+- Ogni `transizione.mosse` include la mossa del Nero (studente) + la risposta del Bianco (avversario)
+- La `fen_risultante` della transizione corrisponde ESATTAMENTE alla `fen_aggiornata` dello step successivo
+- L'ultimo step NON ha `transizione` perche' e' l'ultimo della sequenza
+
 ## Regole per le mosse
 
 - Le mosse si scrivono come casa_partenza + casa_arrivo senza spazi: `e1g1` (arrocco corto bianco), `e8g8` (arrocco corto nero), `f1c4` (Alfiere va in c4), `b8c6` (Cavallo va in c6), `d2d4` (pedone d avanza)
@@ -400,7 +575,17 @@ Alla fine, genera il JSON completo seguendo ESATTAMENTE queste strutture. Non in
 - `mosse_corrette` = la mossa MIGLIORE, quella che da' il feedback piu' positivo. E' un sottoinsieme delle consentite
 - Per il tipo candidate: `mosse_candidate` = le mosse buone che lo studente deve trovare, `mossa_migliore` = la migliore tra tutte
 - Se la lezione ha piu' step tutti dello stesso tipo: `tipo_modulo: "intent_sequenza"` oppure `"candidate_sequenza"`. Se mescola tipi diversi: `"mista"`
-- Ogni step di una sequenza ha la sua `fen_aggiornata` che rappresenta la posizione DOPO le mosse degli step precedenti. Se la posizione cambia tra uno step e l'altro (perche' si e' mossa una mossa), la FEN deve riflettere la nuova posizione
+- Ogni step DEVE avere il campo `tipo_step` ("intent", "detective" o "candidate"), anche nelle sequenze omogenee (intent_sequenza, candidate_sequenza)
+
+## Regole per le FEN nelle sequenze
+
+- Ogni step di una sequenza ha `fen_aggiornata`: la FEN della posizione in cui lo studente deve agire
+- Lo step 1 ha `fen_aggiornata` uguale alla `fen` root della lezione
+- Ogni step (tranne l'ultimo) ha un campo `transizione` con `mosse` e `fen_risultante`
+- La `fen_risultante` di uno step DEVE essere UGUALE alla `fen_aggiornata` dello step successivo
+- Le FEN devono essere calcolate correttamente: NON inventarle, ma ricavarle applicando le mosse alla posizione precedente
+- Il colore attivo nella FEN (campo 2: `w` o `b`) deve essere coerente con chi muove: se lo studente gioca col Nero, la `fen_aggiornata` deve avere `b`
+- I diritti di arrocco nella FEN (campo 3: es. `KQkq`) devono aggiornarsi quando si muovono Re o Torri
 
 ## Il tuo stile
 
