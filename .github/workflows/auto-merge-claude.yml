@@ -27,7 +27,7 @@ jobs:
           if [ -z "$EXISTING_PR" ]; then
             # Create PR
             PR_URL=$(gh pr create \
-              --base master \
+              --base main \
               --head "$BRANCH" \
               --title "Auto-merge: ${BRANCH}" \
               --body "Auto-generated PR from Claude Code branch." \
