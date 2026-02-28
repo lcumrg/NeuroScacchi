@@ -14,33 +14,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Create PR and merge
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BRANCH="${GITHUB_REF#refs/heads/}"
+          echo "Branch: $BRANCH"
 
           # Check if a PR already exists for this branch
           EXISTING_PR=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number' 2>/dev/null || echo "")
 
           if [ -z "$EXISTING_PR" ]; then
-            # Create PR
-            PR_URL=$(gh pr create \
+            echo "Creating PR..."
+            gh pr create \
               --base main \
               --head "$BRANCH" \
               --title "Auto-merge: ${BRANCH}" \
-              --body "Auto-generated PR from Claude Code branch." \
-              2>&1)
-            echo "Created PR: $PR_URL"
+              --body "Auto-generated PR from Claude Code branch."
 
-            # Extract PR number
+            # Wait for PR to be fully created
+            sleep 5
+
             PR_NUMBER=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number')
+            echo "Created PR #$PR_NUMBER"
           else
             echo "PR #$EXISTING_PR already exists"
             PR_NUMBER="$EXISTING_PR"
           fi
 
-          # Merge with merge commit
-          gh pr merge "$PR_NUMBER" --merge --admin
+          # Merge with merge commit (no --admin flag)
+          gh pr merge "$PR_NUMBER" --merge --delete-branch
           echo "Merged PR #$PR_NUMBER"
