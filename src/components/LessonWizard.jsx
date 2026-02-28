@@ -105,6 +105,12 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
   // Quando true, dopo feedback torniamo direttamente a review (skip extras/continue)
   const [returnToReview, setReturnToReview] = useState(false)
 
+  // FEN per il prossimo step (dopo la transizione posizione con mosse avversario)
+  const [nextStepFen, setNextStepFen] = useState(null)
+
+  // Se true, la pagina Continue mostra direttamente la board di avanzamento posizione
+  const [continueDirectAdvance, setContinueDirectAdvance] = useState(false)
+
   // Callback generico per aggiornare i dati della lezione
   const updateLesson = useCallback((updates) => {
     setLessonData(prev => {
@@ -159,7 +165,7 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
     const newStep = {
       numero: stepNumber,
       tipo_step: taskType,
-      fen_aggiornata: lessonData.fen,
+      fen_aggiornata: nextStepFen || lessonData.fen,
       mostra_chunk_visivo: [],
       frecce_pattern: [],
       feedback: '',
@@ -188,6 +194,7 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
     }
 
     setBuildingStep(newStep)
+    setNextStepFen(null)
     goTo('question')
   }
 
@@ -238,9 +245,14 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
     setEditStepIndex(null)
   }
 
-  // "Vuoi aggiungere un altro step?" → Si
-  const handleAddAnotherStep = () => {
+  // "Vuoi aggiungere un altro step?" → Si (con FEN aggiornata dalla transizione)
+  const handleAddAnotherStep = (transitionFen, transitionMoves) => {
+    if (buildingStep && transitionMoves?.length > 0) {
+      buildingStep.transizione = { mosse: transitionMoves, fen_risultante: transitionFen }
+    }
     finalizeCurrentStep()
+    setNextStepFen(transitionFen || null)
+    setContinueDirectAdvance(false)
     goTo('task')
   }
 
@@ -274,11 +286,12 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
     updateLesson({ steps: newSteps, tipo_modulo: tipoModulo })
   }
 
-  // Add step from review: vai a task con returnToReview
+  // Add step from review: passa per la transizione posizione prima di task
   const handleAddStepFromReview = () => {
     setReturnToReview(true)
     setEditStepIndex(null)
-    goTo('task')
+    setContinueDirectAdvance(true)
+    goTo('continue')
   }
 
   // Salva la lezione
@@ -356,7 +369,15 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
         {headerLabel && <div className="wizard-header-label">{headerLabel}</div>}
         <div className="wizard-progress">
           {WIZARD_PAGES.map((page, i) => (
-            <div key={page} className={`wizard-progress-dot ${i <= pageIndex ? 'active' : ''} ${page === currentPage ? 'current' : ''}`}>
+            <div key={page}
+              className={`wizard-progress-dot ${i <= pageIndex ? 'active' : ''} ${page === currentPage ? 'current' : ''} ${i < pageIndex ? 'clickable' : ''}`}
+              onClick={() => {
+                if (i < pageIndex) {
+                  if (['question', 'visuals', 'feedback'].includes(page) && !buildingStep) return
+                  goTo(page)
+                }
+              }}
+            >
               <span className="wizard-progress-label">{PAGE_LABELS[page]}</span>
             </div>
           ))}
@@ -436,9 +457,12 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
           <WizardStepContinue
             stepsCount={totalSteps}
             currentStep={buildingStep}
+            fen={buildingStep?.fen_aggiornata || (lessonData.steps?.length > 0 ? lessonData.steps[lessonData.steps.length - 1].fen_aggiornata : null) || lessonData.fen}
+            boardOrientation={boardOrientation}
             onAddAnother={handleAddAnotherStep}
             onFinish={handleFinishLesson}
-            onBack={() => goTo('extras')}
+            onBack={continueDirectAdvance ? () => { setContinueDirectAdvance(false); setReturnToReview(false); goTo('review') } : () => goTo('extras')}
+            directAdvance={continueDirectAdvance}
           />
         )}
 
