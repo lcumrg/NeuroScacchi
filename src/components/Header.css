@@ -60,6 +60,25 @@
   white-space: nowrap;
 }
 
+.role-badge {
+  padding: 4px 12px;
+  background: rgba(42, 74, 127, 0.1);
+  border: 1px solid rgba(42, 74, 127, 0.2);
+  border-radius: 16px;
+  font-family: var(--font-main, system-ui);
+  font-size: 12px;
+  font-weight: 600;
+  color: #2a4a7f;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.role-badge:hover {
+  background: rgba(42, 74, 127, 0.18);
+  border-color: #2a4a7f;
+}
+
 .logout-btn {
   font-size: 18px;
 }

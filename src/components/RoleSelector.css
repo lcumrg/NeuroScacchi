@@ -1,0 +1,164 @@
+/* ---- Role Selector Screen ---- */
+.role-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 50%, #f0f4f8 100%);
+  padding: 24px;
+}
+
+.role-container {
+  width: 100%;
+  max-width: 640px;
+  animation: roleFadeIn 0.6s ease;
+}
+
+@keyframes roleFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Logo ---- */
+.role-logo {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.role-logo-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #1a365d, #2a4a7f);
+  color: white;
+  font-size: 28px;
+  font-weight: 800;
+  font-family: var(--font-mono, monospace);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  box-shadow: 0 8px 24px rgba(26, 54, 93, 0.3);
+}
+
+.role-logo h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary, #1a202c);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+}
+
+.role-welcome {
+  font-size: 16px;
+  color: var(--text-secondary, #718096);
+  margin: 0;
+}
+
+/* ---- Cards ---- */
+.role-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.role-card {
+  background: var(--bg-card, #fff);
+  border: 2px solid transparent;
+  border-radius: 20px;
+  padding: 36px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  font-family: var(--font-main, system-ui);
+}
+
+.role-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.role-card:active {
+  transform: translateY(-1px);
+}
+
+/* Student card */
+.role-student {
+  border-color: rgba(76, 175, 80, 0.2);
+}
+
+.role-student:hover {
+  border-color: #4CAF50;
+  background: linear-gradient(180deg, #fff 60%, rgba(76, 175, 80, 0.06) 100%);
+}
+
+.role-student .role-icon {
+  color: #4CAF50;
+}
+
+/* Coach card */
+.role-coach {
+  border-color: rgba(42, 74, 127, 0.2);
+}
+
+.role-coach:hover {
+  border-color: #2a4a7f;
+  background: linear-gradient(180deg, #fff 60%, rgba(42, 74, 127, 0.06) 100%);
+}
+
+.role-coach .role-icon {
+  color: #2a4a7f;
+}
+
+/* ---- Icon ---- */
+.role-icon {
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
+/* ---- Text ---- */
+.role-card h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary, #1a202c);
+  margin: 0 0 8px 0;
+}
+
+.role-card p {
+  font-size: 14px;
+  color: var(--text-secondary, #718096);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 520px) {
+  .role-cards {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .role-card {
+    padding: 28px 20px;
+  }
+
+  .role-icon {
+    font-size: 40px;
+  }
+
+  .role-card h2 {
+    font-size: 20px;
+  }
+
+  .role-logo-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+
+  .role-logo h1 {
+    font-size: 24px;
+  }
+}

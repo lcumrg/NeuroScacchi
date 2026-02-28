@@ -1,6 +1,8 @@
 import './Header.css'
 
-function Header({ onExit, onSettings, onLogout, showExit = false, lessonTitle = null, userName = null }) {
+function Header({ onExit, onSettings, onLogout, onChangeRole, showExit = false, lessonTitle = null, userName = null, userRole = null }) {
+  const roleLabel = userRole === 'studente' ? 'Studente' : userRole === 'allenatore' ? 'Allenatore' : null
+
   return (
     <header className="header">
       <div className="header-content">
@@ -12,6 +14,11 @@ function Header({ onExit, onSettings, onLogout, showExit = false, lessonTitle = 
         <div className="header-controls">
           {userName && (
             <span className="header-user-name">{userName}</span>
+          )}
+          {roleLabel && onChangeRole && (
+            <button className="role-badge" onClick={onChangeRole} title="Cambia modalita">
+              {roleLabel}
+            </button>
           )}
           {showExit && (
             <button className="icon-btn exit-btn" onClick={onExit} aria-label="Esci dalla lezione">

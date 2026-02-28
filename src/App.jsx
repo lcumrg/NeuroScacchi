@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Chess } from 'chess.js'
 import { useAuth } from './contexts/AuthContext'
 import LoginScreen from './components/LoginScreen'
+import RoleSelector from './components/RoleSelector'
 import Header from './components/Header'
 import LessonSelector from './components/LessonSelector'
 import ChessboardComponent from './components/ChessboardComponent'
@@ -29,7 +30,8 @@ import './App.css'
 
 function App() {
   const { user, loading, logout } = useAuth()
-  const [currentScreen, setCurrentScreen] = useState('selector') // 'selector' | 'lesson' | 'admin' | 'ai-builder'
+  const [currentScreen, setCurrentScreen] = useState('role') // 'role' | 'selector' | 'lesson' | 'admin' | 'ai-builder'
+  const [userRole, setUserRole] = useState(null) // 'studente' | 'allenatore'
   const [lessons, setLessons] = useState([])
   const [currentLesson, setCurrentLesson] = useState(null)
   const [editingLesson, setEditingLesson] = useState(null)
@@ -653,6 +655,19 @@ function App() {
     return <LoginScreen />
   }
 
+  // Schermata scelta ruolo
+  if (currentScreen === 'role' || !userRole) {
+    return (
+      <RoleSelector
+        userName={user.displayName || user.email?.split('@')[0]}
+        onSelectRole={(role) => {
+          setUserRole(role)
+          setCurrentScreen('selector')
+        }}
+      />
+    )
+  }
+
   return (
     <div className="app-container">
       <Header
@@ -660,7 +675,9 @@ function App() {
         onExit={handleExit}
         onSettings={() => alert('Impostazioni (coming soon)')}
         onLogout={logout}
+        onChangeRole={() => { setUserRole(null); setCurrentScreen('role') }}
         userName={user.displayName || user.email?.split('@')[0]}
+        userRole={userRole}
         lessonTitle={currentScreen === 'lesson' ? currentLesson?.titolo : null}
       />
 
@@ -678,6 +695,7 @@ function App() {
       ) : currentScreen === 'selector' ? (
         <LessonSelector
           lessons={lessons}
+          role={userRole}
           onSelectLesson={startLesson}
           onSelectEsame={(lesson) => startLesson(lesson, true)}
           onUploadLesson={handleUploadLesson}
