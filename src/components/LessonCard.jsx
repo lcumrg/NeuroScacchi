@@ -62,30 +62,34 @@ function LessonCard({ lesson, onSelect, onSelectEsame, onDelete, onEdit }) {
         </button>
       )}
 
-      <div className="card-action-buttons">
-        {onEdit && (
-          <button
-            className="btn-edit-card"
-            onClick={(e) => {
-              e.stopPropagation()
-              onEdit()
-            }}
-          >
-            &#9998;
-          </button>
-        )}
-        <button
-          className="btn-delete-card"
-          onClick={(e) => {
-            e.stopPropagation()
-            if (confirm(`Eliminare "${lesson.titolo}"?`)) {
-              onDelete()
-            }
-          }}
-        >
-          🗑️
-        </button>
-      </div>
+      {(onEdit || onDelete) && (
+        <div className="card-action-buttons">
+          {onEdit && (
+            <button
+              className="btn-edit-card"
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit()
+              }}
+            >
+              &#9998;
+            </button>
+          )}
+          {onDelete && (
+            <button
+              className="btn-delete-card"
+              onClick={(e) => {
+                e.stopPropagation()
+                if (confirm(`Eliminare "${lesson.titolo}"?`)) {
+                  onDelete()
+                }
+              }}
+            >
+              🗑️
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }
