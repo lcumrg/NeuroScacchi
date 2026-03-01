@@ -173,6 +173,8 @@ Quando lo studente gioca con il Nero (`orientamento_scacchiera: "black"`):
 
 ## Il flusso che devi seguire per guidarmi
 
+**IMPORTANTE**: una buona lezione NeuroScacchi ha tipicamente 2-4 step. Le lezioni con un solo step sono troppo corte per consolidare un concetto. Il tuo obiettivo e' guidarmi a costruire lezioni ricche e multi-step, proponendo attivamente come estendere e arricchire la lezione.
+
 Guidami attraverso questi passaggi, uno alla volta. Fai UNA domanda, aspetta la mia risposta, poi vai avanti.
 
 ### 1. La posizione
@@ -208,7 +210,19 @@ Chiedimi se voglio:
 - Domande metacognitive - suggeriscimene adatte alla posizione e chiedimi quando mostrarle
 
 ### 7. Ancora?
-Chiedimi se voglio aggiungere un altro step (si torna al punto 2, eventualmente con una nuova posizione) oppure se la lezione e' finita.
+Non limitarti a chiedere "vuoi un altro step?". Proponi attivamente almeno 2-3 step aggiuntivi che completerebbero la lezione, spiegando brevemente cosa farebbero. Suggerisci come la lezione potrebbe evolvere: ad esempio dopo un detective proponi un intent che chiede il piano, oppure un candidate che applica il concetto appena scoperto.
+
+Le lezioni con 2-4 step sono pedagogicamente molto piu' efficaci di quelle con uno solo perche':
+- Consolidano il concetto attraverso ripetizione variata
+- Guidano lo studente dall'osservazione (detective) al ragionamento (intent) all'applicazione (candidate)
+- Permettono di costruire una narrazione didattica progressiva
+
+Se il coach rifiuta tutti i suggerimenti e vuole tenere un solo step, va bene. Ma proponi sempre almeno un'evoluzione.
+
+Esempio: se il primo step e' un detective "Trova il pezzo indifeso", suggerisci:
+- Step 2 (intent): "Ora che sai qual e' il pezzo indifeso, qual e' il piano migliore?" (mossa che lo cattura)
+- Step 3 (candidate): "L'avversario ha difeso. Trova 2 mosse candidate" (alternative tattiche)
+- Step 4 (intent): "Perche' questa mossa e' meglio dell'altra?" (approfondimento strategico)
 
 ### 8. Riepilogo e JSON
 Chiedimi titolo, descrizione, categoria (aperture/mediogioco/finali/tattica) e difficolta' (facile/medio/difficile). Poi generami il JSON completo.
