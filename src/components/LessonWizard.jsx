@@ -25,7 +25,8 @@ import './LessonWizard.css'
 
   Modalita' fromAI:
   - I dati sono pre-compilati da un JSON generato dall'IA
-  - Si parte da position, poi si va direttamente a review
+  - Le lezioni single-step vengono normalizzate in steps[] per uniformita'
+  - Si parte direttamente da review (skip position)
   - Da review si possono modificare o aggiungere step
   - Il flusso di editing step: question → visuals → feedback → torna a review
 */
@@ -45,9 +46,53 @@ const PAGE_LABELS = {
 }
 
 function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
+  // Normalizza lezioni single-step importate dall'IA: crea steps[] dai dati root
+  // cosi' la review puo' mostrare e editare gli step uniformemente
+  const normalizeImportedLesson = (data) => {
+    if (!fromAI) return data
+    if (data.steps && data.steps.length > 0) return data
+
+    const step = {
+      numero: 1,
+      fen_aggiornata: data.fen,
+      mostra_chunk_visivo: data.parametri?.mostra_chunk_visivo || [],
+      frecce_pattern: data.parametri?.frecce_pattern || []
+    }
+
+    if (data.tipo_modulo === 'detective') {
+      step.tipo_step = 'detective'
+      step.domanda = data.modalita_detective?.domanda || ''
+      step.risposta_corretta_casa = data.modalita_detective?.risposta_corretta_casa || ''
+      step.max_tentativi = 3
+      step.feedback_positivo = data.modalita_detective?.feedback_positivo || data.feedback_positivo || ''
+      step.feedback_negativo = data.modalita_detective?.feedback_negativo || data.feedback_negativo || ''
+    } else if (data.tipo_modulo === 'candidate') {
+      step.tipo_step = 'candidate'
+      step.mosse_candidate = data.mosse_candidate || []
+      step.mossa_migliore = data.mossa_migliore || ''
+      step.num_candidate = data.parametri?.num_candidate || 2
+      step.descrizione_step = ''
+      step.feedback_positivo = data.feedback_positivo || ''
+      step.feedback_negativo = data.feedback_negativo || ''
+    } else {
+      // intent (default)
+      step.tipo_step = 'intent'
+      step.domanda = data.domanda || ''
+      step.opzioni_risposta = data.opzioni_risposta || []
+      step.risposta_corretta = data.risposta_corretta || ''
+      step.mosse_consentite = data.mosse_consentite || []
+      step.mosse_corrette = data.mosse_corrette || []
+      step.feedback = data.feedback_positivo || ''
+      step.feedback_negativo = data.feedback_negativo || ''
+    }
+
+    data.steps = [step]
+    return data
+  }
+
   // Stato globale della lezione in costruzione
   const [lessonData, setLessonData] = useState(() => {
-    if (editLesson) return { ...JSON.parse(JSON.stringify(editLesson)) }
+    if (editLesson) return normalizeImportedLesson(JSON.parse(JSON.stringify(editLesson)))
     return {
       id: '',
       titolo: '',
@@ -87,8 +132,7 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
 
   // Wizard navigation
   const getStartPage = () => {
-    if (fromAI) return 'position'
-    if (editLesson) return 'review'
+    if (fromAI || editLesson) return 'review'
     return 'position'
   }
   const [currentPage, setCurrentPage] = useState(getStartPage)
@@ -381,8 +425,7 @@ function LessonWizard({ onSave, onClose, editLesson = null, fromAI = false }) {
 
   // Dove va il bottone "Avanti" dalla pagina position
   const handlePositionNext = () => {
-    // Se da IA o editing con step esistenti, vai direttamente a review
-    if ((fromAI || editLesson) && (lessonData.steps || []).length > 0) {
+    if (fromAI || editLesson) {
       goTo('review')
     } else {
       goTo('task')
