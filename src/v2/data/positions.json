@@ -66,7 +66,7 @@
   },
   {
     "id": "pin-01",
-    "fen": "rn1qkbnr/ppp1pppp/8/3p4/3P2b1/5N2/PPP1PPPP/RNBQKB1R w KQkq - 2 3",
+    "fen": "rn1qkbnr/ppp1pppp/8/3p4/3P2b1/4PN2/PPP2PPP/RNBQKB1R w KQkq - 0 3",
     "solutionMoves": ["f1e2"],
     "theme": "pin",
     "difficulty": 2,
@@ -105,7 +105,7 @@
   },
   {
     "id": "fork-07",
-    "fen": "rnbqkbnr/ppp1pppp/8/3pN3/8/8/PPPPPPPP/RNBQKB1R b KQkq - 1 2",
+    "fen": "rnbqkbnr/ppp1pppp/8/4N3/8/8/PPPPPPPP/RNBQKB1R b KQkq - 1 2",
     "solutionMoves": ["d8d4"],
     "theme": "fork",
     "difficulty": 2,
