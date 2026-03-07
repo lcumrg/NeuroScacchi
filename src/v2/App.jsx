@@ -3,11 +3,13 @@ import { useAuth } from '../shared/contexts/AuthContext'
 import LoginScreen from '../v1/components/LoginScreen'
 import { resetVersionChoice } from '../VersionSelector'
 import HomePage from './pages/HomePage'
+import ProfilePage from './pages/ProfilePage'
+import StatsPage from './pages/StatsPage'
 import SessionRunner from './components/SessionRunner'
 
 export default function AppV2() {
   const { user, loading, logout } = useAuth()
-  const [screen, setScreen] = useState('home') // 'home' | 'training'
+  const [screen, setScreen] = useState('home') // 'home' | 'training' | 'profile' | 'stats'
   const [sessionPositions, setSessionPositions] = useState([])
 
   if (loading) {
@@ -50,7 +52,7 @@ export default function AppV2() {
           >
             v2
           </button>
-          {screen === 'training' && (
+          {screen !== 'home' && (
             <button style={styles.headerBtn} onClick={handleBackHome}>
               &#10005; Esci
             </button>
@@ -64,7 +66,17 @@ export default function AppV2() {
 
       <main>
         {screen === 'home' && (
-          <HomePage onStartSession={handleStartSession} />
+          <HomePage
+            onStartSession={handleStartSession}
+            onOpenProfile={() => setScreen('profile')}
+            onOpenStats={() => setScreen('stats')}
+          />
+        )}
+        {screen === 'profile' && (
+          <ProfilePage onBack={handleBackHome} />
+        )}
+        {screen === 'stats' && (
+          <StatsPage onBack={handleBackHome} />
         )}
         {screen === 'training' && (
           <SessionRunner
@@ -72,9 +84,7 @@ export default function AppV2() {
             onFinish={handleBackHome}
             onRestart={() => {
               setScreen('home')
-              setTimeout(() => {
-                handleStartSession(sessionPositions)
-              }, 0)
+              setTimeout(() => handleStartSession(sessionPositions), 0)
             }}
           />
         )}

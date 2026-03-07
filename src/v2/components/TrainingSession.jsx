@@ -3,34 +3,50 @@ import { Chess } from 'chess.js'
 import { Chessboard } from 'react-chessboard'
 import FreezeOverlay from './FreezeOverlay'
 import HintBox from './HintBox'
+import ProfilassiPrompt from './ProfilassiPrompt'
+import MetaPrompt from './MetaPrompt'
+import { getFreezeDuration, shouldShowProfilassi, shouldShowMetacognition, getMaxHints, getRandomMetaQuestion } from '../engine/cognitiveLayer'
 
-const FREEZE_DURATION = 3000 // ms — sara configurabile dal profilo cognitivo
+export default function TrainingSession({ position, positionIndex, cognitiveProfile, onResult }) {
+  const freezeDuration = getFreezeDuration(cognitiveProfile)
+  const maxHints = getMaxHints(cognitiveProfile)
+  const showProfilassi = shouldShowProfilassi(cognitiveProfile, positionIndex)
 
-export default function TrainingSession({ position, onResult }) {
-  const [frozen, setFrozen] = useState(true)
+  const [phase, setPhase] = useState(showProfilassi ? 'profilassi' : 'freeze')
+  // profilassi → freeze → play → meta → done
   const [errors, setErrors] = useState(0)
-  const [feedback, setFeedback] = useState(null) // { type: 'correct'|'wrong', message }
+  const [feedback, setFeedback] = useState(null)
   const [solved, setSolved] = useState(false)
+  const [showSolution, setShowSolution] = useState(false)
+  const [metaQuestion, setMetaQuestion] = useState(null)
   const gameRef = useRef(new Chess(position.fen))
   const startTimeRef = useRef(null)
+  const totalErrorsRef = useRef(0)
+
+  const handleProfilassiComplete = useCallback(() => {
+    setPhase('freeze')
+  }, [])
 
   const handleFreezeEnd = useCallback(() => {
-    setFrozen(false)
+    setPhase('play')
     startTimeRef.current = Date.now()
   }, [])
 
+  const handleMetaAnswer = useCallback((answer) => {
+    setPhase('play')
+    setMetaQuestion(null)
+  }, [])
+
   const handleDrop = (source, target) => {
-    if (frozen || solved) return false
+    if (phase !== 'play' || solved) return false
 
     const game = gameRef.current
     const moveUci = source + target
 
-    // Verifica se la mossa e' legale in chess.js
     try {
       const result = game.move({ from: source, to: target, promotion: 'q' })
       if (!result) return false
 
-      // Verifica se e' la mossa corretta
       const isCorrect = position.solutionMoves.some(sol =>
         sol === moveUci || sol === moveUci + 'q'
       )
@@ -39,7 +55,6 @@ export default function TrainingSession({ position, onResult }) {
         setSolved(true)
         setFeedback({ type: 'correct', message: 'Ottimo! Mossa corretta.' })
         const elapsed = Date.now() - startTimeRef.current
-        // Notifica il risultato dopo un breve delay per mostrare il feedback
         setTimeout(() => {
           onResult({
             positionId: position.id,
@@ -50,10 +65,35 @@ export default function TrainingSession({ position, onResult }) {
         }, 1200)
         return true
       } else {
-        // Mossa legale ma sbagliata — annulla
         game.undo()
-        setErrors(e => e + 1)
-        setFeedback({ type: 'wrong', message: 'Non e\' la mossa migliore. Riprova!' })
+        const newErrors = errors + 1
+        setErrors(newErrors)
+        totalErrorsRef.current++
+
+        // Hint limitati + soluzione
+        if (maxHints !== -1 && newErrors > maxHints && position.solutionMoves[0]) {
+          setShowSolution(true)
+          setFeedback({ type: 'wrong', message: `La mossa corretta era: ${formatMove(position.solutionMoves[0])}` })
+          setTimeout(() => {
+            onResult({
+              positionId: position.id,
+              correct: false,
+              errors: newErrors,
+              timeMs: Date.now() - startTimeRef.current,
+            })
+          }, 2500)
+        } else {
+          setFeedback({ type: 'wrong', message: 'Non e\' la mossa migliore. Riprova!' })
+
+          // Metacognizione?
+          if (shouldShowMetacognition(cognitiveProfile, totalErrorsRef.current)) {
+            setTimeout(() => {
+              setMetaQuestion(getRandomMetaQuestion())
+              setPhase('meta')
+            }, 1200)
+          }
+        }
+
         return false
       }
     } catch {
@@ -61,37 +101,47 @@ export default function TrainingSession({ position, onResult }) {
     }
   }
 
-  // Determina orientamento dalla FEN (chi muove)
   const turn = position.fen.split(' ')[1]
   const orientation = turn === 'b' ? 'black' : 'white'
 
   return (
     <div style={styles.container}>
-      {position.title && (
-        <h3 style={styles.title}>{position.title}</h3>
+      {position.title && <h3 style={styles.title}>{position.title}</h3>}
+
+      {/* Profilassi — prima del freeze */}
+      {phase === 'profilassi' && (
+        <ProfilassiPrompt fen={position.fen} onComplete={handleProfilassiComplete} />
       )}
 
-      <div style={styles.boardWrapper}>
-        <Chessboard
-          position={gameRef.current.fen()}
-          onPieceDrop={handleDrop}
-          boardWidth={Math.min(440, window.innerWidth - 40)}
-          boardOrientation={orientation}
-          arePiecesDraggable={!frozen && !solved}
-          customBoardStyle={{
-            borderRadius: 8,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-          }}
-          customDarkSquareStyle={{ backgroundColor: '#779952' }}
-          customLightSquareStyle={{ backgroundColor: '#edeed1' }}
-        />
-        {frozen && (
-          <FreezeOverlay duration={FREEZE_DURATION} onComplete={handleFreezeEnd} />
-        )}
-      </div>
+      {/* Scacchiera */}
+      {phase !== 'profilassi' && (
+        <div style={styles.boardWrapper}>
+          <Chessboard
+            position={gameRef.current.fen()}
+            onPieceDrop={handleDrop}
+            boardWidth={Math.min(440, window.innerWidth - 40)}
+            boardOrientation={orientation}
+            arePiecesDraggable={phase === 'play' && !solved && !showSolution}
+            customBoardStyle={{
+              borderRadius: 8,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+            }}
+            customDarkSquareStyle={{ backgroundColor: '#779952' }}
+            customLightSquareStyle={{ backgroundColor: '#edeed1' }}
+          />
+          {phase === 'freeze' && (
+            <FreezeOverlay duration={freezeDuration} onComplete={handleFreezeEnd} />
+          )}
+        </div>
+      )}
+
+      {/* Metacognizione */}
+      {phase === 'meta' && metaQuestion && (
+        <MetaPrompt question={metaQuestion} onAnswer={handleMetaAnswer} />
+      )}
 
       {/* Feedback */}
-      {feedback && (
+      {feedback && phase !== 'profilassi' && (
         <div style={{
           ...styles.feedback,
           background: feedback.type === 'correct' ? '#E8F5E9' : '#FFEBEE',
@@ -102,20 +152,24 @@ export default function TrainingSession({ position, onResult }) {
         </div>
       )}
 
-      {/* Hint progressivi */}
-      {!solved && position.hints && position.hints.length > 0 && (
+      {/* Hint */}
+      {!solved && !showSolution && phase === 'play' && position.hints && position.hints.length > 0 && (
         <HintBox hints={position.hints} errorsCount={errors} />
       )}
 
-      {/* Info tema e difficolta */}
+      {/* Meta: tema e difficolta */}
       <div style={styles.meta}>
         <span style={styles.badge}>{position.theme}</span>
         <span style={styles.difficulty}>
-          {'★'.repeat(position.difficulty)}{'☆'.repeat(10 - position.difficulty)}
+          {'\u2605'.repeat(position.difficulty)}{'\u2606'.repeat(10 - position.difficulty)}
         </span>
       </div>
     </div>
   )
+}
+
+function formatMove(uci) {
+  return uci.slice(0, 2) + ' \u2192 ' + uci.slice(2, 4)
 }
 
 const styles = {

@@ -1,7 +1,7 @@
 # NeuroScacchi 2.0 — Roadmap
 
 > Training engine adattivo per scacchi + riabilitazione funzioni esecutive.
-> Ultimo aggiornamento: 8 Marzo 2026 (Strato 0 completato)
+> Ultimo aggiornamento: 8 Marzo 2026 (Strati 0-3 implementati)
 
 ---
 
@@ -64,103 +64,94 @@ Dashboard: progressi studenti, direttive attive, alert, gestione posizioni.
 
 ---
 
-## STRATO 1 — Memoria e Cognizione
+## STRATO 1 — Memoria e Cognizione — COMPLETATO
 
-### 1.1 Spaced Repetition
-- [ ] Salvare risultato per ogni posizione: `{ positionId, correct, attempts, lastSeen, nextReview, interval }`
-- [ ] Algoritmo SR semplice (stile Leitner a 5 box):
-  - Sbagliata → box 1 (rivedi domani)
-  - Corretta → box successivo (intervallo raddoppia: 1gg, 3gg, 7gg, 14gg, 30gg)
-- [ ] Il SessionEngine prioritizza le posizioni "in scadenza" (nextReview <= oggi)
-- [ ] Indicatore visivo nello storico: "da rivedere", "in fase di apprendimento", "consolidata"
+### 1.1 Spaced Repetition — COMPLETATO
+- [x] Algoritmo Leitner a 5 box in `spacedRepetition.js` (intervalli: 1, 3, 7, 14, 30 giorni)
+- [x] `createSRRecord` / `updateSRRecord` con storico completo
+- [x] `selectPositionsForSession`: prioritizza scadute → mai viste → prossime
+- [x] Stato visivo: "da rivedere" / "in apprendimento" / "consolidata" con colori
+- [x] Persistenza in localStorage (`storage.js`)
+- [x] Integrato in SessionRunner: ogni risultato aggiorna i record SR
 
-### 1.2 Profilo Cognitivo — Setup
-- [ ] Schermata di configurazione profilo (per il coach o per auto-setup):
-  - Impulsivita: alta / media / bassa
-  - Consapevolezza minacce: alta / media / bassa
-  - Metacognizione: alta / media / bassa
-  - Tolleranza frustrazione: alta / media / bassa
-- [ ] Ogni parametro controlla un comportamento dell'app:
-  - Impulsivita → durata freeze (alta=5s, media=3s, bassa=1s)
-  - Consapevolezza minacce → frequenza profilassi (alta=mai, media=ogni 3, bassa=sempre)
-  - Metacognizione → frequenza domande post-errore (alta=rara, media=ogni 2 errori, bassa=ogni errore)
-  - Tolleranza frustrazione → numero hint prima di rivelare la soluzione, messaggi di incoraggiamento
-- [ ] Salvataggio in localStorage + Firestore (stesso pattern della v1)
+### 1.2 Profilo Cognitivo — COMPLETATO
+- [x] `cognitiveLayer.js`: 4 parametri (impulsivita, consapevolezzaMinacce, metacognizione, tolleranzaFrustrazione)
+- [x] Ogni parametro con 3 livelli (alta/media/bassa) controlla un comportamento:
+  - Impulsivita → freeze (5s/3s/1s)
+  - Consapevolezza → profilassi (sempre/ogni 3/mai)
+  - Metacognizione → domande (ogni errore/ogni 2/ogni 4)
+  - Frustrazione → hint max (2/3/illimitati)
+- [x] `ProfilePage.jsx`: UI di configurazione con feedback live degli effetti
+- [x] Salvataggio in localStorage
 
-### 1.3 Profilassi (secondo elemento cognitivo)
-- [ ] Prima della mossa, chiedere: "Cosa potrebbe fare l'avversario da questa posizione?"
-- [ ] Opzioni generate dall'engine: le 2-3 minacce reali dell'avversario
-- [ ] Lo studente seleziona quella che ritiene piu pericolosa
-- [ ] Non blocca la mossa — e un prompt di riflessione, poi prosegue
-- [ ] Frequenza controllata dal profilo cognitivo (non da ogni singola posizione)
+### 1.3 Profilassi — COMPLETATO
+- [x] `ProfilassiPrompt.jsx`: analizza la posizione con chess.js, genera 3 minacce dell'avversario
+- [x] Lo studente sceglie la piu pericolosa prima di vedere la scacchiera
+- [x] Frequenza controllata dal profilo cognitivo (`shouldShowProfilassi`)
+- [x] Integrato nel flusso TrainingSession: profilassi → freeze → gioco
 
-### 1.4 Metacognizione (terzo elemento cognitivo)
-- [ ] Dopo un errore, mostrare domanda di riflessione:
-  - "Ti eri accorto che c'era una minaccia?"
-  - "Hai guardato tutta la scacchiera prima di muovere?"
-  - "Avevi un piano in mente o hai mosso d'istinto?"
-- [ ] Pool di domande, scelta casuale
-- [ ] Risposta Si/No — registrata per analytics
-- [ ] Frequenza controllata dal profilo cognitivo
+### 1.4 Metacognizione — COMPLETATO
+- [x] `MetaPrompt.jsx`: domanda Si/No dopo errore
+- [x] Pool di 7 domande in `cognitiveLayer.js`, scelta casuale
+- [x] Frequenza controllata dal profilo cognitivo (`shouldShowMetacognition`)
+- [x] Integrato nel flusso TrainingSession
 
-### 1.5 Import posizioni da Lichess
-- [ ] Scaricare e parsare il Lichess puzzle database (CSV pubblico)
-- [ ] Filtrare per tema e rating, convertire in formato interno
-- [ ] Tool o script per importare N posizioni per tema
-- [ ] Classificazione automatica difficolta (mapping rating Lichess → scala 1-10)
+### 1.5 Import posizioni da Lichess — COMPLETATO
+- [x] Script `scripts/import-lichess-puzzles.cjs`
+- [x] Parsing CSV Lichess con applicazione mossa di setup
+- [x] Filtri: tema, rating min/max, conteggio
+- [x] Mapping automatico temi Lichess → temi interni
+- [x] Mapping rating → difficolta 1-10
 
 ---
 
-## STRATO 2 — Adattivita e Coach
+## STRATO 2 — Adattivita e Coach — PARZIALMENTE COMPLETATO
 
-### 2.1 Difficolta adattiva
-- [ ] Tracciare il "rating" dello studente per ogni tema (Elo semplificato o percentuale successo)
-- [ ] Il SessionEngine sceglie posizioni nella zona ottimale: ~60-70% probabilita di successo
-- [ ] Se lo studente azzecca molte di fila → sale. Se sbaglia molte → scende
-- [ ] Visualizzazione del proprio livello per tema (grafichetto semplice)
+### 2.1 Difficolta adattiva — COMPLETATO
+- [x] `adaptiveDifficulty.js`: calcola livello studente per tema (media pesata dei risultati)
+- [x] Range ottimale: livello +/- 1, con espansione automatica se poche posizioni
+- [x] Integrato in `sessionEngine.js`: filtra posizioni per zona ottimale
 
-### 2.2 Percorsi tematici
-- [ ] Organizzare posizioni per tema: tattica (fork, pin, skewer, discovery...), finali, aperture, difesa
-- [ ] Lo studente puo scegliere "Allenamento libero" (mix) o "Focus su [tema]"
-- [ ] Tracciamento progressi separato per tema
-- [ ] Suggerimento automatico: "Sei debole sui finali di torre — vuoi allenarli?"
+### 2.2 Percorsi tematici — COMPLETATO
+- [x] Posizioni organizzate per tema (12 temi)
+- [x] HomePage: click su tema → sessione focalizzata
+- [x] "Allenamento smart" (mix) o "Focus su [tema]"
+- [x] Tracciamento progressi per tema in StatsPage con barre percentuali
 
-### 2.3 Direttive del coach
-- [ ] Il coach puo impostare per ogni studente:
-  - Tema focus della settimana
-  - Difficolta minima/massima
-  - Posizioni specifiche da proporre
-  - Note testuali ("lavora sulla pazienza")
-- [ ] Lo studente vede le direttive attive come messaggio in home
-- [ ] Il SessionEngine le usa come vincoli aggiuntivi nella generazione
+### 2.3 Session Engine — COMPLETATO
+- [x] `sessionEngine.js`: genera sessioni combinando SR + difficolta adattiva + tema + direttive
+- [x] `generateSession({ count, theme, directives })` — API unica per tutte le modalita
+- [x] Supporto direttive coach (tema, min/max difficolta, posizioni specifiche)
 
-### 2.4 Dashboard Coach (base)
-- [ ] Lista studenti con: ultimo accesso, sessioni completate, livello per tema
-- [ ] Grafico semplice: andamento errori nel tempo per studente
-- [ ] Possibilita di cambiare il profilo cognitivo dello studente
-- [ ] Gestione direttive
+### 2.4 Direttive del coach
+- [ ] UI per impostare direttive per studente
+- [ ] Lo studente vede le direttive attive in home
+- [ ] Richiede sistema multi-utente (coach + studenti su Firebase)
 
-### 2.5 Adattamento automatico profilo cognitivo
-- [ ] Se lo studente mostra segni di minor impulsivita (tempo medio pre-mossa aumenta), ridurre freeze
-- [ ] Se le risposte profilassi migliorano, ridurre la frequenza
-- [ ] Se la metacognizione mostra consapevolezza, ridurre le domande
-- [ ] Log dei cambiamenti per il coach ("Il freeze e sceso da 5s a 3s — sembra meno impulsivo")
+### 2.5 Dashboard Coach
+- [ ] Lista studenti con progressi
+- [ ] Gestione direttive e profili cognitivi
+- [ ] Richiede sistema multi-utente
+
+### 2.6 Adattamento automatico profilo cognitivo
+- [ ] Analisi automatica dei dati per regolare il profilo
+- [ ] Log dei cambiamenti per il coach
 
 ---
 
-## STRATO 3 — Analytics e Completamento
+## STRATO 3 — Analytics e Completamento — PARZIALMENTE COMPLETATO
 
-### 3.1 Analytics studente
-- [ ] Grafici: successo nel tempo, tempo medio per posizione, errori per tema
-- [ ] Insight in linguaggio naturale: "Questa settimana hai migliorato del 15% nelle forchette"
-- [ ] Confronto settimana corrente vs precedente
-- [ ] Streak e traguardi (motivazione per uso autonomo)
+### 3.1 Analytics studente — COMPLETATO
+- [x] `StatsPage.jsx`: panoramica con barra visiva (consolidate/in corso/da rivedere/nuove)
+- [x] Progresso per tema con barre percentuali
+- [x] Storico ultime 5 sessioni
+- [x] Insight in linguaggio naturale: tema forte/debole, confronto sessioni, conteggio consolidate
+- [x] Accessibile da HomePage via bottone "Statistiche"
 
 ### 3.2 Alert coach
 - [ ] Notifica se lo studente non si allena da X giorni
 - [ ] Notifica se lo studente e bloccato su un tema
-- [ ] Notifica se c'e un miglioramento significativo
-- [ ] Riassunto settimanale automatico
+- [ ] Richiede sistema multi-utente
 
 ### 3.3 Upload posizioni semplificato (coach)
 - [ ] Scacchiera interattiva: posiziona i pezzi, indica la mossa giusta
@@ -261,9 +252,11 @@ src/v2/
 
 ### 8 Marzo 2026
 - Ristrutturazione app in v1/v2 con selettore versione
-- Strato 0 completato: schema posizioni, 25 puzzle, TrainingSession, SessionRunner, FreezeOverlay, SessionSummary, HomePage
-- Fix 2 posizioni con mosse illegali (pin-01, fork-07)
-- Aggiunta validazione automatica posizioni pre-build
+- **Strato 0**: schema posizioni, 25 puzzle, TrainingSession, SessionRunner, FreezeOverlay, SessionSummary, HomePage
+- Fix 2 posizioni con mosse illegali + validazione automatica pre-build
+- **Strato 1**: spaced repetition (Leitner 5 box), profilo cognitivo (4 parametri × 3 livelli), profilassi (analisi minacce avversario), metacognizione (domande post-errore), script import Lichess
+- **Strato 2**: difficolta adattiva, percorsi tematici (sessioni per tema), session engine unificato con supporto direttive coach
+- **Strato 3**: pagina statistiche con panoramica, insight, progresso per tema, storico sessioni
 
 ### 7 Marzo 2026
 - Creazione ROADMAP-V2 e definizione architettura a 4 blocchi
