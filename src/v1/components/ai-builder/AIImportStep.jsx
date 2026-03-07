@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { validateLesson } from '../../utils/lessonValidator'
-import promptRaw from '../../../docs/prompt-crea-lezione.md?raw'
+import promptRaw from '../../../../docs/prompt-crea-lezione.md?raw'
 
 // Estrai il prompt dopo il separatore ---
 const extractPrompt = () => {

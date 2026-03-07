@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../../shared/contexts/AuthContext'
 import './LoginScreen.css'
 
 function LoginScreen() {

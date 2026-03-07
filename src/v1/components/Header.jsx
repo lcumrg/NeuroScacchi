@@ -33,6 +33,9 @@ function Header({ onExit, onSettings, onLogout, onChangeRole, showExit = false, 
               &#8618;
             </button>
           )}
+          <span className="header-build-time" title="Ultimo deploy">
+            {__BUILD_TIME__}
+          </span>
         </div>
       </div>
     </header>

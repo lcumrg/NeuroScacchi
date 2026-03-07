@@ -1,0 +1,844 @@
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Chess } from 'chess.js'
+import { useAuth } from '../shared/contexts/AuthContext'
+import LoginScreen from './components/LoginScreen'
+import RoleSelector from './components/RoleSelector'
+import Header from './components/Header'
+import LessonSelector from './components/LessonSelector'
+import ChessboardComponent from './components/ChessboardComponent'
+import DetectiveMode from './components/DetectiveMode'
+import IntentPanel from './components/IntentPanel'
+import FeedbackBox from './components/FeedbackBox'
+import ProfilassiRadar from './components/ProfilassiRadar'
+import SequencePlayer from './components/SequencePlayer'
+import CandidateMode from './components/CandidateMode'
+import CandidateSequencePlayer from './components/CandidateSequencePlayer'
+import MixedSequencePlayer from './components/MixedSequencePlayer'
+import ReflectionPrompt from './components/ReflectionPrompt'
+import MetacognitivePrompt from './components/MetacognitivePrompt'
+import LessonSummary from './components/LessonSummary'
+import LessonWizard from './components/LessonWizard'
+import AILessonBuilder from './components/AILessonBuilder'
+import { getLessons, saveLesson, deleteLesson, getSettings, saveLessonProgress, createSession, saveSession, mergeFromCloud } from './utils/storageManager'
+import { generateConfrontation } from './utils/confrontation'
+import lezione01 from './data/lezione01.json'
+import testMetaV4 from './data/test_metacognizione_v4.json'
+import testCandidate from './data/test_candidate.json'
+import testCandidateSequenza from './data/test_candidate_sequenza.json'
+import testMista from './data/test_sequenza_mista.json'
+import './App.css'
+
+function App() {
+  const { user, loading, logout } = useAuth()
+  const [currentScreen, setCurrentScreen] = useState('role') // 'role' | 'selector' | 'lesson' | 'admin' | 'ai-builder'
+  const [userRole, setUserRole] = useState(null) // 'studente' | 'allenatore'
+  const [lessons, setLessons] = useState([])
+  const [currentLesson, setCurrentLesson] = useState(null)
+  const [editingLesson, setEditingLesson] = useState(null)
+  const [settings] = useState(getSettings())
+
+  // Lesson player state
+  const gameRef = useRef(new Chess())
+  const game = gameRef.current
+  const [position, setPosition] = useState('')
+  const [isFrozen, setIsFrozen] = useState(true)
+  const [intentSelected, setIntentSelected] = useState(false)
+  const [feedback, setFeedback] = useState({ type: 'neutral', message: '' })
+  const [highlightedSquares, setHighlightedSquares] = useState([])
+  const [arrows, setArrows] = useState([])
+  const [boardOrientation, setBoardOrientation] = useState('white')
+  const [cooldownActive, setCooldownActive] = useState(true)
+  const [showProfilassi, setShowProfilassi] = useState(false)
+  const [pendingMove, setPendingMove] = useState(null)
+  const [profilassiSquareStyles, setProfilassiSquareStyles] = useState({})
+  const [lessonComplete, setLessonComplete] = useState(false)
+  const timersRef = useRef([])
+  const promotionHandledRef = useRef(false)
+
+  // v4.0 Metacognizione state
+  const sessionRef = useRef(null)
+  const [showReflection, setShowReflection] = useState(false)
+  const [reflectionContext, setReflectionContext] = useState(null)
+  const [showSummary, setShowSummary] = useState(false)
+  const [completedSession, setCompletedSession] = useState(null)
+
+  // v5.0 Metacognitive questions (coach-configurable)
+  const [showMetacognitive, setShowMetacognitive] = useState(false)
+  const [metacognitiveQuestion, setMetacognitiveQuestion] = useState(null)
+  const [metacognitivePendingAction, setMetacognitivePendingAction] = useState(null)
+
+  // v4.1 Esame Mode
+  const [esameMode, setEsameMode] = useState(false)
+
+  // Cancella tutti i timer attivi (cleanup)
+  const clearAllTimers = () => {
+    timersRef.current.forEach(id => clearTimeout(id))
+    timersRef.current = []
+  }
+  const safeTimeout = (fn, ms) => {
+    const id = setTimeout(fn, ms)
+    timersRef.current.push(id)
+    return id
+  }
+
+  // v5.0: Seleziona una domanda metacognitiva random dal pool
+  const pickMetacognitiveQuestion = (lesson) => {
+    const domande = lesson.metacognizione?.domande
+    if (!domande || domande.length === 0) return null
+    return domande[Math.floor(Math.random() * domande.length)]
+  }
+
+  // v5.0: Mostra domanda metacognitiva se configurata per il trigger
+  const tryShowMetacognitive = (lesson, trigger, pendingAction) => {
+    const lessonTrigger = lesson.metacognizione?.trigger
+    if (lessonTrigger !== trigger) return false
+    if (esameMode) return false
+
+    const question = pickMetacognitiveQuestion(lesson)
+    if (!question) return false
+
+    setMetacognitiveQuestion(question)
+    setMetacognitivePendingAction(() => pendingAction)
+    setShowMetacognitive(true)
+    return true
+  }
+
+  // v5.0: Gestione risposta metacognitiva
+  const handleMetacognitiveAnswer = (answer) => {
+    if (sessionRef.current) {
+      if (!sessionRef.current.metacognitive) sessionRef.current.metacognitive = []
+      sessionRef.current.metacognitive.push({
+        question: metacognitiveQuestion,
+        answer,
+        trigger: currentLesson?.metacognizione?.trigger,
+        timestamp: Date.now()
+      })
+    }
+    setShowMetacognitive(false)
+    setMetacognitiveQuestion(null)
+    // Esegui l'azione in sospeso
+    if (metacognitivePendingAction) {
+      metacognitivePendingAction()
+      setMetacognitivePendingAction(null)
+    }
+  }
+
+  const handleMetacognitiveSkip = () => {
+    setShowMetacognitive(false)
+    setMetacognitiveQuestion(null)
+    if (metacognitivePendingAction) {
+      metacognitivePendingAction()
+      setMetacognitivePendingAction(null)
+    }
+  }
+
+  // Carica lezioni al mount + sync da Firebase
+  useEffect(() => {
+    const loadLessons = async () => {
+      // 1. Se utente loggato, scarica lezioni dal cloud e unisci a quelle locali
+      if (user) {
+        const syncResult = await mergeFromCloud()
+        if (syncResult.lessonsAdded > 0) {
+          console.log(`Sync: ${syncResult.lessonsAdded} nuove lezioni dal cloud`)
+        }
+      }
+
+      // 2. Carica lezioni da localStorage (ora include anche quelle dal cloud)
+      const stored = getLessons()
+      if (stored.length === 0) {
+        const defaultLessons = [
+          { ...lezione01, categoria: 'test' },
+          { ...testMetaV4, categoria: 'test' },
+          { ...testCandidate, categoria: 'test' },
+          { ...testCandidateSequenza, categoria: 'test' },
+          { ...testMista, categoria: 'test' }
+        ]
+        defaultLessons.forEach(l => saveLesson(l))
+        setLessons(defaultLessons)
+      } else {
+        const ensureLesson = (id, data) => {
+          if (!stored.some(l => l.id === id)) {
+            const lesson = { ...data, categoria: 'test' }
+            saveLesson(lesson)
+            stored.push(lesson)
+          }
+        }
+        ensureLesson('test_metacognizione_v4', testMetaV4)
+        ensureLesson('test_candidate_01', testCandidate)
+        ensureLesson('test_candidate_seq_01', testCandidateSequenza)
+        ensureLesson('test_mista_01', testMista)
+        setLessons(stored)
+      }
+    }
+    loadLessons()
+  }, [user])
+
+  // Inizializza lezione
+  const startLesson = (lesson, isEsame = false) => {
+    clearAllTimers()
+    setCurrentLesson(lesson)
+    setCurrentScreen('lesson')
+    setEsameMode(isEsame)
+
+    // Fix #6: gestione FEN invalida
+    try {
+      game.load(lesson.fen)
+      setPosition(lesson.fen)
+    } catch (e) {
+      setFeedback({ type: 'negative', message: 'Errore: la posizione FEN di questa lezione non è valida.' })
+      return
+    }
+
+    // In esame mode: niente freeze, niente intent panel, scacchiera subito attiva
+    if (isEsame) {
+      setIsFrozen(false)
+      setIntentSelected(true)
+      setCooldownActive(false)
+    } else {
+      setIsFrozen(lesson.tipo_modulo === 'intent')
+      setIntentSelected(false)
+      setCooldownActive(true)
+    }
+
+    setLessonComplete(false)
+    setFeedback({ type: 'neutral', message: '' })
+    setHighlightedSquares([])
+    setArrows([])
+    setShowReflection(false)
+    setReflectionContext(null)
+    setShowMetacognitive(false)
+    setMetacognitiveQuestion(null)
+    setMetacognitivePendingAction(null)
+    setShowSummary(false)
+    setCompletedSession(null)
+
+    // v4.0: crea sessione di tracciamento
+    sessionRef.current = createSession(lesson.id)
+    if (isEsame && sessionRef.current) {
+      sessionRef.current.isEsame = true
+    }
+
+    // Imposta orientamento
+    if (lesson.parametri?.orientamento_scacchiera) {
+      setBoardOrientation(lesson.parametri.orientamento_scacchiera)
+    }
+
+    // Debug mode: auto-complete
+    if (settings.debugMode && !isEsame) {
+      safeTimeout(() => {
+        if (lesson.tipo_modulo === 'intent') {
+          handleIntentSelection(lesson.risposta_corretta)
+        }
+      }, 500)
+    }
+
+    // In esame mode: niente freeze, messaggio diretto
+    if (isEsame) {
+      if (sessionRef.current) {
+        sessionRef.current.phases.freeze.end = Date.now()
+        sessionRef.current.phases.intent.end = Date.now()
+        sessionRef.current.phases.move.start = Date.now()
+      }
+      setFeedback({
+        type: 'neutral',
+        message: 'Modalita Esame: esegui la mossa corretta senza aiuti.'
+      })
+      return
+    }
+
+    // Freeze iniziale
+    const freezeTime = lesson.parametri?.tempo_freeze || 1500
+    safeTimeout(() => {
+      setCooldownActive(false)
+      // v4.0: segna fine fase freeze, inizio fase intent
+      if (sessionRef.current) {
+        sessionRef.current.phases.freeze.end = Date.now()
+        sessionRef.current.phases.intent.start = Date.now()
+      }
+      if (lesson.tipo_modulo === 'intent') {
+        setFeedback({
+          type: 'neutral',
+          message: 'Osserva attentamente la posizione. Quale piano strategico sceglieresti?'
+        })
+      }
+    }, freezeTime)
+  }
+
+  // Gestione Intent
+  const handleIntentSelection = (selectedIntent) => {
+    const isCorrect = selectedIntent === currentLesson.risposta_corretta
+
+    // v4.0: traccia tentativo
+    if (sessionRef.current) {
+      sessionRef.current.intentAttempts++
+    }
+
+    if (isCorrect) {
+      // v4.0: segna fine fase intent, inizio fase move
+      if (sessionRef.current) {
+        sessionRef.current.phases.intent.end = Date.now()
+        sessionRef.current.phases.move.start = Date.now()
+      }
+
+      setFeedback({
+        type: 'positive',
+        message: currentLesson.feedback_positivo
+      })
+
+      // Mostra chunk visivi (non in esame mode)
+      if (currentLesson.parametri?.mostra_chunk_visivo && !esameMode) {
+        setHighlightedSquares(currentLesson.parametri.mostra_chunk_visivo)
+      }
+
+      // Mostra frecce (non in esame mode)
+      if (currentLesson.parametri?.frecce_pattern && !esameMode) {
+        setArrows(currentLesson.parametri.frecce_pattern)
+      }
+
+      // v5.0: Domanda metacognitiva post-intent?
+      const unlockBoard = () => {
+        setIsFrozen(false)
+        setIntentSelected(true)
+      }
+
+      const shown = tryShowMetacognitive(currentLesson, 'post_intent', unlockBoard)
+      if (!shown) {
+        safeTimeout(unlockBoard, 800)
+      }
+
+    } else {
+      // v4.0: traccia errore intent
+      if (sessionRef.current) {
+        sessionRef.current.intentErrors.push({
+          selected: selectedIntent,
+          correct: currentLesson.risposta_corretta,
+          timestamp: Date.now()
+        })
+      }
+
+      setFeedback({
+        type: 'negative',
+        message: currentLesson.feedback_negativo
+      })
+
+      // v4.0: mostra riflessione dopo il secondo errore
+      if (sessionRef.current && sessionRef.current.intentErrors.length >= 2) {
+        safeTimeout(() => {
+          setReflectionContext({ phase: 'intent', selected: selectedIntent })
+          setShowReflection(true)
+        }, 1500)
+      }
+    }
+  }
+
+  // v4.0: gestione riflessione
+  const handleReflection = (reflection) => {
+    if (sessionRef.current) {
+      sessionRef.current.reflections.push(reflection)
+    }
+    setShowReflection(false)
+    setReflectionContext(null)
+  }
+
+  const handleReflectionSkip = () => {
+    setShowReflection(false)
+    setReflectionContext(null)
+  }
+
+  // Gestione Detective
+  const handleDetectiveCorrect = () => {
+    setFeedback({
+      type: 'positive',
+      message: currentLesson.modalita_detective.feedback_positivo || currentLesson.feedback_positivo
+    })
+
+    safeTimeout(() => {
+      completeLesson()
+    }, 2000)
+  }
+
+  const handleDetectiveWrong = () => {
+    // v4.0: traccia errore detective
+    if (sessionRef.current) {
+      sessionRef.current.moveErrors.push({
+        type: 'detective',
+        timestamp: Date.now()
+      })
+    }
+
+    setFeedback({
+      type: 'negative',
+      message: currentLesson.modalita_detective.feedback_negativo || currentLesson.feedback_negativo
+    })
+  }
+
+  // Controlla se una mossa e' una promozione (per la libreria react-chessboard)
+  const handlePromotionCheck = (sourceSquare, targetSquare, piece) => {
+    const isPromo = ((piece === "wP" && sourceSquare[1] === "7" && targetSquare[1] === "8") ||
+                     (piece === "bP" && sourceSquare[1] === "2" && targetSquare[1] === "1")) &&
+                    Math.abs(sourceSquare.charCodeAt(0) - targetSquare.charCodeAt(0)) <= 1
+    if (!isPromo) return false
+
+    // Se la mossa non e' consentita, non mostrare il dialog di promozione
+    const moveNotation = sourceSquare + targetSquare
+    if (currentLesson.mosse_consentite &&
+        !currentLesson.mosse_consentite.includes(moveNotation)) {
+      return false
+    }
+
+    return true
+  }
+
+  // Gestione mossa
+  const onDrop = (sourceSquare, targetSquare) => {
+    // Se la promozione e' gia' stata gestita, conferma alla libreria senza rieseguire
+    if (promotionHandledRef.current) {
+      promotionHandledRef.current = false
+      return true
+    }
+
+    if (isFrozen) return false
+
+    const moveNotation = sourceSquare + targetSquare
+
+    // v4.0: traccia tentativo mossa
+    if (sessionRef.current) {
+      sessionRef.current.moveAttempts++
+    }
+
+    // Verifica se la mossa è consentita
+    if (currentLesson.mosse_consentite &&
+        !currentLesson.mosse_consentite.includes(moveNotation)) {
+      // v4.0: traccia errore mossa
+      if (sessionRef.current) {
+        sessionRef.current.moveErrors.push({
+          type: 'wrong_move',
+          attempted: moveNotation,
+          timestamp: Date.now()
+        })
+      }
+
+      setFeedback({
+        type: 'negative',
+        message: 'Questa mossa non è ottimale. Prova a sviluppare i pezzi verso il centro.'
+      })
+
+      // v4.0: mostra riflessione dopo il secondo errore mossa
+      if (sessionRef.current && sessionRef.current.moveErrors.length >= 2) {
+        safeTimeout(() => {
+          setReflectionContext({ phase: 'move', attempted: moveNotation })
+          setShowReflection(true)
+        }, 1500)
+      }
+
+      return false
+    }
+
+    // Profilassi attiva? (non in esame mode)
+    if (currentLesson.parametri?.usa_profilassi && !esameMode) {
+      setPendingMove({ from: sourceSquare, to: targetSquare })
+      setShowProfilassi(true)
+      return false
+    }
+
+    // Esegui mossa direttamente
+    return executeMove(sourceSquare, targetSquare)
+  }
+
+  // Callback quando l'utente sceglie il pezzo di promozione dal dialog della libreria
+  const handlePromotionPieceSelect = (piece, promoteFromSquare, promoteToSquare) => {
+    if (!piece || !promoteFromSquare || !promoteToSquare) {
+      return false
+    }
+    const promotionPiece = piece[1].toLowerCase()
+
+    // Se c'e' la profilassi, salva la mossa come pending (non in esame mode)
+    if (currentLesson.parametri?.usa_profilassi && !esameMode) {
+      setPendingMove({ from: promoteFromSquare, to: promoteToSquare, promotion: promotionPiece })
+      setShowProfilassi(true)
+      promotionHandledRef.current = true
+      return true
+    }
+
+    const result = executeMove(promoteFromSquare, promoteToSquare, promotionPiece)
+    if (result) promotionHandledRef.current = true
+    return result
+  }
+
+  const executeMove = (sourceSquare, targetSquare, promotion = 'q', confidenceLevel = null) => {
+    const preMoveFen = position
+
+    try {
+      const move = game.move({
+        from: sourceSquare,
+        to: targetSquare,
+        promotion
+      })
+
+      if (move) {
+        setPosition(game.fen())
+
+        const moveNotation = sourceSquare + targetSquare
+        const isCorrect = currentLesson.mosse_corrette?.includes(moveNotation)
+
+        // Genera confronto metacognitivo se la profilassi ha raccolto la fiducia
+        let confrontation = null
+        if (confidenceLevel) {
+          const customMessages = currentLesson.parametri?.profilassi?.messaggi_confronto || null
+          confrontation = generateConfrontation(confidenceLevel, isCorrect, preMoveFen, customMessages)
+
+          // v4.0: salva dati calibrazione nella sessione
+          if (sessionRef.current) {
+            if (!sessionRef.current.calibrations) sessionRef.current.calibrations = []
+            sessionRef.current.calibrations.push({
+              move: moveNotation,
+              confidence: confidenceLevel,
+              correct: isCorrect,
+              confrontation: confrontation.message,
+              timestamp: Date.now()
+            })
+          }
+        }
+
+        if (isCorrect) {
+          setFeedback({
+            type: 'positive',
+            message: '✅ Eccellente! Hai eseguito la mossa migliore.',
+            confrontation
+          })
+
+          safeTimeout(() => {
+            completeLesson()
+          }, confrontation ? 3500 : 2000)
+        } else {
+          setFeedback({
+            type: 'positive',
+            message: 'Mossa accettabile, ma ce n\'era una migliore.',
+            confrontation
+          })
+
+          // In esame mode: completa comunque la lezione dopo il feedback
+          if (esameMode) {
+            safeTimeout(() => {
+              completeLesson()
+            }, confrontation ? 3500 : 2500)
+          }
+        }
+
+        return true
+      }
+    } catch (e) {
+      return false
+    }
+
+    return false
+  }
+
+  const completeLesson = () => {
+    setLessonComplete(true)
+    saveLessonProgress(currentLesson.id, { completed: true })
+
+    // v4.0: finalizza e salva sessione, poi mostra summary
+    if (sessionRef.current) {
+      sessionRef.current.phases.move.end = Date.now()
+      sessionRef.current.completed = true
+      sessionRef.current.completedAt = Date.now()
+      saveSession(sessionRef.current)
+      setCompletedSession({ ...sessionRef.current })
+    }
+
+    // v5.0: Domanda metacognitiva post-move prima del summary
+    const showSummaryFn = () => {
+      setShowSummary(true)
+    }
+    const shown = tryShowMetacognitive(currentLesson, 'post_move', showSummaryFn)
+    if (!shown) {
+      safeTimeout(showSummaryFn, 1500)
+    }
+  }
+
+  // Reset lezione
+  const handleReset = () => {
+    startLesson(currentLesson)
+  }
+
+  // Exit lezione
+  const handleExit = () => {
+    clearAllTimers()
+    setShowSummary(false)
+    setShowReflection(false)
+    setShowMetacognitive(false)
+    setMetacognitiveQuestion(null)
+    setMetacognitivePendingAction(null)
+    setCurrentScreen('selector')
+    setCurrentLesson(null)
+  }
+
+  // Upload lezione
+  const handleUploadLesson = (newLesson) => {
+    saveLesson(newLesson)
+    setLessons([...lessons, newLesson])
+  }
+
+  // Delete lezione
+  const handleDeleteLesson = (lessonId) => {
+    deleteLesson(lessonId)
+    setLessons(lessons.filter(l => l.id !== lessonId))
+  }
+
+  // Admin Console
+  const handleOpenAdmin = (lessonToEdit = null) => {
+    setEditingLesson(lessonToEdit)
+    setCurrentScreen('admin')
+  }
+
+  const handleAdminSave = (savedLesson) => {
+    const existing = lessons.findIndex(l => l.id === savedLesson.id)
+    if (existing !== -1) {
+      const updated = [...lessons]
+      updated[existing] = savedLesson
+      setLessons(updated)
+    } else {
+      setLessons([...lessons, savedLesson])
+    }
+  }
+
+  const handleAdminClose = () => {
+    setEditingLesson(null)
+    setCurrentScreen('selector')
+  }
+
+  // AI Builder
+  const handleOpenAIBuilder = () => {
+    setCurrentScreen('ai-builder')
+  }
+
+  const handleAIBuilderSave = (savedLesson) => {
+    const existing = lessons.findIndex(l => l.id === savedLesson.id)
+    if (existing !== -1) {
+      const updated = [...lessons]
+      updated[existing] = savedLesson
+      setLessons(updated)
+    } else {
+      setLessons([...lessons, savedLesson])
+    }
+  }
+
+  const handleAIBuilderClose = () => {
+    setCurrentScreen('selector')
+  }
+
+  // Callback stabile per evidenziazione profilassi sulla scacchiera
+  const handleProfilassiHighlight = useCallback((styles) => {
+    setProfilassiSquareStyles(styles)
+  }, [])
+
+  // v4.0: callback per SequencePlayer completeLesson
+  const handleSequenceComplete = () => {
+    saveLessonProgress(currentLesson.id, { completed: true })
+    setLessonComplete(true)
+  }
+
+  // Auth gating
+  if (loading) {
+    return (
+      <div className="app-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>&#9823;</div>
+          <div>Caricamento...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <LoginScreen />
+  }
+
+  // Schermata scelta ruolo
+  if (currentScreen === 'role' || !userRole) {
+    return (
+      <RoleSelector
+        userName={user.displayName || user.email?.split('@')[0]}
+        onSelectRole={(role) => {
+          setUserRole(role)
+          setCurrentScreen('selector')
+        }}
+      />
+    )
+  }
+
+  return (
+    <div className="app-container">
+      <Header
+        showExit={currentScreen === 'lesson'}
+        onExit={handleExit}
+        onSettings={() => alert('Impostazioni (coming soon)')}
+        onLogout={logout}
+        onChangeRole={() => { setUserRole(null); setCurrentScreen('role') }}
+        userName={user.displayName || user.email?.split('@')[0]}
+        userRole={userRole}
+        lessonTitle={currentScreen === 'lesson' ? currentLesson?.titolo : null}
+      />
+
+      {currentScreen === 'ai-builder' ? (
+        <AILessonBuilder
+          onSave={handleAIBuilderSave}
+          onClose={handleAIBuilderClose}
+        />
+      ) : currentScreen === 'admin' ? (
+        <LessonWizard
+          editLesson={editingLesson}
+          onSave={handleAdminSave}
+          onClose={handleAdminClose}
+        />
+      ) : currentScreen === 'selector' ? (
+        <LessonSelector
+          lessons={lessons}
+          role={userRole}
+          onSelectLesson={startLesson}
+          onSelectEsame={(lesson) => startLesson(lesson, true)}
+          onUploadLesson={handleUploadLesson}
+          onDeleteLesson={handleDeleteLesson}
+          onCreateLesson={() => handleOpenAdmin()}
+          onEditLesson={(lesson) => handleOpenAdmin(lesson)}
+          onAIBuild={handleOpenAIBuilder}
+        />
+      ) : currentLesson?.tipo_modulo === 'intent_sequenza' ? (
+        <SequencePlayer
+          lesson={currentLesson}
+          esameMode={esameMode}
+          onComplete={handleSequenceComplete}
+          onExit={handleExit}
+        />
+      ) : currentLesson?.tipo_modulo === 'candidate_sequenza' ? (
+        <CandidateSequencePlayer
+          lesson={currentLesson}
+          esameMode={esameMode}
+          onComplete={handleSequenceComplete}
+          onExit={handleExit}
+        />
+      ) : currentLesson?.tipo_modulo === 'mista' ? (
+        <MixedSequencePlayer
+          lesson={currentLesson}
+          esameMode={esameMode}
+          onComplete={handleSequenceComplete}
+          onExit={handleExit}
+        />
+      ) : currentLesson?.tipo_modulo === 'candidate' && !esameMode ? (
+        <CandidateMode
+          lesson={currentLesson}
+          onComplete={() => {
+            saveLessonProgress(currentLesson.id, { completed: true })
+            setLessonComplete(true)
+          }}
+          onExit={handleExit}
+        />
+      ) : (
+        <main className="main-content">
+          <div className="chess-section">
+            {currentLesson?.tipo_modulo === 'detective' ? (
+              <DetectiveMode
+                position={position}
+                question={currentLesson.modalita_detective.domanda}
+                correctSquare={currentLesson.modalita_detective.risposta_corretta_casa}
+                onCorrect={handleDetectiveCorrect}
+                onWrong={handleDetectiveWrong}
+                boardOrientation={boardOrientation}
+              />
+            ) : (
+              <>
+                <div className="lesson-title">
+                  <h2>{currentLesson?.titolo}</h2>
+                  <p className="lesson-description">{currentLesson?.descrizione}</p>
+                </div>
+
+                <ChessboardComponent
+                  position={position}
+                  onDrop={onDrop}
+                  isFrozen={isFrozen}
+                  highlightedSquares={highlightedSquares}
+                  boardOrientation={boardOrientation}
+                  arrows={arrows}
+                  onPromotionPieceSelect={handlePromotionPieceSelect}
+                  onPromotionCheck={handlePromotionCheck}
+                  profilassiSquareStyles={profilassiSquareStyles}
+                />
+              </>
+            )}
+          </div>
+
+          <div className="intent-section">
+            {/* Profilassi: sostituisce il pannello laterale (la scacchiera resta visibile) */}
+            {showProfilassi && pendingMove && !esameMode ? (
+              <ProfilassiRadar
+                position={position}
+                move={pendingMove}
+                config={currentLesson.parametri?.profilassi}
+                onConfirm={(confidenceLevel) => {
+                  setShowProfilassi(false)
+                  setProfilassiSquareStyles({})
+                  executeMove(pendingMove.from, pendingMove.to, pendingMove.promotion || 'q', confidenceLevel)
+                  setPendingMove(null)
+                }}
+                onCancel={() => {
+                  setShowProfilassi(false)
+                  setProfilassiSquareStyles({})
+                  setPendingMove(null)
+                }}
+                onHighlightChange={handleProfilassiHighlight}
+              />
+            ) : (
+              <>
+                {currentLesson?.tipo_modulo === 'intent' && !esameMode && (
+                  <IntentPanel
+                    question={currentLesson.domanda}
+                    options={currentLesson.opzioni_risposta}
+                    onSelect={handleIntentSelection}
+                    disabled={intentSelected || cooldownActive}
+                    cooldownActive={cooldownActive}
+                  />
+                )}
+
+                {/* v5.0: Domanda metacognitiva */}
+                {showMetacognitive && metacognitiveQuestion ? (
+                  <MetacognitivePrompt
+                    question={metacognitiveQuestion}
+                    onAnswer={handleMetacognitiveAnswer}
+                    onSkip={handleMetacognitiveSkip}
+                  />
+                ) : showReflection && reflectionContext ? (
+                  <ReflectionPrompt
+                    onReflect={handleReflection}
+                    onSkip={handleReflectionSkip}
+                    errorContext={reflectionContext}
+                  />
+                ) : (
+                  <FeedbackBox
+                    type={feedback.type}
+                    message={feedback.message}
+                    confrontation={feedback.confrontation}
+                    onReset={handleReset}
+                    showReset={lessonComplete && !showSummary}
+                  />
+                )}
+              </>
+            )}
+          </div>
+        </main>
+      )}
+
+      {/* v4.0: Schermata riepilogo post-lezione */}
+      {showSummary && completedSession && (
+        <LessonSummary
+          session={completedSession}
+          lessonTitle={currentLesson?.titolo}
+          onRepeat={handleReset}
+          onExit={handleExit}
+        />
+      )}
+    </div>
+  )
+}
+
+export default App

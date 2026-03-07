@@ -116,6 +116,13 @@
   background: #FFCDD2;
 }
 
+.header-build-time {
+  font-size: 10px;
+  color: #B0BEC5;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+
 @media (max-width: 768px) {
   .header-content {
     padding: 8px 16px;
