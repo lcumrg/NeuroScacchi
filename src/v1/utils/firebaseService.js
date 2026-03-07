@@ -6,7 +6,7 @@
 //   users/{uid}/settings/main        → impostazioni utente
 //   users/{uid}/lessons/{lessonId}   → lezioni custom caricate dall'utente
 import { collection, doc, addDoc, setDoc, getDoc, getDocs, deleteDoc, serverTimestamp, writeBatch } from 'firebase/firestore'
-import { db, auth, isConfigured } from '../firebase'
+import { db, auth, isConfigured } from '../../shared/firebase'
 
 // Ottieni UID dell'utente corrente
 const getUid = () => auth?.currentUser?.uid || null
