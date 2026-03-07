@@ -248,6 +248,71 @@ src/v2/
 
 ---
 
+## RIFLESSIONE APERTA — Integrazione Motore Scacchistico
+
+> Stato: IN VALUTAZIONE — da discutere prima di procedere con la roadmap
+> Data: 8 Marzo 2026
+
+### Il problema di fondo
+
+L'app non ha un motore scacchistico reale. Claude (AI) puo verificare se una mossa e' legale, ma non se e' la migliore. Questo causa:
+- Posizioni con soluzioni sbagliate (es. endgame-01: f2f4 regalava il pedone)
+- Profilassi che mostra minacce "finte" (mosse legali, non minacce reali con valutazione)
+- Feedback binario giusto/sbagliato, frustrante per ragazzi ADHD
+- Difficolta assegnata a mano (1-10), non misurabile oggettivamente
+- Ogni posizione richiede soluzioni pre-scritte e verificate manualmente
+
+### Opzione: Stockfish WASM nel browser
+
+Stockfish e' il motore scacchistico piu forte al mondo (open source, GPL). Esiste un port WebAssembly che gira direttamente nel browser via Web Worker. Analizza una posizione a depth 15-18 in ~200-500ms su un telefono moderno. Nessun server necessario. Pacchetti npm disponibili: `stockfish`, `stockfish.js`.
+
+Alternativa leggera: Lichess Cloud Evaluation API (gratuita, no auth, ma limitata a 1 req/s e solo posizioni gia nel database Lichess).
+
+### Cosa cambierebbe nell'app
+
+| Aspetto | Oggi (senza motore) | Con Stockfish |
+|---|---|---|
+| **Soluzioni** | Lista fissa pre-scritta | Calcolate in tempo reale |
+| **Feedback** | Giusto/Sbagliato | Spettro graduato: ottima / buona / imprecisione / errore |
+| **Profilassi** | Minacce finte (mosse legali) | Minacce reali (eval-based) |
+| **Difficolta** | Numero manuale 1-10 | Calcolata: profondita necessaria per trovare la mossa |
+| **Posizioni** | Database curato a mano | Qualsiasi FEN funziona (Lichess, partite vere, coach) |
+| **Metacognizione** | Domanda generica post-errore | Contestuale: "Hai mosso in 2s, il motore dice che perdi un pezzo. Cosa non hai visto?" |
+| **Modalita** | Solo puzzle singoli | Puzzle + partite intere con scaffolding cognitivo |
+
+### Impatto sul layer cognitivo (ADHD / funzioni esecutive)
+
+**Freeze**: potrebbe applicarsi prima di OGNI mossa (non solo a inizio posizione), calibrato sull'impulsivita. Lo studente impulsivo viene frenato dove serve davvero.
+
+**Profilassi**: il motore evidenzia la minaccia reale con valutazione numerica. La differenza tra "il cavallo puo andare in d5" e "il cavallo in d5 ti costa la qualita (-3.2)" e' enorme per chi deve imparare a valutare il pericolo.
+
+**Feedback graduato**: "buona mossa, ma c'era di meglio" e' meno frustrante di "SBAGLIATO" per un ragazzo con bassa tolleranza alla frustrazione. Meno muri rossi, piu sfumature.
+
+**Metacognizione contestuale**: "Hai perso 3 punti di valutazione nelle ultime 5 mosse. Stai andando troppo veloce?" — basato su dati reali, non domande generiche.
+
+### Cosa resta uguale
+
+- Spaced repetition (servono ancora posizioni da ripetere)
+- Profilo cognitivo (4 parametri controllano il comportamento)
+- Sessioni generate dal session engine
+- Struttura coach → direttive → studente si allena
+- Stack tecnico (React + Vite + Firebase)
+
+### La visione
+
+Lo studente non risolve piu "indovinelli con una risposta sola". **Gioca a scacchi, e l'app lo accompagna** con gli strumenti cognitivi calibrati sul suo profilo. I puzzle restano come modalita di allenamento mirato, ma non sono piu l'unica cosa che l'app sa fare.
+
+Cambio di natura: da "quiz di scacchi con supporto ADHD" a "allenatore di scacchi adattivo per funzioni esecutive".
+
+### Decisioni da prendere
+
+1. **Si integra Stockfish?** Se si, diventa il cuore dell'app.
+2. **Si mantengono anche i puzzle classici?** (Probabilmente si, come modalita "tattiche")
+3. **Si aggiunge la modalita partita con scaffolding?** (Il vero salto di qualita, ma richiede piu lavoro)
+4. **Priorita**: prima sostituire le posizioni manuali con Lichess (fix immediato) e poi integrare Stockfish? O direttamente Stockfish?
+
+---
+
 ## Changelog
 
 ### 8 Marzo 2026
