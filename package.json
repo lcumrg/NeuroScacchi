@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "validate": "node scripts/validate-positions.cjs",
+    "dev": "node scripts/validate-positions.cjs && vite",
+    "build": "node scripts/validate-positions.cjs && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
