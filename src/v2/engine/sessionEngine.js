@@ -44,12 +44,16 @@ export function generateSession({ count = 10, theme = null, directives = null } 
     }
   }
 
-  // 3. Difficolta adattiva (se non gia filtrato per tema specifico)
-  if (!directives?.minDifficulty && !directives?.maxDifficulty) {
+  // 3. Difficolta adattiva — solo se il pool e' abbastanza grande
+  //    Con pochi esercizi per tema, il filtro rischia di svuotare il pool
+  if (!directives?.minDifficulty && !directives?.maxDifficulty && pool.length > count) {
     const level = theme
       ? getStudentLevel(enrichRecords(srRecords), theme)
       : getAverageLevel(enrichRecords(srRecords))
-    pool = filterByDifficulty(pool, level, Math.min(count, pool.length))
+    const filtered = filterByDifficulty(pool, level, Math.min(count, pool.length))
+    if (filtered.length > 0) {
+      pool = filtered
+    }
   }
 
   // 4. Spaced repetition: prioritizza posizioni in scadenza e mai viste
