@@ -222,3 +222,48 @@ src/v2/
 - Un file = un concetto. Niente file da 800 righe come l'attuale App.jsx
 - Nomi in inglese per il codice, italiano per i testi UI
 - Test manuali su ogni strato prima di passare al successivo
+
+---
+
+## Infrastruttura e Qualita
+
+### Selettore versione v1/v2
+- [x] `VersionSelector.jsx` — schermata iniziale con due card (Classic / 2.0)
+- [x] Scelta salvata in localStorage, si presenta solo la prima volta
+- [x] `resetVersionChoice()` per tornare al selettore
+- [x] Bottone "Cambia versione" nell'header di entrambe le versioni (v1: badge "v1", v2: badge "v2")
+
+### Struttura codice condivisa
+- [x] `src/shared/` — firebase.js e AuthContext condivisi tra v1 e v2
+- [x] `src/v1/` — tutto il codice Classic, spostato senza modifiche funzionali
+- [x] `src/v2/` — codice 2.0, parte da zero
+- [x] `src/App.jsx` — router che smista tra v1 e v2
+
+### Timestamp build
+- [x] `__BUILD_TIME__` iniettato da Vite al build (vite.config.js `define`)
+- [x] Visibile nell'header v1 e nel footer v2
+- [x] Formato italiano con data e ora (timezone Europe/Rome)
+
+### Validazione automatica posizioni
+- [x] `scripts/validate-positions.cjs` — script di validazione pre-build
+- [x] Verifica: FEN valido, mosse soluzione legali (chess.js), ID univoci, tema ammesso, difficolta 1-10, hint corretti
+- [x] Integrato in `npm run build` e `npm run dev` — se fallisce, il build si blocca
+- [x] Messaggio di errore dettagliato: quale posizione, quale mossa, mosse legali disponibili
+- [x] Comando standalone: `npm run validate`
+
+### Deploy automatico
+- [x] GitHub Action `auto-merge-claude.yml`: push su `claude/*` → merge automatico in main
+- [x] Netlify auto-deploy da main
+
+---
+
+## Changelog
+
+### 8 Marzo 2026
+- Ristrutturazione app in v1/v2 con selettore versione
+- Strato 0 completato: schema posizioni, 25 puzzle, TrainingSession, SessionRunner, FreezeOverlay, SessionSummary, HomePage
+- Fix 2 posizioni con mosse illegali (pin-01, fork-07)
+- Aggiunta validazione automatica posizioni pre-build
+
+### 7 Marzo 2026
+- Creazione ROADMAP-V2 e definizione architettura a 4 blocchi
