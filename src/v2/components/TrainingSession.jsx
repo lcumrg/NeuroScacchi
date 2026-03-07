@@ -12,8 +12,8 @@ export default function TrainingSession({ position, positionIndex, cognitiveProf
   const maxHints = getMaxHints(cognitiveProfile)
   const showProfilassi = shouldShowProfilassi(cognitiveProfile, positionIndex)
 
-  const [phase, setPhase] = useState(showProfilassi ? 'profilassi' : 'freeze')
-  // profilassi → freeze → play → meta → done
+  const [phase, setPhase] = useState('freeze')
+  // freeze → profilassi → play → meta → done
   const [errors, setErrors] = useState(0)
   const [feedback, setFeedback] = useState(null)
   const [solved, setSolved] = useState(false)
@@ -23,11 +23,16 @@ export default function TrainingSession({ position, positionIndex, cognitiveProf
   const startTimeRef = useRef(null)
   const totalErrorsRef = useRef(0)
 
-  const handleProfilassiComplete = useCallback(() => {
-    setPhase('freeze')
-  }, [])
-
   const handleFreezeEnd = useCallback(() => {
+    if (showProfilassi) {
+      setPhase('profilassi')
+    } else {
+      setPhase('play')
+      startTimeRef.current = Date.now()
+    }
+  }, [showProfilassi])
+
+  const handleProfilassiComplete = useCallback(() => {
     setPhase('play')
     startTimeRef.current = Date.now()
   }, [])
@@ -108,31 +113,29 @@ export default function TrainingSession({ position, positionIndex, cognitiveProf
     <div style={styles.container}>
       {position.title && <h3 style={styles.title}>{position.title}</h3>}
 
-      {/* Profilassi — prima del freeze */}
+      {/* Scacchiera — sempre visibile */}
+      <div style={styles.boardWrapper}>
+        <Chessboard
+          position={gameRef.current.fen()}
+          onPieceDrop={handleDrop}
+          boardWidth={Math.min(440, window.innerWidth - 40)}
+          boardOrientation={orientation}
+          arePiecesDraggable={phase === 'play' && !solved && !showSolution}
+          customBoardStyle={{
+            borderRadius: 8,
+            boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+          }}
+          customDarkSquareStyle={{ backgroundColor: '#779952' }}
+          customLightSquareStyle={{ backgroundColor: '#edeed1' }}
+        />
+        {phase === 'freeze' && (
+          <FreezeOverlay duration={freezeDuration} onComplete={handleFreezeEnd} />
+        )}
+      </div>
+
+      {/* Profilassi — dopo il freeze, prima di giocare */}
       {phase === 'profilassi' && (
         <ProfilassiPrompt fen={position.fen} onComplete={handleProfilassiComplete} />
-      )}
-
-      {/* Scacchiera */}
-      {phase !== 'profilassi' && (
-        <div style={styles.boardWrapper}>
-          <Chessboard
-            position={gameRef.current.fen()}
-            onPieceDrop={handleDrop}
-            boardWidth={Math.min(440, window.innerWidth - 40)}
-            boardOrientation={orientation}
-            arePiecesDraggable={phase === 'play' && !solved && !showSolution}
-            customBoardStyle={{
-              borderRadius: 8,
-              boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-            }}
-            customDarkSquareStyle={{ backgroundColor: '#779952' }}
-            customLightSquareStyle={{ backgroundColor: '#edeed1' }}
-          />
-          {phase === 'freeze' && (
-            <FreezeOverlay duration={freezeDuration} onComplete={handleFreezeEnd} />
-          )}
-        </div>
       )}
 
       {/* Metacognizione */}
@@ -141,7 +144,7 @@ export default function TrainingSession({ position, positionIndex, cognitiveProf
       )}
 
       {/* Feedback */}
-      {feedback && phase !== 'profilassi' && (
+      {feedback && phase !== 'profilassi' && phase !== 'freeze' && (
         <div style={{
           ...styles.feedback,
           background: feedback.type === 'correct' ? '#E8F5E9' : '#FFEBEE',
