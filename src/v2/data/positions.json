@@ -1,0 +1,327 @@
+[
+  {
+    "id": "fork-01",
+    "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4",
+    "solutionMoves": ["h5f7"],
+    "theme": "mate",
+    "difficulty": 1,
+    "hints": [
+      "Guarda il re nero: e' protetto?",
+      "Il cavallo in f6 difende f7?"
+    ],
+    "origin": "manual",
+    "title": "Matto del barbiere"
+  },
+  {
+    "id": "fork-02",
+    "fen": "r1bqkbnr/pppppppp/2n5/8/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 2 2",
+    "solutionMoves": ["d7d5"],
+    "theme": "opening",
+    "difficulty": 1,
+    "hints": [
+      "Controlla il centro!",
+      "Un pedone puo attaccare e4"
+    ],
+    "origin": "manual",
+    "title": "Controllo del centro"
+  },
+  {
+    "id": "fork-03",
+    "fen": "r2qkb1r/ppp2ppp/2n1bn2/3pp3/4P3/1B3N2/PPPP1PPP/RNBQ1RK1 w kq - 4 6",
+    "solutionMoves": ["f3g5"],
+    "theme": "tactics",
+    "difficulty": 2,
+    "hints": [
+      "Quale pezzo debole puoi attaccare?",
+      "f7 e' un punto debole classico"
+    ],
+    "origin": "manual",
+    "title": "Attacco su f7"
+  },
+  {
+    "id": "fork-04",
+    "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+    "solutionMoves": ["g8f6"],
+    "theme": "opening",
+    "difficulty": 1,
+    "hints": [
+      "Sviluppa un pezzo e attacca il centro",
+      "Quale cavallo puo andare su una casa utile?"
+    ],
+    "origin": "manual",
+    "title": "Sviluppo naturale"
+  },
+  {
+    "id": "fork-05",
+    "fen": "rnbqkb1r/pppppppp/5n2/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq d3 0 2",
+    "solutionMoves": ["f6e4"],
+    "theme": "tactics",
+    "difficulty": 2,
+    "hints": [
+      "Un pedone e' rimasto senza difesa",
+      "Il cavallo puo catturare qualcosa?"
+    ],
+    "origin": "manual",
+    "title": "Pedone indifeso"
+  },
+  {
+    "id": "pin-01",
+    "fen": "rn1qkbnr/ppp1pppp/8/3p4/3P2b1/5N2/PPP1PPPP/RNBQKB1R w KQkq - 2 3",
+    "solutionMoves": ["f1e2"],
+    "theme": "pin",
+    "difficulty": 2,
+    "hints": [
+      "Il cavallo in f3 e' inchiodato?",
+      "Come puoi liberare il cavallo dall'inchiodatura?"
+    ],
+    "origin": "manual",
+    "title": "Liberarsi dall'inchiodatura"
+  },
+  {
+    "id": "pin-02",
+    "fen": "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R w KQkq - 2 5",
+    "solutionMoves": ["c1g5"],
+    "theme": "pin",
+    "difficulty": 3,
+    "hints": [
+      "Puoi inchiodare un pezzo nemico?",
+      "L'alfiere puo creare un'inchiodatura sulla donna"
+    ],
+    "origin": "manual",
+    "title": "Inchiodatura classica"
+  },
+  {
+    "id": "fork-06",
+    "fen": "r1bq1rk1/ppppbppp/2n2n2/4p3/2B1P3/3P1N2/PPP2PPP/RNBQ1RK1 w - - 6 7",
+    "solutionMoves": ["c1g5"],
+    "theme": "pin",
+    "difficulty": 3,
+    "hints": [
+      "Quale pezzo puoi inchiodare?",
+      "Il cavallo f6 difende qualcosa di importante..."
+    ],
+    "origin": "manual",
+    "title": "Inchioda il difensore"
+  },
+  {
+    "id": "fork-07",
+    "fen": "rnbqkbnr/ppp1pppp/8/3pN3/8/8/PPPPPPPP/RNBQKB1R b KQkq - 1 2",
+    "solutionMoves": ["d8d4"],
+    "theme": "fork",
+    "difficulty": 2,
+    "hints": [
+      "La donna puo attaccare due pezzi?",
+      "Da d4 la donna attacca il cavallo e il pedone e2"
+    ],
+    "origin": "manual",
+    "title": "Forchetta di donna"
+  },
+  {
+    "id": "mate-01",
+    "fen": "6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1",
+    "solutionMoves": ["e1e8"],
+    "theme": "mate",
+    "difficulty": 2,
+    "hints": [
+      "La torre puo dare scacco?",
+      "Il re nero non ha via di fuga sull'ottava traversa"
+    ],
+    "origin": "manual",
+    "title": "Matto in prima traversa"
+  },
+  {
+    "id": "mate-02",
+    "fen": "r1bqk2r/pppp1Bpp/2n2n2/2b1p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 4",
+    "solutionMoves": ["e8f7"],
+    "theme": "tactics",
+    "difficulty": 2,
+    "hints": [
+      "Non puoi ignorare lo scacco!",
+      "Il re deve riprendere l'alfiere"
+    ],
+    "origin": "manual",
+    "title": "Cattura forzata"
+  },
+  {
+    "id": "sacrifice-01",
+    "fen": "r1b1k2r/ppppqppp/2n2n2/2b1p3/2B1P3/2NP1N2/PPP2PPP/R1BQK2R w KQkq - 4 6",
+    "solutionMoves": ["c4f7"],
+    "theme": "sacrifice",
+    "difficulty": 4,
+    "hints": [
+      "A volte sacrificare un pezzo apre linee di attacco",
+      "f7 e' difeso solo dal re..."
+    ],
+    "origin": "manual",
+    "title": "Sacrificio su f7"
+  },
+  {
+    "id": "endgame-01",
+    "fen": "8/8/8/8/4k3/8/4KP2/8 w - - 0 1",
+    "solutionMoves": ["f2f4"],
+    "theme": "endgame",
+    "difficulty": 3,
+    "hints": [
+      "Il pedone deve avanzare",
+      "Spingi il pedone per guadagnare spazio"
+    ],
+    "origin": "manual",
+    "title": "Finale di pedone"
+  },
+  {
+    "id": "endgame-02",
+    "fen": "8/5pk1/8/8/8/8/1R3PK1/8 w - - 0 1",
+    "solutionMoves": ["b2b7"],
+    "theme": "endgame",
+    "difficulty": 3,
+    "hints": [
+      "La torre deve diventare attiva",
+      "Metti la torre sulla settima traversa!"
+    ],
+    "origin": "manual",
+    "title": "Torre in settima"
+  },
+  {
+    "id": "skewer-01",
+    "fen": "4r1k1/5ppp/8/1B6/8/8/5PPP/6K1 w - - 0 1",
+    "solutionMoves": ["b5e8"],
+    "theme": "skewer",
+    "difficulty": 3,
+    "hints": [
+      "L'alfiere puo allineare due pezzi?",
+      "Catturai la torre con l'alfiere!"
+    ],
+    "origin": "manual",
+    "title": "Infilata di alfiere"
+  },
+  {
+    "id": "discovery-01",
+    "fen": "rnbqk2r/pppp1ppp/4pn2/8/1bPP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+    "solutionMoves": ["e2e3"],
+    "theme": "defense",
+    "difficulty": 2,
+    "hints": [
+      "L'alfiere b4 sta inchiodando il cavallo",
+      "Difendi e libera la posizione con una mossa di pedone"
+    ],
+    "origin": "manual",
+    "title": "Difesa dall'inchiodatura"
+  },
+  {
+    "id": "tactics-01",
+    "fen": "r2qk2r/ppp1bppp/2n1bn2/3pp3/8/1BN2N2/PPPP1PPP/R1BQ1RK1 w kq - 6 7",
+    "solutionMoves": ["f3e5"],
+    "theme": "tactics",
+    "difficulty": 3,
+    "hints": [
+      "Il cavallo puo saltare in una casa forte?",
+      "e5 e' una casa potente nel centro"
+    ],
+    "origin": "manual",
+    "title": "Avamposto centrale"
+  },
+  {
+    "id": "mate-03",
+    "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/4PP2/8/PPPP2PP/RNBQKBNR b KQkq f3 0 2",
+    "solutionMoves": ["d8h4"],
+    "theme": "mate",
+    "difficulty": 2,
+    "hints": [
+      "Il re bianco e' esposto?",
+      "La donna puo dare scacco matto?"
+    ],
+    "origin": "manual",
+    "title": "Matto del pastore invertito"
+  },
+  {
+    "id": "fork-08",
+    "fen": "r3kb1r/pppq1ppp/2n1bn2/3Np3/2B1P3/8/PPPP1PPP/RNBQ1RK1 w kq - 2 7",
+    "solutionMoves": ["d5f6"],
+    "theme": "fork",
+    "difficulty": 4,
+    "hints": [
+      "Il cavallo puo creare una doppia minaccia?",
+      "Da f6 il cavallo da scacco e attacca la donna"
+    ],
+    "origin": "manual",
+    "title": "Forchetta di cavallo"
+  },
+  {
+    "id": "deflection-01",
+    "fen": "r4rk1/ppp2ppp/2n2n2/3qp1B1/3P4/2N5/PPP2PPP/R2Q1RK1 w - - 0 10",
+    "solutionMoves": ["g5f6"],
+    "theme": "deflection",
+    "difficulty": 5,
+    "hints": [
+      "Quale pezzo difende qualcosa di importante?",
+      "Se catturi il cavallo f6, chi difende la donna?"
+    ],
+    "origin": "manual",
+    "title": "Deviazione del difensore"
+  },
+  {
+    "id": "promotion-01",
+    "fen": "8/P5k1/8/8/8/8/6K1/8 w - - 0 1",
+    "solutionMoves": ["a7a8q"],
+    "theme": "promotion",
+    "difficulty": 1,
+    "hints": [
+      "Il pedone e' quasi arrivato!",
+      "Promuovi a donna"
+    ],
+    "origin": "manual",
+    "title": "Promozione semplice"
+  },
+  {
+    "id": "trapped-01",
+    "fen": "rn1qkbnr/pbpppppp/1p6/6B1/4P3/5N2/PPPP1PPP/RN1QKB1R b KQkq - 3 3",
+    "solutionMoves": ["h7h6"],
+    "theme": "trapped_piece",
+    "difficulty": 3,
+    "hints": [
+      "L'alfiere bianco in g5 puo essere cacciato?",
+      "Attacca l'alfiere con il pedone h"
+    ],
+    "origin": "manual",
+    "title": "Caccia all'alfiere"
+  },
+  {
+    "id": "tactics-02",
+    "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p3/3PP3/5N2/PPP2PPP/RNBQKB1R b KQkq d3 0 3",
+    "solutionMoves": ["e5d4"],
+    "theme": "tactics",
+    "difficulty": 2,
+    "hints": [
+      "Un pedone e' in presa",
+      "Cattura il pedone in d4"
+    ],
+    "origin": "manual",
+    "title": "Cattura al centro"
+  },
+  {
+    "id": "defense-01",
+    "fen": "rnbqk2r/pppp1ppp/5n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+    "solutionMoves": ["d2d3"],
+    "theme": "defense",
+    "difficulty": 2,
+    "hints": [
+      "L'alfiere in c4 deve essere protetto",
+      "Un pedone in d3 protegge l'alfiere e controlla il centro"
+    ],
+    "origin": "manual",
+    "title": "Difesa solida"
+  },
+  {
+    "id": "mate-04",
+    "fen": "5rk1/ppp2ppp/8/8/8/8/PPP2PPP/3RR1K1 w - - 0 1",
+    "solutionMoves": ["d1d8"],
+    "theme": "mate",
+    "difficulty": 3,
+    "hints": [
+      "Hai due torri sulla stessa colonna",
+      "Una torre da scacco, l'altra copre"
+    ],
+    "origin": "manual",
+    "title": "Matto con due torri"
+  }
+]

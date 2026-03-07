@@ -1,7 +1,7 @@
 # NeuroScacchi 2.0 — Roadmap
 
 > Training engine adattivo per scacchi + riabilitazione funzioni esecutive.
-> Ultimo aggiornamento: 7 Marzo 2026
+> Ultimo aggiornamento: 8 Marzo 2026 (Strato 0 completato)
 
 ---
 
@@ -33,38 +33,34 @@ Dashboard: progressi studenti, direttive attive, alert, gestione posizioni.
 
 ---
 
-## STRATO 0 — MVP Funzionante
+## STRATO 0 — MVP Funzionante — COMPLETATO
 
-L'obiettivo e avere qualcosa di usabile il prima possibile. Ogni task e piccola e autocontenuta.
+### 0.1 Modello dati posizioni — COMPLETATO
+- [x] Schema posizione in `src/v2/engine/positionSchema.js` con validazione
+- [x] Set iniziale di 25 posizioni tattiche in `src/v2/data/positions.json`
+- Temi: mate, fork, pin, skewer, tactics, opening, defense, sacrifice, endgame, promotion, deflection, trapped_piece
 
-### 0.1 Modello dati posizioni
-- [ ] Definire lo schema di una posizione: `{ id, fen, solutionMoves[], theme, difficulty, hints[], origin }`
-- [ ] Creare un file `src/v2/engine/positionSchema.js` con validazione
-- [ ] Creare un set iniziale di 20-30 posizioni tattiche a mano (JSON)
+### 0.2 Training Session base — COMPLETATO
+- [x] Componente `TrainingSession`: scacchiera + mossa + feedback
+- [x] Validazione mossa con chess.js vs solutionMoves
+- [x] Feedback visivo: verde (corretta), rosso (sbagliata + "riprova")
+- [x] Hint progressivi (HintBox): primo hint dopo 1 errore, secondo dopo 2
+- [x] Orientamento automatico in base a chi muove
 
-### 0.2 Training Session base
-- [ ] Componente `TrainingSession`: mostra una posizione, lo studente deve trovare la mossa giusta
-- [ ] Scacchiera interattiva (riusa `react-chessboard` + `chess.js`)
-- [ ] Validazione mossa con `chess.js` — confronto con `solutionMoves`
-- [ ] Feedback visivo: mossa corretta (verde), mossa sbagliata (rosso + "riprova")
-- [ ] Possibilita di mostrare hint progressivi (primo hint dopo 1 errore, secondo dopo 2, ecc.)
-- [ ] Alla fine della posizione, passa alla successiva
+### 0.3 Sessione come lista di posizioni — COMPLETATO
+- [x] Componente `SessionRunner`: sequenza di posizioni
+- [x] Barra di progresso (ProgressBar)
+- [x] Schermata riepilogo (`SessionSummary`): corrette/sbagliate, errori, tempo medio, precisione %
 
-### 0.3 Sessione come lista di posizioni
-- [ ] Componente `SessionRunner`: prende una lista di posizioni e le presenta in sequenza
-- [ ] Barra di progresso (posizione 3/10)
-- [ ] Schermata riepilogo a fine sessione: posizioni corrette/sbagliate, tempo totale
+### 0.4 Freeze — COMPLETATO
+- [x] `FreezeOverlay`: overlay con timer visivo (barra che si riempie)
+- [x] 3 secondi di default, applicato automaticamente a ogni posizione
+- [x] Messaggio "Osserva la posizione..."
 
-### 0.4 Freeze (primo elemento cognitivo)
-- [ ] Prima di ogni posizione, la scacchiera e visibile ma non interattiva per N secondi
-- [ ] Timer visivo (barra che si svuota) — lo studente capisce che deve guardare
-- [ ] Durata freeze configurabile (default 3 secondi)
-- [ ] Il freeze si applica automaticamente a ogni posizione — non serve configurarlo per ognuna
-
-### 0.5 Home page v2
-- [ ] Schermata principale con bottone "Allenati" che avvia una sessione
-- [ ] Per ora la sessione usa le posizioni in ordine di difficolta crescente
-- [ ] Bottone "Cambia versione" per tornare alla v1
+### 0.5 Home page v2 — COMPLETATO
+- [x] Schermata principale con sessione rapida (10) e completa (25)
+- [x] Riepilogo temi disponibili
+- [x] Bottone "Cambia versione" (v2) nell'header
 
 ---
 
