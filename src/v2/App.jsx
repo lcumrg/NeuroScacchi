@@ -1,9 +1,14 @@
+import { useState } from 'react'
 import { useAuth } from '../shared/contexts/AuthContext'
 import LoginScreen from '../v1/components/LoginScreen'
 import { resetVersionChoice } from '../VersionSelector'
+import HomePage from './pages/HomePage'
+import SessionRunner from './components/SessionRunner'
 
 export default function AppV2() {
   const { user, loading, logout } = useAuth()
+  const [screen, setScreen] = useState('home') // 'home' | 'training'
+  const [sessionPositions, setSessionPositions] = useState([])
 
   if (loading) {
     return (
@@ -20,38 +25,59 @@ export default function AppV2() {
     return <LoginScreen />
   }
 
+  const handleStartSession = (positions) => {
+    setSessionPositions(positions)
+    setScreen('training')
+  }
+
+  const handleBackHome = () => {
+    setScreen('home')
+    setSessionPositions([])
+  }
+
   return (
     <div style={styles.container}>
       <header style={styles.header}>
         <div style={styles.headerLeft}>
-          <span style={{ fontSize: 24 }}>&#9812;</span>
+          <span style={{ fontSize: 24, cursor: 'pointer' }} onClick={handleBackHome}>&#9812;</span>
           <h1 style={styles.headerTitle}>NeuroScacchi 2.0</h1>
         </div>
         <div style={styles.headerRight}>
           <span style={styles.userName}>{user.displayName || user.email?.split('@')[0]}</span>
           <button
-            style={styles.headerBtn}
+            style={styles.versionBtn}
             onClick={() => { resetVersionChoice(); window.location.reload() }}
           >
-            Cambia versione
+            v2
           </button>
+          {screen === 'training' && (
+            <button style={styles.headerBtn} onClick={handleBackHome}>
+              &#10005; Esci
+            </button>
+          )}
           <button style={styles.headerBtn} onClick={logout}>
-            Esci
+            Logout
           </button>
+          <span style={styles.buildTime}>{__BUILD_TIME__}</span>
         </div>
       </header>
 
-      <main style={styles.main}>
-        <div style={styles.placeholder}>
-          <div style={{ fontSize: 64, marginBottom: 16 }}>&#9812;</div>
-          <h2 style={{ margin: '0 0 12px 0', color: '#2C3E50' }}>NeuroScacchi 2.0</h2>
-          <p style={{ color: '#5A6C7D', maxWidth: 400, lineHeight: 1.6 }}>
-            Training engine adattivo in fase di sviluppo.
-            Il session engine, il profilo cognitivo e il sistema di progressione
-            verranno costruiti qui.
-          </p>
-          <div style={styles.statusBadge}>In costruzione</div>
-        </div>
+      <main>
+        {screen === 'home' && (
+          <HomePage onStartSession={handleStartSession} />
+        )}
+        {screen === 'training' && (
+          <SessionRunner
+            positions={sessionPositions}
+            onFinish={handleBackHome}
+            onRestart={() => {
+              setScreen('home')
+              setTimeout(() => {
+                handleStartSession(sessionPositions)
+              }, 0)
+            }}
+          />
+        )}
       </main>
 
       <footer style={styles.footer}>
@@ -79,7 +105,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '12px 20px',
+    padding: '10px 20px',
     background: '#FFFFFF',
     borderBottom: '1px solid #E0E0E0',
     boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
@@ -98,41 +124,36 @@ const styles = {
   headerRight: {
     display: 'flex',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   userName: {
     fontSize: 14,
     color: '#5A6C7D',
   },
+  versionBtn: {
+    padding: '3px 10px',
+    background: '#E8F5E9',
+    border: '1px solid #A5D6A7',
+    borderRadius: 12,
+    fontFamily: 'monospace',
+    fontSize: 11,
+    fontWeight: 700,
+    color: '#2E7D32',
+    cursor: 'pointer',
+  },
   headerBtn: {
     background: 'none',
     border: '1px solid #E0E0E0',
     borderRadius: 8,
-    padding: '6px 14px',
+    padding: '6px 12px',
     fontSize: 13,
     color: '#5A6C7D',
     cursor: 'pointer',
     fontFamily: 'inherit',
   },
-  main: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 'calc(100vh - 60px)',
-  },
-  placeholder: {
-    textAlign: 'center',
-    padding: 40,
-  },
-  statusBadge: {
-    marginTop: 20,
-    display: 'inline-block',
-    padding: '6px 16px',
-    borderRadius: 20,
-    background: '#FFF3E0',
-    color: '#E65100',
-    fontSize: 13,
-    fontWeight: 600,
+  buildTime: {
+    fontSize: 10,
+    color: '#B0BEC5',
   },
   footer: {
     position: 'fixed',
