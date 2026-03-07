@@ -116,6 +116,24 @@
   background: #FFCDD2;
 }
 
+.version-switch-btn {
+  padding: 3px 10px;
+  background: #E8EAF6;
+  border: 1px solid #C5CAE9;
+  border-radius: 12px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  color: #3949AB;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.version-switch-btn:hover {
+  background: #C5CAE9;
+  border-color: #7986CB;
+}
+
 .header-build-time {
   font-size: 10px;
   color: #B0BEC5;
