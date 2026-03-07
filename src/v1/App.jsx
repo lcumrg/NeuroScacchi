@@ -26,6 +26,7 @@ import testMetaV4 from './data/test_metacognizione_v4.json'
 import testCandidate from './data/test_candidate.json'
 import testCandidateSequenza from './data/test_candidate_sequenza.json'
 import testMista from './data/test_sequenza_mista.json'
+import { resetVersionChoice } from '../VersionSelector'
 import './App.css'
 
 function App() {
@@ -676,6 +677,7 @@ function App() {
         onSettings={() => alert('Impostazioni (coming soon)')}
         onLogout={logout}
         onChangeRole={() => { setUserRole(null); setCurrentScreen('role') }}
+        onChangeVersion={() => { resetVersionChoice(); window.location.reload() }}
         userName={user.displayName || user.email?.split('@')[0]}
         userRole={userRole}
         lessonTitle={currentScreen === 'lesson' ? currentLesson?.titolo : null}
