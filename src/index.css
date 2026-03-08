@@ -1,7 +1,8 @@
-:root {
-  /* Palette Colori NeuroScacchi */
+:root, [data-theme="light"] {
+  /* Palette Colori NeuroScacchi — Tema Chiaro */
   --bg-main: #F8F9FA;
   --bg-card: #FAFBFC;
+  --bg-surface: #FFFFFF;
   --text-primary: #212121;
   --text-secondary: #546E7A;
   --text-label: #90A4AE;
@@ -41,6 +42,43 @@
   /* Typography — Nunito + Atkinson Hyperlegible */
   --font-main: 'Nunito', 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* ── Tema Scuro ── */
+[data-theme="dark"] {
+  --bg-main: #1C1C2E;
+  --bg-card: #252540;
+  --bg-surface: #252540;
+  --text-primary: #E8EAF6;
+  --text-secondary: #B0BEC5;
+  --text-label: #78909C;
+
+  /* Classificazione mosse — stessi colori, contrasto garantito su sfondo scuro */
+  --move-ottima: #66BB6A;
+  --move-buona: #81C784;
+  --move-imprecisione: #FF9800;
+  --move-errore: #EF5350;
+
+  /* UI */
+  --color-primary: #5C6BC0;
+  --color-primary-light: #7986CB;
+  --color-primary-bg: #1A237E;
+  --color-freeze: #283593;
+
+  /* Feedback */
+  --feedback-positive: #1B3A1B;
+  --feedback-negative: #3A1B1B;
+  --feedback-neutral: #3A3A1B;
+
+  /* Bordi e Ombre */
+  --border-color: #37374F;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+  /* Scacchiera */
+  --square-light: #B0B0B0;
+  --square-dark: #707070;
 }
 
 /* Font: Nunito (principale) + Atkinson Hyperlegible (fallback leggibilita) */

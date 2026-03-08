@@ -63,24 +63,24 @@ const styles = {
     padding: 20,
   },
   card: {
-    background: '#FAFBFC',
+    background: 'var(--bg-card)',
     borderRadius: 20,
     padding: '36px 32px',
     maxWidth: 400,
     width: '100%',
     textAlign: 'center',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+    boxShadow: 'var(--shadow-lg)',
     animation: 'fadeIn 0.3s ease',
   },
   title: {
     fontSize: 22,
     fontWeight: 700,
-    color: '#212121',
+    color: 'var(--text-primary)',
     margin: '0 0 4px 0',
   },
   message: {
     fontSize: 15,
-    color: '#546E7A',
+    color: 'var(--text-secondary)',
     margin: '0 0 24px 0',
   },
   stats: {
@@ -95,11 +95,11 @@ const styles = {
   statValue: {
     fontSize: 22,
     fontWeight: 700,
-    color: '#212121',
+    color: 'var(--text-primary)',
   },
   statLabel: {
     fontSize: 11,
-    color: '#90A4AE',
+    color: 'var(--text-label)',
     fontWeight: 600,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -111,7 +111,7 @@ const styles = {
   },
   btnPrimary: {
     padding: '12px 24px',
-    background: '#283593',
+    background: 'var(--color-primary)',
     color: '#fff',
     border: 'none',
     borderRadius: 10,
@@ -123,8 +123,8 @@ const styles = {
   btnSecondary: {
     padding: '10px 24px',
     background: 'none',
-    color: '#546E7A',
-    border: '1px solid #E0E0E0',
+    color: 'var(--text-secondary)',
+    border: '1px solid var(--border-color)',
     borderRadius: 10,
     fontSize: 14,
     cursor: 'pointer',

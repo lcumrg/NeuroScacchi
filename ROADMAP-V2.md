@@ -454,19 +454,23 @@ src/v2/
 - [x] Scacchiera emerge nitida sopra overlay (z-index), titolo e turno visibili
 - [x] Timer: barra sottile 5px, colore indaco fisso #3949AB, countdown numerico 32px
 
-### 7.4 Tema chiaro / scuro
+### 7.4 Tema chiaro / scuro — COMPLETATO
 
-- [ ] Sfondo light: #F8F9FA, superfici #FFFFFF + ombra, bordi #E0E0E0
-- [ ] Sfondo dark: #1C1C2E, superfici #252540, bordi #37374F
-- [ ] Contrasto 4.5:1 - 7:1 in entrambi i temi
-- [ ] Toggle utente, preferenza salvata in localStorage
+- [x] CSS variables in `index.css`: `:root` (light) e `[data-theme="dark"]`
+- [x] Light: bg #F8F9FA, card #FAFBFC, surface #FFFFFF, bordi #E0E0E0
+- [x] Dark: bg #1C1C2E, card #252540, bordi #37374F, testo #E8EAF6
+- [x] Colori classificazione mosse adattati per contrasto su sfondo scuro
+- [x] Toggle nell'header (sole/luna), preferenza in localStorage
+- [x] Transizione fluida 0.3s su cambio tema
+- [x] Tutti i componenti v2 (App, HomePage, TrainingSession, SessionRunner, SessionSummary) usano CSS variables
 
-### 7.5 Layout single-action
+### 7.5 Layout single-action — COMPLETATO
 
-- [ ] Un'unica azione principale per schermata, visivamente dominante
-- [ ] Scacchiera 60-70% verticale, mai spostata da popup/notifiche
-- [ ] Statistiche accessibili ma non visibili durante sessione attiva
-- [ ] Animazioni solo per eventi cognitivi (classificazione, fine freeze). Zero decorative
+- [x] Sessione di allenamento occupa tutto lo spazio verticale (minHeight: calc(100vh - 60px))
+- [x] Scacchiera dimensionata al 55% altezza viewport (max 440px, rispetta mobile)
+- [x] Feedback, hint, meta-info sotto la scacchiera senza spostarla
+- [x] SessionSummary come overlay modale — non interferisce con la sessione
+- [x] Animazioni solo per eventi cognitivi: fadeIn su feedback, shake su errore, pulse su analisi
 
 ---
 

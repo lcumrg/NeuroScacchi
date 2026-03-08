@@ -6,6 +6,7 @@ const KEYS = {
   COGNITIVE_PROFILE: 'ns2_cognitive_profile',
   SESSION_HISTORY: 'ns2_session_history',
   VERSION_PREF: 'neuroscacchi_version',
+  THEME: 'ns2_theme',
 }
 
 // --- Spaced Repetition Records ---
@@ -67,4 +68,25 @@ export function saveSessionResult(session) {
   // Mantieni solo le ultime 100 sessioni
   if (history.length > 100) history.splice(0, history.length - 100)
   localStorage.setItem(KEYS.SESSION_HISTORY, JSON.stringify(history))
+}
+
+// --- Theme ---
+
+export function getTheme() {
+  return localStorage.getItem(KEYS.THEME) || 'light'
+}
+
+export function saveTheme(theme) {
+  localStorage.setItem(KEYS.THEME, theme)
+  document.documentElement.setAttribute('data-theme', theme)
+}
+
+/**
+ * Inizializza il tema all'avvio dell'app.
+ * Legge la preferenza salvata e la applica al DOM.
+ */
+export function initTheme() {
+  const theme = getTheme()
+  document.documentElement.setAttribute('data-theme', theme)
+  return theme
 }

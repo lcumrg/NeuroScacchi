@@ -275,7 +275,7 @@ export default function TrainingSession({ position, positionIndex, cognitiveProf
           <Chessboard
             position={gameRef.current.fen()}
             onPieceDrop={handleDrop}
-            boardWidth={Math.min(440, window.innerWidth - 40)}
+            boardWidth={Math.min(440, window.innerWidth - 40, Math.floor(window.innerHeight * 0.55))}
             boardOrientation={orientation}
             arePiecesDraggable={phase === 'play' && !solved && !showSolution && !analyzing}
             customBoardStyle={{
@@ -357,7 +357,7 @@ const styles = {
   title: {
     fontSize: 18,
     fontWeight: 600,
-    color: '#212121',
+    color: 'var(--text-primary)',
     margin: 0,
   },
   titleFreeze: {
@@ -369,7 +369,7 @@ const styles = {
   turnLabel: {
     fontSize: 14,
     fontWeight: 600,
-    color: '#546E7A',
+    color: 'var(--text-secondary)',
     textAlign: 'center',
     marginBottom: 6,
   },
@@ -390,8 +390,8 @@ const styles = {
   analyzingBox: {
     padding: '8px 16px',
     borderRadius: 10,
-    background: '#E8EAF6',
-    color: '#283593',
+    background: 'var(--color-primary-bg)',
+    color: 'var(--color-primary)',
     fontSize: 14,
     fontWeight: 500,
     textAlign: 'center',
@@ -423,8 +423,8 @@ const styles = {
     gap: 10,
   },
   badge: {
-    background: '#E8EAF6',
-    color: '#283593',
+    background: 'var(--color-primary-bg)',
+    color: 'var(--color-primary)',
     padding: '3px 10px',
     borderRadius: 12,
     fontSize: 14,
