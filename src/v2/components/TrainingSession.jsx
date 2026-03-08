@@ -5,7 +5,7 @@ import FreezeOverlay from './FreezeOverlay'
 import HintBox from './HintBox'
 import ProfilassiPrompt from './ProfilassiPrompt'
 import MetaPrompt from './MetaPrompt'
-import { getFreezeDuration, shouldShowProfilassi, shouldShowMetacognition, getMaxHints, getRandomMetaQuestion } from '../engine/cognitiveLayer'
+import { getFreezeDuration, shouldShowProfilassi, shouldShowMetacognition, getMaxHints, getContextualMetaQuestion, getRandomMetaQuestion } from '../engine/cognitiveLayer'
 import { analyzeMove } from '../engine/stockfishService'
 
 // Colori esclusivi per classificazione mosse (Design System)
@@ -142,8 +142,14 @@ export default function TrainingSession({ position, positionIndex, cognitiveProf
 
           // Metacognizione?
           if (shouldShowMetacognition(cognitiveProfile, totalErrorsRef.current)) {
+            const metaCtx = {
+              deltaEval,
+              timeMs: Date.now() - startTimeRef.current,
+              classification,
+              totalErrors: totalErrorsRef.current,
+            }
             setTimeout(() => {
-              setMetaQuestion(getRandomMetaQuestion())
+              setMetaQuestion(getContextualMetaQuestion(metaCtx))
               setPhase('meta')
             }, 1500)
           }
@@ -198,7 +204,12 @@ export default function TrainingSession({ position, positionIndex, cognitiveProf
           setFeedback({ classification: 'errore', message: 'Non e\' la mossa migliore. Riprova!' })
           if (shouldShowMetacognition(cognitiveProfile, totalErrorsRef.current)) {
             setTimeout(() => {
-              setMetaQuestion(getRandomMetaQuestion())
+              setMetaQuestion(getContextualMetaQuestion({
+                deltaEval: null,
+                timeMs: Date.now() - startTimeRef.current,
+                classification: 'errore',
+                totalErrors: totalErrorsRef.current,
+              }))
               setPhase('meta')
             }, 1200)
           }

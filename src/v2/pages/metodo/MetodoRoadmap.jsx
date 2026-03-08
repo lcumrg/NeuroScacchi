@@ -32,7 +32,7 @@ export default function MetodoRoadmap() {
             { label: 'Feedback graduato (ottima/buona/imprecisione/errore)', done: true, pillar: 'Regolazione emotiva' },
             { label: 'Profilassi reale con eval numerica', done: true, pillar: 'Memoria di lavoro' },
             { label: 'Difficolta calcolata automaticamente', done: false, pillar: 'Infrastruttura' },
-            { label: 'Metacognizione contestuale (basata su eval)', done: false, pillar: 'Metacognizione' },
+            { label: 'Metacognizione contestuale (basata su eval)', done: true, pillar: 'Metacognizione' },
             { label: 'Architettura dati Firebase + logging per-mossa', done: false, pillar: 'Infrastruttura' },
             { label: 'Ri-validazione posizioni esistenti', done: false, pillar: 'Qualita' },
             { label: 'Agente IA coach: generazione posizioni e percorsi', done: false, pillar: 'Contenuti' },

@@ -292,13 +292,17 @@ src/v2/
 - [ ] Aggiornare `adaptiveDifficulty.js` per usare la difficolta calcolata
 - [ ] Mantenere retrocompatibilita con difficolta manuale per posizioni curate dal coach
 
-### 4.5 Metacognizione contestuale (pilastro 3)
+### 4.5 Metacognizione contestuale (pilastro 3) — COMPLETATO
 
-- [ ] Dopo errore, generare domanda basata su dati reali del motore:
-  - "Hai mosso in 2 secondi. Il motore dice che perdi un pezzo. Cosa non hai visto?"
-  - "Nelle ultime 3 posizioni hai perso 5 punti di eval. Stai andando troppo veloce?"
-- [ ] Pool di template con placeholder: `{deltaEval}`, `{tempoRisposta}`, `{minaccia}`
-- [ ] Frequenza controllata dal profilo cognitivo (metacognizione)
+- [x] `getContextualMetaQuestion(context)` in `cognitiveLayer.js` con template basati su:
+  - Velocita risposta (≤3s): "Hai mosso in N secondi. Hai davvero valutato le alternative?"
+  - deltaEval alto (>2.5): "Hai perso X punti. Cosa non hai visto?"
+  - deltaEval moderato (>1.0): "Potevi fare meglio. Avevi visto l'alternativa?"
+  - Pattern errori (≥3): "E' il N-esimo errore. Stai rallentando?"
+  - Classificazione errore: domande su difesa e minacce avversarie
+- [x] Fallback a domande generiche se nessun template contestuale matcha
+- [x] TrainingSession passa contesto reale (deltaEval, timeMs, classification, totalErrors)
+- [x] Frequenza controllata dal profilo cognitivo (metacognizione) — invariata
 
 ### 4.6 Validazione automatica posizioni esistenti
 
@@ -502,6 +506,11 @@ src/v2/
 ---
 
 ## Changelog
+
+### 8 Marzo 2026 (sessione 8)
+- Strato 4.5 completato: metacognizione contestuale basata su dati reali Stockfish
+- `getContextualMetaQuestion()` genera domande basate su deltaEval, tempo risposta, pattern errori, classificazione
+- TrainingSession passa contesto reale sia nel path Stockfish che nel fallback classico
 
 ### 8 Marzo 2026 (sessione 7)
 - Design System applicato all'intera app: Strato 7.1, 7.2, 7.3 completati
