@@ -44,15 +44,15 @@ export default function StatsPage({ onBack }) {
         <h3 style={styles.cardTitle}>Panoramica</h3>
         <div style={styles.overviewGrid}>
           <div style={styles.overviewItem}>
-            <div style={{ ...styles.overviewValue, color: '#2E7D32' }}>{consolidated}</div>
+            <div style={{ ...styles.overviewValue, color: '#1565C0' }}>{consolidated}</div>
             <div style={styles.overviewLabel}>Consolidate</div>
           </div>
           <div style={styles.overviewItem}>
-            <div style={{ ...styles.overviewValue, color: '#F57F17' }}>{learning}</div>
+            <div style={{ ...styles.overviewValue, color: '#5C6BC0' }}>{learning}</div>
             <div style={styles.overviewLabel}>In corso</div>
           </div>
           <div style={styles.overviewItem}>
-            <div style={{ ...styles.overviewValue, color: '#C62828' }}>{toReview}</div>
+            <div style={{ ...styles.overviewValue, color: '#455A64' }}>{toReview}</div>
             <div style={styles.overviewLabel}>Da rivedere</div>
           </div>
           <div style={styles.overviewItem}>
@@ -62,9 +62,9 @@ export default function StatsPage({ onBack }) {
         </div>
         {/* Barra visiva */}
         <div style={styles.progressBar}>
-          {consolidated > 0 && <div style={{ ...styles.progressSegment, background: '#2E7D32', flex: consolidated }} />}
-          {learning > 0 && <div style={{ ...styles.progressSegment, background: '#F57F17', flex: learning }} />}
-          {toReview > 0 && <div style={{ ...styles.progressSegment, background: '#C62828', flex: toReview }} />}
+          {consolidated > 0 && <div style={{ ...styles.progressSegment, background: '#1565C0', flex: consolidated }} />}
+          {learning > 0 && <div style={{ ...styles.progressSegment, background: '#5C6BC0', flex: learning }} />}
+          {toReview > 0 && <div style={{ ...styles.progressSegment, background: '#455A64', flex: toReview }} />}
           {unseen > 0 && <div style={{ ...styles.progressSegment, background: '#E0E0E0', flex: unseen }} />}
         </div>
       </div>
@@ -178,34 +178,34 @@ function generateInsights(srRecords, history, posMap) {
 
 const styles = {
   container: { maxWidth: 520, margin: '0 auto', padding: '24px 20px 80px' },
-  title: { fontSize: 24, fontWeight: 700, color: '#2C3E50', margin: '0 0 20px 0' },
+  title: { fontSize: 24, fontWeight: 700, color: '#212121', margin: '0 0 20px 0' },
   card: {
-    background: '#fff', borderRadius: 12, padding: '16px 20px',
+    background: '#FAFBFC', borderRadius: 12, padding: '16px 20px',
     boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #E0E0E0',
     marginBottom: 16,
   },
   cardTitle: { fontSize: 14, fontWeight: 600, color: '#90A4AE', textTransform: 'uppercase', letterSpacing: 0.5, margin: '0 0 12px 0' },
   overviewGrid: { display: 'flex', justifyContent: 'space-around', marginBottom: 12 },
   overviewItem: { textAlign: 'center' },
-  overviewValue: { fontSize: 24, fontWeight: 700, color: '#2C3E50' },
-  overviewLabel: { fontSize: 10, color: '#90A4AE', fontWeight: 600, textTransform: 'uppercase' },
+  overviewValue: { fontSize: 24, fontWeight: 700, color: '#212121' },
+  overviewLabel: { fontSize: 11, color: '#90A4AE', fontWeight: 600, textTransform: 'uppercase' },
   progressBar: { display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', gap: 2 },
   progressSegment: { borderRadius: 4, transition: 'flex 0.3s' },
   insight: {
-    padding: '8px 12px', background: '#F3E5F5', borderRadius: 8,
-    fontSize: 14, color: '#4A148C', marginBottom: 8, lineHeight: 1.4,
+    padding: '8px 12px', background: '#E8EAF6', borderRadius: 8,
+    fontSize: 14, color: '#283593', marginBottom: 8, lineHeight: 1.4,
   },
   themeRow: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 },
-  themeName: { fontSize: 13, color: '#2C3E50', fontWeight: 500, textTransform: 'capitalize', width: 100, flexShrink: 0 },
+  themeName: { fontSize: 14, color: '#212121', fontWeight: 500, textTransform: 'capitalize', width: 100, flexShrink: 0 },
   themeBar: { flex: 1, height: 8, background: '#E0E0E0', borderRadius: 4, overflow: 'hidden' },
-  themeBarFill: { height: '100%', background: '#66BB6A', borderRadius: 4, transition: 'width 0.3s' },
-  themePct: { fontSize: 13, fontWeight: 600, color: '#5A6C7D', width: 36, textAlign: 'right' },
+  themeBarFill: { height: '100%', background: '#5C6BC0', borderRadius: 4, transition: 'width 0.3s' },
+  themePct: { fontSize: 14, fontWeight: 600, color: '#546E7A', width: 36, textAlign: 'right' },
   sessionRow: { display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #F5F5F5' },
-  sessionDate: { fontSize: 13, color: '#5A6C7D' },
-  sessionResult: { fontSize: 13, fontWeight: 600, color: '#2C3E50' },
+  sessionDate: { fontSize: 14, color: '#546E7A' },
+  sessionResult: { fontSize: 14, fontWeight: 600, color: '#212121' },
   empty: { textAlign: 'center', padding: 20, color: '#90A4AE' },
   backBtn: {
-    padding: '10px 24px', background: 'none', color: '#5A6C7D',
+    padding: '10px 24px', background: 'none', color: '#546E7A',
     border: '1px solid #E0E0E0', borderRadius: 10, fontSize: 14,
     cursor: 'pointer', fontFamily: 'inherit', marginTop: 8,
   },

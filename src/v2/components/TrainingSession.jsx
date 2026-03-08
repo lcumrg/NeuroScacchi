@@ -143,7 +143,7 @@ export default function TrainingSession({ position, positionIndex, cognitiveProf
         <MetaPrompt question={metaQuestion} onAnswer={handleMetaAnswer} />
       )}
 
-      {/* Feedback */}
+      {/* Feedback — colori esclusivi classificazione mosse */}
       {feedback && phase !== 'profilassi' && phase !== 'freeze' && (
         <div style={{
           ...styles.feedback,
@@ -151,7 +151,7 @@ export default function TrainingSession({ position, positionIndex, cognitiveProf
           borderColor: feedback.type === 'correct' ? '#81C784' : '#EF9A9A',
           color: feedback.type === 'correct' ? '#2E7D32' : '#C62828',
         }}>
-          {feedback.type === 'correct' ? '\u2705' : '\u274C'} {feedback.message}
+          {feedback.message}
         </div>
       )}
 
@@ -186,7 +186,7 @@ const styles = {
   title: {
     fontSize: 18,
     fontWeight: 600,
-    color: '#2C3E50',
+    color: '#212121',
     margin: 0,
   },
   boardWrapper: {
@@ -196,8 +196,8 @@ const styles = {
     padding: '10px 16px',
     borderRadius: 10,
     border: '1px solid',
-    fontSize: 15,
-    fontWeight: 500,
+    fontSize: 17,
+    fontWeight: 600,
     animation: 'fadeIn 0.3s ease',
     textAlign: 'center',
     maxWidth: 440,
@@ -209,16 +209,16 @@ const styles = {
     gap: 10,
   },
   badge: {
-    background: '#E3F2FD',
-    color: '#1565C0',
+    background: '#E8EAF6',
+    color: '#283593',
     padding: '3px 10px',
     borderRadius: 12,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 600,
     textTransform: 'capitalize',
   },
   difficulty: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#FFB300',
     letterSpacing: 1,
   },

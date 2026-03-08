@@ -115,12 +115,12 @@ const styles = {
   title: {
     fontSize: 24,
     fontWeight: 700,
-    color: '#2C3E50',
+    color: '#212121',
     margin: '0 0 4px 0',
   },
   subtitle: {
     fontSize: 14,
-    color: '#5A6C7D',
+    color: '#546E7A',
     lineHeight: 1.5,
     margin: '0 0 24px 0',
   },
@@ -130,7 +130,7 @@ const styles = {
     gap: 16,
   },
   paramCard: {
-    background: '#fff',
+    background: '#FAFBFC',
     borderRadius: 12,
     padding: '16px 20px',
     boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
@@ -145,19 +145,19 @@ const styles = {
   paramLabel: {
     fontSize: 16,
     fontWeight: 600,
-    color: '#2C3E50',
+    color: '#212121',
   },
   paramEffect: {
     fontSize: 12,
-    color: '#1565C0',
-    background: '#E3F2FD',
+    color: '#283593',
+    background: '#E8EAF6',
     padding: '2px 8px',
     borderRadius: 8,
     fontWeight: 500,
   },
   paramDesc: {
-    fontSize: 13,
-    color: '#5A6C7D',
+    fontSize: 14,
+    color: '#546E7A',
     margin: '0 0 10px 0',
   },
   levelButtons: {
@@ -171,7 +171,7 @@ const styles = {
     borderRadius: 8,
     background: '#F5F5F5',
     fontSize: 14,
-    color: '#5A6C7D',
+    color: '#546E7A',
     cursor: 'pointer',
     fontFamily: 'inherit',
     fontWeight: 500,
@@ -179,9 +179,9 @@ const styles = {
     transition: 'all 0.15s',
   },
   levelBtnActive: {
-    background: '#2E7D32',
+    background: '#283593',
     color: '#fff',
-    borderColor: '#2E7D32',
+    borderColor: '#283593',
   },
   actions: {
     display: 'flex',
@@ -191,7 +191,7 @@ const styles = {
   },
   btnPrimary: {
     padding: '12px 24px',
-    background: '#2E7D32',
+    background: '#283593',
     color: '#fff',
     border: 'none',
     borderRadius: 10,
@@ -203,7 +203,7 @@ const styles = {
   btnSecondary: {
     padding: '10px 24px',
     background: 'none',
-    color: '#5A6C7D',
+    color: '#546E7A',
     border: '1px solid #E0E0E0',
     borderRadius: 10,
     fontSize: 14,

@@ -8,7 +8,7 @@ export default function HintBox({ hints, errorsCount }) {
     <div style={styles.container}>
       {visibleHints.map((hint, i) => (
         <div key={i} style={styles.hint}>
-          <span style={styles.bulb}>&#128161;</span> {hint}
+          {hint}
         </div>
       ))}
     </div>
@@ -30,8 +30,5 @@ const styles = {
     fontSize: 14,
     color: '#5D4037',
     animation: 'fadeIn 0.3s ease',
-  },
-  bulb: {
-    marginRight: 4,
   },
 }
