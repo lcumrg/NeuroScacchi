@@ -3,7 +3,7 @@ import { getSRRecords, getSessionHistory } from '../utils/storage'
 import { getSRStatus } from '../engine/spacedRepetition'
 import positions from '../data/positions.json'
 
-export default function HomePage({ onStartSession, onOpenProfile, onOpenStats, onOpenMethod }) {
+export default function HomePage({ onStartSession, onOpenProfile, onOpenStats, onOpenMethod, onOpenCoachAI }) {
   const srRecords = getSRRecords()
   const history = getSessionHistory()
   const themes = getAvailableThemes()
@@ -85,6 +85,16 @@ export default function HomePage({ onStartSession, onOpenProfile, onOpenStats, o
         </div>
       </div>
 
+      {/* Coach IA */}
+      <div style={styles.coachSection}>
+        <button style={styles.coachBtn} onClick={onOpenCoachAI}>
+          &#9733; Coach IA
+        </button>
+        <p style={styles.coachHint}>
+          Genera posizioni, percorsi di studio e analizza partite con l'agente IA
+        </p>
+      </div>
+
       {/* Azioni */}
       <div style={styles.actions}>
         <button style={styles.actionBtn} onClick={onOpenProfile}>
@@ -113,23 +123,23 @@ const styles = {
   },
   hero: { textAlign: 'center' },
   heroIcon: { fontSize: 56, marginBottom: 8 },
-  heroTitle: { fontSize: 26, fontWeight: 700, color: '#212121', margin: '0 0 4px 0' },
-  heroSubtitle: { fontSize: 15, color: '#546E7A', margin: 0 },
+  heroTitle: { fontSize: 26, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px 0' },
+  heroSubtitle: { fontSize: 15, color: 'var(--text-secondary)', margin: 0 },
   statsRow: {
     display: 'flex',
     gap: 16,
-    background: '#FAFBFC',
+    background: 'var(--bg-card)',
     borderRadius: 12,
     padding: '16px 24px',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-    border: '1px solid #E0E0E0',
+    boxShadow: 'var(--shadow-sm)',
+    border: '1px solid var(--border-color)',
     width: '100%',
     maxWidth: 400,
     justifyContent: 'space-around',
   },
   stat: { textAlign: 'center' },
-  statValue: { fontSize: 22, fontWeight: 700, color: '#212121' },
-  statLabel: { fontSize: 11, color: '#90A4AE', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.3 },
+  statValue: { fontSize: 22, fontWeight: 700, color: 'var(--text-primary)' },
+  statLabel: { fontSize: 11, color: 'var(--text-label)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.3 },
   sessionOptions: {
     display: 'flex',
     flexDirection: 'column',
@@ -139,7 +149,7 @@ const styles = {
   },
   btnPrimary: {
     padding: '14px 24px',
-    background: '#283593',
+    background: 'var(--color-primary)',
     color: '#fff',
     border: 'none',
     borderRadius: 12,
@@ -150,9 +160,9 @@ const styles = {
   },
   btnSecondary: {
     padding: '12px 24px',
-    background: '#FAFBFC',
-    color: '#212121',
-    border: '1px solid #E0E0E0',
+    background: 'var(--bg-card)',
+    color: 'var(--text-primary)',
+    border: '1px solid var(--border-color)',
     borderRadius: 12,
     fontSize: 15,
     fontWeight: 500,
@@ -160,28 +170,50 @@ const styles = {
     fontFamily: 'inherit',
   },
   themesSection: { width: '100%', textAlign: 'center' },
-  themesTitle: { fontSize: 14, fontWeight: 600, color: '#90A4AE', textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 10px 0' },
+  themesTitle: { fontSize: 14, fontWeight: 600, color: 'var(--text-label)', textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 10px 0' },
   themesList: { display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' },
   themeBtn: {
-    background: '#F5F5F5',
-    border: '1px solid #E0E0E0',
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border-color)',
     borderRadius: 16,
     padding: '6px 14px',
     fontSize: 14,
-    color: '#546E7A',
+    color: 'var(--text-secondary)',
     textTransform: 'capitalize',
     cursor: 'pointer',
     fontFamily: 'inherit',
     transition: 'all 0.15s',
   },
+  coachSection: {
+    width: '100%',
+    maxWidth: 320,
+    textAlign: 'center',
+  },
+  coachBtn: {
+    width: '100%',
+    padding: '14px 24px',
+    background: 'linear-gradient(135deg, #1565C0, #283593)',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 12,
+    fontSize: 16,
+    fontWeight: 600,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+  },
+  coachHint: {
+    fontSize: 12,
+    color: 'var(--text-label)',
+    marginTop: 6,
+  },
   actions: { display: 'flex', gap: 10 },
   actionBtn: {
     padding: '8px 16px',
-    background: '#F5F5F5',
-    border: '1px solid #E0E0E0',
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border-color)',
     borderRadius: 8,
     fontSize: 14,
-    color: '#546E7A',
+    color: 'var(--text-secondary)',
     cursor: 'pointer',
     fontFamily: 'inherit',
   },

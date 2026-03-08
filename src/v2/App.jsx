@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../shared/contexts/AuthContext'
 import LoginScreen from '../v1/components/LoginScreen'
 import { resetVersionChoice } from '../VersionSelector'
@@ -6,12 +6,25 @@ import HomePage from './pages/HomePage'
 import ProfilePage from './pages/ProfilePage'
 import StatsPage from './pages/StatsPage'
 import MetodoPage from './pages/MetodoPage'
+import CoachAIPage from './pages/CoachAIPage'
 import SessionRunner from './components/SessionRunner'
+import { initTheme, saveTheme, getTheme } from './utils/storage'
 
 export default function AppV2() {
   const { user, loading, logout } = useAuth()
-  const [screen, setScreen] = useState('home') // 'home' | 'training' | 'profile' | 'stats' | 'method'
+  const [screen, setScreen] = useState('home') // 'home' | 'training' | 'profile' | 'stats' | 'method' | 'coach-ai'
   const [sessionPositions, setSessionPositions] = useState([])
+  const [theme, setTheme] = useState('light')
+
+  useEffect(() => {
+    setTheme(initTheme())
+  }, [])
+
+  const toggleTheme = () => {
+    const next = theme === 'light' ? 'dark' : 'light'
+    saveTheme(next)
+    setTheme(next)
+  }
 
   if (loading) {
     return (
@@ -48,6 +61,13 @@ export default function AppV2() {
         <div style={styles.headerRight}>
           <span style={styles.userName}>{user.displayName || user.email?.split('@')[0]}</span>
           <button
+            style={styles.themeBtn}
+            onClick={toggleTheme}
+            title={theme === 'light' ? 'Tema scuro' : 'Tema chiaro'}
+          >
+            {theme === 'light' ? '\u263E' : '\u2600'}
+          </button>
+          <button
             style={styles.versionBtn}
             onClick={() => { resetVersionChoice(); window.location.reload() }}
           >
@@ -72,6 +92,7 @@ export default function AppV2() {
             onOpenProfile={() => setScreen('profile')}
             onOpenStats={() => setScreen('stats')}
             onOpenMethod={() => setScreen('method')}
+            onOpenCoachAI={() => setScreen('coach-ai')}
           />
         )}
         {screen === 'profile' && (
@@ -82,6 +103,9 @@ export default function AppV2() {
         )}
         {screen === 'method' && (
           <MetodoPage onBack={handleBackHome} />
+        )}
+        {screen === 'coach-ai' && (
+          <CoachAIPage onBack={handleBackHome} />
         )}
         {screen === 'training' && (
           <SessionRunner
@@ -105,7 +129,9 @@ export default function AppV2() {
 const styles = {
   container: {
     minHeight: '100vh',
-    background: '#F8F9FA',
+    background: 'var(--bg-main)',
+    color: 'var(--text-primary)',
+    transition: 'background 0.3s ease, color 0.3s ease',
   },
   loading: {
     display: 'flex',
@@ -114,16 +140,17 @@ const styles = {
     justifyContent: 'center',
     minHeight: '100vh',
     gap: 8,
-    color: '#546E7A',
+    color: 'var(--text-secondary)',
   },
   header: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '10px 20px',
-    background: '#FAFBFC',
-    borderBottom: '1px solid #E0E0E0',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+    background: 'var(--bg-card)',
+    borderBottom: '1px solid var(--border-color)',
+    boxShadow: 'var(--shadow-sm)',
+    transition: 'background 0.3s ease',
   },
   headerLeft: {
     display: 'flex',
@@ -133,7 +160,7 @@ const styles = {
   headerTitle: {
     fontSize: 18,
     fontWeight: 600,
-    color: '#212121',
+    color: 'var(--text-primary)',
     margin: 0,
   },
   headerRight: {
@@ -143,32 +170,41 @@ const styles = {
   },
   userName: {
     fontSize: 14,
-    color: '#546E7A',
+    color: 'var(--text-secondary)',
+  },
+  themeBtn: {
+    padding: '3px 10px',
+    background: 'var(--color-primary-bg)',
+    border: '1px solid var(--border-color)',
+    borderRadius: 12,
+    fontSize: 16,
+    cursor: 'pointer',
+    lineHeight: 1,
   },
   versionBtn: {
     padding: '3px 10px',
-    background: '#E8EAF6',
-    border: '1px solid #C5CAE9',
+    background: 'var(--color-primary-bg)',
+    border: '1px solid var(--border-color)',
     borderRadius: 12,
     fontFamily: 'monospace',
     fontSize: 11,
     fontWeight: 700,
-    color: '#283593',
+    color: 'var(--color-primary)',
     cursor: 'pointer',
   },
   headerBtn: {
     background: 'none',
-    border: '1px solid #E0E0E0',
+    border: '1px solid var(--border-color)',
     borderRadius: 8,
     padding: '6px 12px',
     fontSize: 14,
-    color: '#546E7A',
+    color: 'var(--text-secondary)',
     cursor: 'pointer',
     fontFamily: 'inherit',
   },
   buildTime: {
     fontSize: 11,
-    color: '#B0BEC5',
+    color: 'var(--text-label)',
   },
   footer: {
     position: 'fixed',
@@ -178,7 +214,8 @@ const styles = {
     textAlign: 'center',
     padding: '8px 0',
     fontSize: 11,
-    color: '#B0BEC5',
-    background: '#F8F9FA',
+    color: 'var(--text-label)',
+    background: 'var(--bg-main)',
+    transition: 'background 0.3s ease',
   },
 }
