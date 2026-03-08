@@ -300,13 +300,22 @@ src/v2/
 - [ ] Propone la mossa migliore del motore come alternativa/sostituzione
 - [ ] Ricalcola difficolta per ogni posizione
 
-### 4.7 Upload posizioni semplificato (coach)
+### 4.7 Agente IA per il coach — strumento di lavoro immediato
 
-- [ ] Scacchiera interattiva: posiziona i pezzi o incolla FEN, indica la mossa giusta
-- [ ] Stockfish valida automaticamente la mossa e calcola la difficolta
-- [ ] Tag tema con dropdown, hint testuali opzionali
-- [ ] Nessun wizard complesso — salva in 30 secondi
-- [ ] Con Stockfish: il coach puo inserire qualsiasi FEN senza pre-verificare la soluzione
+> L'agente IA per il coach NON e' un wizard o un form. E' un'interfaccia conversazionale
+> nella sezione Coach dell'app. Il coach dialoga con l'IA per creare contenuti e percorsi.
+> Mentre il coach lavora, l'agente accumula contesto — sara gia "formato" quando evolvera
+> per interagire con lo studente (Strato 8).
+
+- [ ] Backend API key (Node.js su Railway/Render) — pre-requisito per qualsiasi chiamata IA
+- [ ] Interfaccia chat nella sezione Coach dell'app
+- [ ] Generazione posizioni: "Generami 10 posizioni sui finali di torre" → FEN + soluzione + spiegazione
+- [ ] Validazione automatica con Stockfish di ogni posizione generata dall'IA
+- [ ] Percorsi di studio: "Percorso aperture per 1200 Elo impulsivo" → sequenza ragionata con progressione
+- [ ] Analisi PGN: coach incolla un PGN → IA identifica momenti critici → genera posizioni di studio
+- [ ] Consulenza sul metodo: "Studente sbaglia finali sotto pressione" → strategie personalizzate
+- [ ] Salvataggio posizioni generate direttamente nel database dell'app (positions.json o Firestore)
+- [ ] Piattaforma consigliata: Anthropic Claude (ragionamento strutturato, feedback pedagogici)
 
 ### 4.8 Architettura dati Firebase + logging per-mossa
 
@@ -442,42 +451,34 @@ src/v2/
 
 ---
 
-## STRATO 8 — Integrazione IA — DA FARE
+## STRATO 8 — IA verso lo Studente — DA FARE
 
-> Prerequisito: Strato 6 completato (validazione umana prima, amplificazione IA dopo)
-> Riferimento: pagina Metodo, sezioni "Coach IA" e "Architettura IA"
-> Principio: l'IA amplifica cio che funziona, ma amplifica anche cio che non funziona
+> Prerequisito: Strato 6 completato + agente coach (4.7) gia operativo e "formato"
+> Riferimento: pagina Metodo, sezioni "Evoluzione — l'agente incontra lo studente"
+> Principio: l'agente che ha lavorato con il coach evolve per interagire con lo studente
 
-### 8.1 Backend per API key (pre-requisito)
+### 8.1 Livello 1 — IA come analista (post-sessione studente)
 
-- [ ] Server Node.js (Railway o Render, ~$7-20/mese)
-- [ ] Gestisce tutte le chiamate IA lato server — API key mai nel client
-- [ ] Rate limiting e autenticazione Firebase token
-- [ ] Obbligatorio prima di aprire l'app ad altri utenti
-
-### 8.2 Livello 1 — IA come analista (post-sessione)
-
-- [ ] Chiamata API a fine sessione con dati aggregati (Livello 2)
+- [ ] Chiamata API a fine sessione con dati aggregati (Livello 2 dati)
 - [ ] Report testuale: trend, errori ricorrenti, suggerimenti
 - [ ] Feedback post-errore contestuali (basati su eval e tempo)
 - [ ] Microlezioni contestuali: 2-3 minuti, ancorate all'errore appena commesso
-- [ ] Piattaforma consigliata: Anthropic Claude (ragionamento strutturato, feedback pedagogici calibrati)
-- [ ] Alternativa per task semplici: Google Gemini Flash (economico, integrato Firebase)
+- [ ] L'agente usa il contesto accumulato lavorando col coach (posizioni, percorsi, decisioni pedagogiche)
 
-### 8.3 Livello 1 — Modalita pedagogiche
+### 8.2 Modalita pedagogiche per lo studente
 
 - [ ] Scaffolding dialogico: conversazione, non testo statico. L'IA fa domande nell'ordine giusto
 - [ ] Apprendimento situato: microlezioni proposte a fine sessione, max 3-5 minuti
 - [ ] Analisi repertorio: l'IA identifica dove il repertorio crolla, suggerisce studio mirato
 
-### 8.4 Livello 2 — Agente real-time (futuro)
+### 8.3 Livello 2 — Agente real-time (futuro)
 
 - [ ] Loop agente con stato persistente durante la sessione
 - [ ] Calibra freeze, profilassi, difficolta in tempo reale in base all'andamento
 - [ ] Piattaforma consigliata: Groq (latenza ultra-bassa) o OpenAI GPT-4o (function calling robusto)
 - [ ] Richiede architettura piu complessa: stato agente, feedback loop, timeout
 
-### 8.5 Validazione contenuti generati
+### 8.4 Validazione contenuti generati
 
 - [ ] Stockfish verifica correttezza delle posizioni generate/suggerite dall'IA
 - [ ] Consulente umano (maestro di scacchi) revisiona periodicamente le spiegazioni
@@ -493,6 +494,12 @@ src/v2/
 ---
 
 ## Changelog
+
+### 8 Marzo 2026 (sessione 6)
+- Agente IA per il coach spostato nello Strato 4 come strumento di lavoro immediato (ex Strato 8)
+- Strato 4.7 riscritto: da "upload posizioni semplificato" a interfaccia conversazionale con agente IA
+- Strato 8 ridefinito: "IA verso lo studente" — l'agente coach evolve per interagire con lo studente
+- Architettura IA a 3 livelli: Livello 0 (agente coach, immediato), Livello 1 (analista studente), Livello 2 (agente real-time)
 
 ### 8 Marzo 2026 (sessione 5)
 - Pagina Metodo ristrutturata in moduli (metodo/ subfolder): fondamenti, implementazione, coach IA, design system, architettura dati, roadmap, evoluzione

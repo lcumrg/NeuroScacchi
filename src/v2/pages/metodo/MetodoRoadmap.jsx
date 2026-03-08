@@ -35,7 +35,9 @@ export default function MetodoRoadmap() {
             { label: 'Metacognizione contestuale (basata su eval)', done: false, pillar: 'Metacognizione' },
             { label: 'Architettura dati Firebase + logging per-mossa', done: false, pillar: 'Infrastruttura' },
             { label: 'Ri-validazione posizioni esistenti', done: false, pillar: 'Qualita' },
-            { label: 'Upload posizioni semplificato (coach)', done: false, pillar: 'Infrastruttura' },
+            { label: 'Agente IA coach: generazione posizioni e percorsi', done: false, pillar: 'Contenuti' },
+            { label: 'Agente IA coach: analisi PGN e consulenza metodo', done: false, pillar: 'Contenuti' },
+            { label: 'Backend API key per agente IA', done: false, pillar: 'Infrastruttura' },
           ]}
         />
 
@@ -84,16 +86,15 @@ export default function MetodoRoadmap() {
 
         <RoadmapPhase
           number="8"
-          title="Integrazione IA"
+          title="IA verso lo studente"
           status="future"
-          subtitle="Coach IA a due livelli"
+          subtitle="L'agente coach evolve per interagire con lo studente"
           items={[
-            { label: 'Backend per gestione API key (pre-requisito)', done: false, pillar: 'Infrastruttura' },
             { label: 'Livello 1: Analista post-sessione (report, microlezioni)', done: false, pillar: 'Metacognizione' },
             { label: 'Scaffolding dialogico e apprendimento situato', done: false, pillar: 'Tutti i pilastri' },
+            { label: 'Microlezioni contestuali ancorate all\'errore', done: false, pillar: 'Apprendimento' },
             { label: 'Analisi repertorio personalizzato', done: false, pillar: 'Consolidamento' },
             { label: 'Livello 2: Agente real-time (calibrazione dinamica)', done: false, pillar: 'Tutti i pilastri' },
-            { label: 'Validazione umana prima, amplificazione IA dopo', done: false, pillar: 'Strategia' },
           ]}
         />
       </div>

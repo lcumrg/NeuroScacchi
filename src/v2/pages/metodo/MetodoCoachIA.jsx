@@ -4,19 +4,72 @@ import { styles } from './metodoStyles'
 export default function MetodoCoachIA() {
   return (
     <>
-      <h3 style={styles.partTitle}>Evoluzione con l'Intelligenza Artificiale</h3>
+      <h3 style={styles.partTitle}>Intelligenza Artificiale — Due Fasi</h3>
 
-      <Section status="open" title="6. Apprendimento guidato — Il Coach IA">
+      {/* --- Fase 1: Agente IA per il coach (IMMEDIATO) --- */}
+      <Section status="open" title="6. Agente IA per il coach — strumento di lavoro immediato">
         <p>
-          Il Metodo nella sua forma attuale e' uno strumento di allenamento adattivo.
-          L'integrazione con l'IA lo trasforma in un <strong>coach completo</strong>, capace di
-          insegnare nozioni nuove — aperture, finali, strutture tattiche — nel momento in cui
-          diventano rilevanti per l'utente.
+          La sezione Coach dell'app diventa un'<strong>interfaccia conversazionale con un agente IA</strong>.
+          Non e' un wizard o un form — e' un dialogo continuo in cui il coach (tu) interagisce con l'IA
+          per creare contenuti, progettare percorsi e analizzare il materiale di studio.
         </p>
         <div style={styles.implBox}>
-          <strong>Applicazione</strong>: l'IA intercetta il momento contestuale: dopo una partita
-          persa per un finale mal gestito, propone una microlezione di 2-3 minuti su quella specifica
-          posizione. Non un corso separato — un insegnamento ancorato all'esperienza vissuta.
+          <strong>Cosa fa l'agente per il coach:</strong>
+        </div>
+        <div style={styles.paramGrid}>
+          <div style={styles.paramCard}>
+            <div style={styles.paramName}>Generazione posizioni</div>
+            <div style={styles.paramFoundation}>Contenuti su richiesta</div>
+            <div style={styles.paramDetail}>
+              "Generami 10 posizioni sui finali di torre, difficolta crescente" — l'IA propone
+              FEN + soluzione + spiegazione. Stockfish valida automaticamente ogni posizione.
+            </div>
+          </div>
+          <div style={styles.paramCard}>
+            <div style={styles.paramName}>Percorsi di studio</div>
+            <div style={styles.paramFoundation}>Aperture, finali, tattiche</div>
+            <div style={styles.paramDetail}>
+              "Costruisci un percorso aperture per un 1200 Elo impulsivo" — l'IA genera
+              una sequenza ragionata di posizioni con progressione logica e hint mirati.
+            </div>
+          </div>
+          <div style={styles.paramCard}>
+            <div style={styles.paramName}>Analisi partite</div>
+            <div style={styles.paramFoundation}>Da PGN a posizioni di studio</div>
+            <div style={styles.paramDetail}>
+              Il coach incolla un PGN e l'IA identifica i momenti critici, genera posizioni
+              di studio mirate e le inserisce nel percorso dello studente.
+            </div>
+          </div>
+          <div style={styles.paramCard}>
+            <div style={styles.paramName}>Consulenza sul metodo</div>
+            <div style={styles.paramFoundation}>Ragionamento pedagogico</div>
+            <div style={styles.paramDetail}>
+              "Questo studente sbaglia sempre i finali sotto pressione" — l'agente conosce
+              il profilo cognitivo e propone strategie di allenamento personalizzate.
+            </div>
+          </div>
+        </div>
+        <div style={styles.evolutionBox}>
+          <strong>Vantaggio strategico doppio:</strong> mentre il coach crea contenuti, l'agente
+          accumula contesto sul metodo, sui percorsi, sulle posizioni. Quando in futuro evolvera
+          per interagire direttamente con lo studente, sara gia "formato" — avra gia visto
+          centinaia di posizioni validate, percorsi costruiti, decisioni pedagogiche prese.
+          Piu contenuti il coach crea ora, migliore sara l'agente domani.
+        </div>
+      </Section>
+
+      {/* --- Fase 2: IA verso lo studente (FUTURO) --- */}
+      <Section status="open" title="7. Evoluzione — l'agente incontra lo studente">
+        <p>
+          Nella fase successiva, lo stesso agente IA che ha lavorato con il coach evolve per
+          interagire anche con lo studente. L'integrazione e' progettata in due livelli:
+        </p>
+        <div style={styles.implBox}>
+          <strong>Applicazione futura</strong>: dopo una partita persa per un finale mal gestito,
+          l'agente propone una microlezione di 2-3 minuti su quella specifica posizione.
+          Non un corso separato — un insegnamento ancorato all'esperienza vissuta, calibrato
+          sul profilo cognitivo dello studente.
         </div>
         <p>
           <strong>Fondamento scientifico:</strong> per un cervello ADHD l'apprendimento astratto e
@@ -33,7 +86,7 @@ export default function MetodoCoachIA() {
           la nozione e domanda metacognitiva dopo.
         </div>
 
-        <p><strong>Tre modalita operative dell'IA pedagogica:</strong></p>
+        <p><strong>Tre modalita operative dell'IA con lo studente:</strong></p>
         <div style={styles.paramGrid}>
           <div style={styles.paramCard}>
             <div style={styles.paramName}>Scaffolding dialogico</div>
@@ -62,33 +115,49 @@ export default function MetodoCoachIA() {
         </div>
       </Section>
 
-      <Section status="open" title="7. Architettura IA — I due livelli di integrazione">
+      <Section status="open" title="8. Architettura IA — I tre livelli di integrazione">
         <p>
-          L'integrazione IA e' progettata in due livelli, implementabili in sequenza:
+          L'integrazione IA e' progettata in tre livelli, implementabili in sequenza:
         </p>
         <table style={styles.table}>
           <thead>
             <tr>
               <th style={styles.th}></th>
-              <th style={styles.th}>Livello 1 — IA come analista</th>
-              <th style={styles.th}>Livello 2 — Agente in tempo reale</th>
+              <th style={{ ...styles.th, background: '#E3F2FD' }}>Livello 0 — Agente coach</th>
+              <th style={styles.th}>Livello 1 — Analista studente</th>
+              <th style={styles.th}>Livello 2 — Agente real-time</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td style={{ ...styles.td, fontWeight: 600 }}>Quando</td>
-              <td style={styles.td}>A fine sessione o dopo ogni errore</td>
+              <td style={{ ...styles.td, background: '#F5F9FF' }}>Subito — nella sezione Coach</td>
+              <td style={styles.td}>A fine sessione o dopo errore</td>
               <td style={styles.td}>Durante la sessione, mossa per mossa</td>
             </tr>
             <tr>
+              <td style={{ ...styles.td, fontWeight: 600 }}>Chi lo usa</td>
+              <td style={{ ...styles.td, background: '#F5F9FF' }}>Il coach (tu)</td>
+              <td style={styles.td}>Lo studente (post-sessione)</td>
+              <td style={styles.td}>Lo studente (in-game)</td>
+            </tr>
+            <tr>
               <td style={{ ...styles.td, fontWeight: 600 }}>Cosa fa</td>
-              <td style={styles.td}>Report, feedback testuale, domande metacognitive contestuali, microlezioni</td>
-              <td style={styles.td}>Calibra freeze, profilassi, difficolta in tempo reale</td>
+              <td style={{ ...styles.td, background: '#F5F9FF' }}>Genera posizioni, percorsi, analizza PGN, consulenza metodo</td>
+              <td style={styles.td}>Report, feedback, microlezioni contestuali</td>
+              <td style={styles.td}>Calibra freeze, profilassi, difficolta live</td>
             </tr>
             <tr>
               <td style={{ ...styles.td, fontWeight: 600 }}>Complessita</td>
+              <td style={{ ...styles.td, background: '#F5F9FF' }}>Media — chat con contesto persistente</td>
               <td style={styles.td}>Bassa — chiamata API a fine sessione</td>
-              <td style={styles.td}>Media — loop agente con stato persistente</td>
+              <td style={styles.td}>Alta — loop agente con stato</td>
+            </tr>
+            <tr>
+              <td style={{ ...styles.td, fontWeight: 600 }}>Priorita</td>
+              <td style={{ ...styles.td, background: '#F5F9FF', fontWeight: 600, color: '#1565C0' }}>IMMEDIATA (Strato 4)</td>
+              <td style={styles.td}>Futuro (Strato 8)</td>
+              <td style={styles.td}>Futuro (Strato 8)</td>
             </tr>
           </tbody>
         </table>
@@ -203,10 +272,10 @@ export default function MetodoCoachIA() {
         </table>
 
         <p style={styles.note}>
-          <strong>Conclusione strategica:</strong> prima si valida il metodo con i due beta tester
-          senza IA, identificando quali momenti beneficiano davvero di un intervento intelligente.
-          Poi si integra. L'IA amplifica cio che funziona — ma amplifica anche cio che non funziona.
-          Il percorso logico e': validazione umana prima, amplificazione artificiale dopo.
+          <strong>Conclusione strategica:</strong> l'agente IA per il coach parte subito — e' uno
+          strumento di lavoro per creare contenuti migliori e piu velocemente. L'estensione
+          allo studente (Livelli 1 e 2) arriva dopo la validazione umana del metodo.
+          Il percorso: il coach crea con l'IA, valida con gli utenti, poi l'IA si estende allo studente.
         </p>
       </Section>
     </>
