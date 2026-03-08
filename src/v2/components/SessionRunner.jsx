@@ -1,16 +1,36 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import TrainingSession from './TrainingSession'
 import ProgressBar from './ProgressBar'
 import SessionSummary from './SessionSummary'
 import { DEFAULT_PROFILE } from '../engine/cognitiveLayer'
 import { createSRRecord, updateSRRecord } from '../engine/spacedRepetition'
 import { getSRRecords, updateSRRecordInStorage, saveSessionResult, getCognitiveProfile } from '../utils/storage'
+import { initStockfish, isReady as isStockfishReady, destroy as destroyStockfish } from '../engine/stockfishService'
 
 export default function SessionRunner({ positions, onFinish, onRestart }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [results, setResults] = useState([])
   const [showSummary, setShowSummary] = useState(false)
+  const [stockfishLoading, setStockfishLoading] = useState(true)
+  const [stockfishError, setStockfishError] = useState(null)
   const cognitiveProfile = getCognitiveProfile() || DEFAULT_PROFILE
+
+  // Inizializza Stockfish una volta
+  useEffect(() => {
+    initStockfish()
+      .then(() => {
+        setStockfishLoading(false)
+      })
+      .catch((err) => {
+        console.warn('Stockfish non disponibile, fallback a modalita classica:', err.message)
+        setStockfishError(err.message)
+        setStockfishLoading(false)
+      })
+
+    return () => {
+      destroyStockfish()
+    }
+  }, [])
 
   const handleResult = (result) => {
     const newResults = [...results, result]
@@ -60,6 +80,12 @@ export default function SessionRunner({ positions, onFinish, onRestart }) {
     <div style={styles.container}>
       <div style={styles.progressArea}>
         <ProgressBar current={currentIndex + 1} total={positions.length} />
+        {stockfishLoading && (
+          <div style={styles.stockfishStatus}>Caricamento motore...</div>
+        )}
+        {stockfishError && (
+          <div style={styles.stockfishStatus}>Motore non disponibile — modalita classica</div>
+        )}
       </div>
 
       <TrainingSession
@@ -68,6 +94,7 @@ export default function SessionRunner({ positions, onFinish, onRestart }) {
         positionIndex={currentIndex}
         cognitiveProfile={cognitiveProfile}
         onResult={handleResult}
+        useStockfish={!stockfishLoading && !stockfishError}
       />
 
       {showSummary && (
@@ -94,6 +121,12 @@ const styles = {
     width: '100%',
     maxWidth: 440,
     padding: '0 16px',
+  },
+  stockfishStatus: {
+    fontSize: 12,
+    color: '#90A4AE',
+    textAlign: 'center',
+    marginTop: 4,
   },
   empty: {
     textAlign: 'center',

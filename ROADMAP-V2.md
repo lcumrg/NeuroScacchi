@@ -246,26 +246,30 @@ src/v2/
 > Principio guida: ogni feature deve servire almeno uno dei 5 pilastri del Metodo
 > (inibizione, memoria di lavoro, metacognizione, regolazione emotiva, consolidamento)
 
-### 4.1 Wrapper Stockfish WASM
+### 4.1 Wrapper Stockfish WASM — COMPLETATO
 
-- [ ] Installare `stockfish.wasm` (o `lila-stockfish-web`) via npm
-- [ ] Creare `src/v2/engine/stockfishWorker.js` — Web Worker che carica e comunica con Stockfish via UCI
-- [ ] API: `evaluate(fen, depth)` → `{ bestMove, eval, pv, depth }`
-- [ ] API: `analyzeMove(fen, move, depth)` → `{ evalBefore, evalAfter, deltaEval, classification }`
-- [ ] API: `getThreats(fen, depth)` → top 3 mosse avversario con eval (per profilassi reale)
-- [ ] Gestione lifecycle: init → ready → analyzing → idle. Timeout su analisi lunghe.
-- [ ] Depth configurabile: default 16, riducibile a 12 su dispositivi lenti
+- [x] Installare `stockfish` (nmrugg/Chess.com) via npm — Stockfish 18 lite single-threaded
+- [x] Creare `src/v2/engine/stockfishService.js` — Web Worker che carica e comunica con Stockfish via UCI
+- [x] API: `evaluate(fen, depth)` → `{ bestMove, eval, pv, depth, mate }`
+- [x] API: `analyzeMove(fen, move, depth)` → `{ evalBefore, evalAfter, deltaEval, classification }`
+- [x] API: `getThreats(fen, depth)` → top 3 mosse avversario con eval via MultiPV
+- [x] Gestione lifecycle: init → ready → analyzing → idle. Timeout 15s su analisi.
+- [x] Depth configurabile: default 16
+- [x] WASM files in public/stockfish/, auto-copiati via postinstall
 - [ ] Test: verificare funzionamento su Chrome, Firefox, Safari mobile
 
-### 4.2 Feedback graduato (Regolazione emotiva — pilastro 4)
+### 4.2 Feedback graduato (Regolazione emotiva — pilastro 4) — COMPLETATO
 
-- [ ] Classificazione mossa basata su deltaEval:
-  - Ottima: deltaEval < 0.3 (verde)
-  - Buona: deltaEval 0.3–1.0 (blu)
-  - Imprecisione: deltaEval 1.0–2.5 (arancione)
-  - Errore: deltaEval > 2.5 (rosso)
-- [ ] UI: sostituire il feedback binario in `TrainingSession` con barra graduata
-- [ ] Mostrare la mossa migliore quando la mossa giocata e' imprecisione/errore
+- [x] Classificazione mossa basata su deltaEval:
+  - Ottima: deltaEval < 0.3 (verde #2E7D32)
+  - Buona: deltaEval 0.3–1.0 (verde chiaro #558B2F)
+  - Imprecisione: deltaEval 1.0–2.5 (arancione #E65100)
+  - Errore: deltaEval > 2.5 (rosso #C62828)
+- [x] UI: feedback graduato in TrainingSession con label grande (20px) + messaggio + deltaEval numerico
+- [x] Mostrare la mossa migliore quando la mossa giocata e' imprecisione/errore
+- [x] "Analisi in corso..." mostrato durante elaborazione Stockfish
+- [x] Fallback automatico a modalita classica (solutionMoves) se Stockfish non disponibile
+- [x] Mosse "buona" accettate come corrette (prima erano rifiutate)
 - [ ] Soglia "errore" configurabile dal coach nel profilo (per bilanciare motivazione vs rigore)
 - [ ] Collegamento con tolleranza frustrazione: soglia piu permissiva se bassa
 
