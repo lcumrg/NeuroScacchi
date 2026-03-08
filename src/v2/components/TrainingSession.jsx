@@ -111,31 +111,33 @@ export default function TrainingSession({ position, positionIndex, cognitiveProf
 
   return (
     <div style={styles.container}>
-      {position.title && <h3 style={styles.title}>{position.title}</h3>}
+      {/* Blocco titolo + scacchiera: emerge sopra il freeze overlay */}
+      <div style={phase === 'freeze' ? styles.boardFreeze : undefined}>
+        {position.title && <h3 style={{
+          ...styles.title,
+          ...(phase === 'freeze' ? styles.titleFreeze : {}),
+        }}>{position.title}</h3>}
 
-      {/* Scacchiera — sempre visibile, emerge sopra il freeze */}
-      <div style={{
-        ...styles.boardWrapper,
-        ...(phase === 'freeze' ? styles.boardFreeze : {}),
-      }}>
-        <Chessboard
-          position={gameRef.current.fen()}
-          onPieceDrop={handleDrop}
-          boardWidth={Math.min(440, window.innerWidth - 40)}
-          boardOrientation={orientation}
-          arePiecesDraggable={phase === 'play' && !solved && !showSolution}
-          customBoardStyle={{
-            borderRadius: 8,
-            boxShadow: phase === 'freeze'
-              ? '0 8px 32px rgba(0,0,0,0.3)'
-              : '0 4px 16px rgba(0,0,0,0.12)',
-          }}
-          customDarkSquareStyle={{ backgroundColor: '#779952' }}
-          customLightSquareStyle={{ backgroundColor: '#edeed1' }}
-        />
+        <div style={styles.boardWrapper}>
+          <Chessboard
+            position={gameRef.current.fen()}
+            onPieceDrop={handleDrop}
+            boardWidth={Math.min(440, window.innerWidth - 40)}
+            boardOrientation={orientation}
+            arePiecesDraggable={phase === 'play' && !solved && !showSolution}
+            customBoardStyle={{
+              borderRadius: 8,
+              boxShadow: phase === 'freeze'
+                ? '0 8px 32px rgba(0,0,0,0.3)'
+                : '0 4px 16px rgba(0,0,0,0.12)',
+            }}
+            customDarkSquareStyle={{ backgroundColor: '#779952' }}
+            customLightSquareStyle={{ backgroundColor: '#edeed1' }}
+          />
+        </div>
       </div>
 
-      {/* Freeze: overlay full-screen che sfoca TUTTO tranne la scacchiera */}
+      {/* Freeze: overlay full-screen che sfoca TUTTO tranne titolo + scacchiera */}
       {phase === 'freeze' && (
         <FreezeOverlay duration={freezeDuration} onComplete={handleFreezeEnd} />
       )}
@@ -196,12 +198,21 @@ const styles = {
     color: '#212121',
     margin: 0,
   },
+  titleFreeze: {
+    color: '#E8EAF6',
+    textShadow: '0 1px 4px rgba(0,0,0,0.5)',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
   boardWrapper: {
     position: 'relative',
   },
   boardFreeze: {
     position: 'relative',
     zIndex: 60,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
   },
   feedback: {
     padding: '10px 16px',
