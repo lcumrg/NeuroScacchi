@@ -19,12 +19,17 @@ export default function MetodoPage({ onBack }) {
     setExporting(true)
     html2pdf()
       .set({
-        margin: [12, 12, 16, 12],
+        margin: [10, 10, 14, 10],
         filename: 'Metodo-NeuroScacchi-2.0.pdf',
-        image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { scale: 2, useCORS: true },
+        image: { type: 'jpeg', quality: 0.92 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          scrollY: -window.scrollY,
+          windowWidth: contentRef.current.scrollWidth,
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+        pagebreak: { mode: ['css', 'legacy'] },
       })
       .from(contentRef.current)
       .save()
@@ -47,7 +52,7 @@ export default function MetodoPage({ onBack }) {
         </button>
       </div>
 
-      <div ref={contentRef}>
+      <div ref={contentRef} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <h2 style={styles.title}>Il Metodo NeuroScacchi 2.0</h2>
         <p style={styles.subtitle}>
           Un allenatore adattivo per scacchisti con ADHD che vogliono progredire davvero.
