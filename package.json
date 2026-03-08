@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "validate": "node scripts/validate-positions.cjs",
+    "validate:stockfish": "node scripts/validate-positions-stockfish.cjs",
     "dev": "node scripts/validate-positions.cjs && vite",
     "build": "node scripts/validate-positions.cjs && vite build",
     "preview": "vite preview",

@@ -34,7 +34,7 @@ export default function MetodoRoadmap() {
             { label: 'Difficolta calcolata automaticamente', done: false, pillar: 'Infrastruttura' },
             { label: 'Metacognizione contestuale (basata su eval)', done: true, pillar: 'Metacognizione' },
             { label: 'Architettura dati Firebase + logging per-mossa', done: false, pillar: 'Infrastruttura' },
-            { label: 'Ri-validazione posizioni esistenti', done: false, pillar: 'Qualita' },
+            { label: 'Ri-validazione posizioni esistenti con Stockfish', done: true, pillar: 'Qualita' },
             { label: 'Agente IA coach: generazione posizioni e percorsi', done: false, pillar: 'Contenuti' },
             { label: 'Agente IA coach: analisi PGN e consulenza metodo', done: false, pillar: 'Contenuti' },
             { label: 'Backend API key per agente IA', done: false, pillar: 'Infrastruttura' },
