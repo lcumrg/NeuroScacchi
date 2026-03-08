@@ -1,10 +1,44 @@
+import { useRef, useState } from 'react'
+import html2pdf from 'html2pdf.js'
+
 export default function MetodoPage({ onBack }) {
+  const contentRef = useRef(null)
+  const [exporting, setExporting] = useState(false)
+
+  const handleDownloadPDF = () => {
+    if (!contentRef.current || exporting) return
+    setExporting(true)
+    html2pdf()
+      .set({
+        margin: [12, 12, 16, 12],
+        filename: 'Metodo-NeuroScacchi-2.0.pdf',
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+      })
+      .from(contentRef.current)
+      .save()
+      .then(() => setExporting(false))
+      .catch(() => setExporting(false))
+  }
+
   return (
     <div style={styles.container}>
-      <button style={styles.backBtn} onClick={onBack}>
-        &#8592; Torna alla home
-      </button>
+      <div style={styles.topBar}>
+        <button style={styles.backBtn} onClick={onBack}>
+          &#8592; Torna alla home
+        </button>
+        <button
+          style={{ ...styles.pdfBtn, opacity: exporting ? 0.6 : 1 }}
+          onClick={handleDownloadPDF}
+          disabled={exporting}
+        >
+          {exporting ? 'Generazione...' : 'Scarica PDF'}
+        </button>
+      </div>
 
+      <div ref={contentRef}>
       <h2 style={styles.title}>Il Metodo NeuroScacchi 2.0</h2>
       <p style={styles.subtitle}>
         Un allenatore adattivo per scacchisti con ADHD che vogliono progredire davvero.
@@ -227,6 +261,17 @@ export default function MetodoPage({ onBack }) {
           man mano che le decisioni di design si chiariscono.
         </p>
       </div>
+
+      <div style={styles.copyright}>
+        <p style={styles.copyrightText}>
+          Il Metodo NeuroScacchi 2.0 e tutti i contenuti di questa pagina sono di proprieta esclusiva
+          di <strong>Luca Morigi</strong>. Tutti i diritti riservati.
+        </p>
+        <p style={styles.copyrightText}>
+          Vietata la riproduzione, distribuzione o utilizzo senza autorizzazione scritta dell'autore.
+        </p>
+      </div>
+      </div>
     </div>
   )
 }
@@ -276,14 +321,29 @@ const styles = {
     flexDirection: 'column',
     gap: 20,
   },
+  topBar: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   backBtn: {
-    alignSelf: 'flex-start',
     background: 'none',
     border: 'none',
     fontSize: 14,
     color: '#5A6C7D',
     cursor: 'pointer',
     padding: '4px 0',
+    fontFamily: 'inherit',
+  },
+  pdfBtn: {
+    padding: '8px 16px',
+    background: '#2C3E50',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    fontSize: 13,
+    fontWeight: 600,
+    cursor: 'pointer',
     fontFamily: 'inherit',
   },
   title: {
@@ -421,5 +481,19 @@ const styles = {
     fontSize: 12,
     color: '#B0BEC5',
     margin: 0,
+  },
+  copyright: {
+    textAlign: 'center',
+    padding: '16px 20px',
+    marginTop: 8,
+    background: '#ECEFF1',
+    borderRadius: 8,
+    border: '1px solid #CFD8DC',
+  },
+  copyrightText: {
+    fontSize: 11,
+    color: '#546E7A',
+    margin: '0 0 4px 0',
+    lineHeight: 1.5,
   },
 }
