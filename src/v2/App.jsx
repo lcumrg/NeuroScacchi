@@ -5,11 +5,12 @@ import { resetVersionChoice } from '../VersionSelector'
 import HomePage from './pages/HomePage'
 import ProfilePage from './pages/ProfilePage'
 import StatsPage from './pages/StatsPage'
+import MetodoPage from './pages/MetodoPage'
 import SessionRunner from './components/SessionRunner'
 
 export default function AppV2() {
   const { user, loading, logout } = useAuth()
-  const [screen, setScreen] = useState('home') // 'home' | 'training' | 'profile' | 'stats'
+  const [screen, setScreen] = useState('home') // 'home' | 'training' | 'profile' | 'stats' | 'method'
   const [sessionPositions, setSessionPositions] = useState([])
 
   if (loading) {
@@ -70,6 +71,7 @@ export default function AppV2() {
             onStartSession={handleStartSession}
             onOpenProfile={() => setScreen('profile')}
             onOpenStats={() => setScreen('stats')}
+            onOpenMethod={() => setScreen('method')}
           />
         )}
         {screen === 'profile' && (
@@ -77,6 +79,9 @@ export default function AppV2() {
         )}
         {screen === 'stats' && (
           <StatsPage onBack={handleBackHome} />
+        )}
+        {screen === 'method' && (
+          <MetodoPage onBack={handleBackHome} />
         )}
         {screen === 'training' && (
           <SessionRunner

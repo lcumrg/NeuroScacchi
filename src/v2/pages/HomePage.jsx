@@ -3,7 +3,7 @@ import { getSRRecords, getSessionHistory } from '../utils/storage'
 import { getSRStatus } from '../engine/spacedRepetition'
 import positions from '../data/positions.json'
 
-export default function HomePage({ onStartSession, onOpenProfile, onOpenStats }) {
+export default function HomePage({ onStartSession, onOpenProfile, onOpenStats, onOpenMethod }) {
   const srRecords = getSRRecords()
   const history = getSessionHistory()
   const themes = getAvailableThemes()
@@ -92,6 +92,9 @@ export default function HomePage({ onStartSession, onOpenProfile, onOpenStats })
         </button>
         <button style={styles.actionBtn} onClick={onOpenStats}>
           &#128200; Statistiche
+        </button>
+        <button style={styles.actionBtn} onClick={onOpenMethod}>
+          &#128214; Il Metodo
         </button>
       </div>
     </div>
