@@ -69,6 +69,7 @@ export function RoadmapPhase({ number, title, status, subtitle, items }) {
         borderRadius: 10,
         padding: '14px 16px',
         borderLeft: `4px solid ${ps.accent}`,
+        pageBreakInside: 'avoid',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: subtitle ? 2 : 8, flexWrap: 'wrap' }}>
           <span style={{

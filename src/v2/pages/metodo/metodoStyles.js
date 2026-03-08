@@ -77,6 +77,7 @@ export const styles = {
     margin: '24px 0 4px',
     paddingBottom: 8,
     borderBottom: '2px solid #CFD8DC',
+    pageBreakAfter: 'avoid',
   },
   roadmapContainer: {
     display: 'flex',
@@ -95,6 +96,7 @@ export const styles = {
     gap: 10,
     marginBottom: 12,
     flexWrap: 'wrap',
+    pageBreakAfter: 'avoid',
   },
   statusBadge: {
     color: '#fff',
@@ -137,6 +139,7 @@ export const styles = {
     color: '#2E7D32',
     lineHeight: 1.6,
     margin: '10px 0',
+    pageBreakInside: 'avoid',
   },
   evolutionBox: {
     background: '#FFF8E1',
@@ -147,6 +150,7 @@ export const styles = {
     color: '#E65100',
     lineHeight: 1.6,
     margin: '10px 0',
+    pageBreakInside: 'avoid',
   },
   warningBox: {
     background: '#FFF3E0',
@@ -157,6 +161,7 @@ export const styles = {
     color: '#E65100',
     lineHeight: 1.6,
     margin: '10px 0',
+    pageBreakInside: 'avoid',
   },
   infoBox: {
     background: '#E3F2FD',
@@ -167,11 +172,13 @@ export const styles = {
     color: '#1565C0',
     lineHeight: 1.6,
     margin: '10px 0',
+    pageBreakInside: 'avoid',
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
     marginTop: 12,
+    pageBreakInside: 'avoid',
     fontSize: 13,
   },
   th: {
@@ -200,6 +207,7 @@ export const styles = {
     border: '1px solid #C8E6C9',
     borderRadius: 8,
     padding: '12px 14px',
+    pageBreakInside: 'avoid',
   },
   paramName: {
     fontSize: 14,
@@ -252,6 +260,7 @@ export const styles = {
     background: '#ECEFF1',
     borderRadius: 8,
     border: '1px solid #CFD8DC',
+    pageBreakInside: 'avoid',
   },
   copyrightText: {
     fontSize: 11,
@@ -292,6 +301,7 @@ export const styles = {
     margin: '10px 0',
     whiteSpace: 'pre',
     overflowX: 'auto',
+    pageBreakInside: 'avoid',
   },
   // Checklist
   checklistItem: {
