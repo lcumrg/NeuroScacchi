@@ -19,7 +19,7 @@ export default async (req) => {
 
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY non configurata' }), {
+    return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY non configurata. Aggiungi la variabile in Netlify > Site settings > Environment variables.' }), {
       status: 500,
       headers: corsHeaders(),
     })
@@ -36,6 +36,9 @@ export default async (req) => {
       })
     }
 
+    // Usa claude-3-5-sonnet (fallback a haiku se non disponibile)
+    const model = 'claude-3-5-sonnet-20241022'
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -44,7 +47,7 @@ export default async (req) => {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
+        model,
         max_tokens: 4096,
         system: system || '',
         messages,

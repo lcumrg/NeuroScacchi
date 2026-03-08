@@ -549,7 +549,7 @@ const styles = {
   inputArea: {
     display: 'flex',
     gap: 8,
-    padding: '12px 0 20px',
+    padding: '12px 0 40px',
     borderTop: '1px solid #E0E0E0',
     alignItems: 'flex-end',
   },
