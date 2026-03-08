@@ -7,7 +7,8 @@
     "validate": "node scripts/validate-positions.cjs",
     "dev": "node scripts/validate-positions.cjs && vite",
     "build": "node scripts/validate-positions.cjs && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "node scripts/copy-stockfish.cjs"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.3.2",
@@ -16,7 +17,8 @@
     "pako": "^2.1.0",
     "react": "^18.3.1",
     "react-chessboard": "^4.6.0",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "stockfish": "^18.0.5"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",

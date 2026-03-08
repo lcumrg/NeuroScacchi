@@ -414,26 +414,27 @@ src/v2/
 > Riferimento: pagina Metodo, sezioni "Design System — Ergonomia Cognitiva"
 > Principio: ogni elemento visivo che non ha una funzione cognitiva precisa non deve esistere
 
-### 7.1 Tipografia ADHD-friendly
+### 7.1 Tipografia ADHD-friendly — COMPLETATO
 
-- [ ] Installare e applicare Nunito / Atkinson Hyperlegible come font principale
-- [ ] Scala tipografica: 17-18px operativo, 14-15px secondario, 20-22px classificazione mossa, 28-32px timer freeze
-- [ ] Mai sotto 14px per nessun elemento. Mai font decorativi per testo operativo
+- [x] Installare e applicare Nunito / Atkinson Hyperlegible come font principale
+- [x] Scala tipografica: 17-18px operativo, 14-15px secondario, 20-22px classificazione mossa, 28-32px timer freeze
+- [x] Mai sotto 14px per nessun elemento. Mai font decorativi per testo operativo
 
-### 7.2 Colori funzionali esclusivi
+### 7.2 Colori funzionali esclusivi — COMPLETATO
 
-- [ ] Verde (#2E7D32), arancio (#E65100), rosso (#C62828) ESCLUSIVI per classificazione mosse
-- [ ] Rimuovere usi di verde/rosso per pulsanti generici, stati UI, elementi decorativi
-- [ ] Colori freeze: indaco #283593 (dominante), #3949AB (timer), #E8EAF6 (testo) — pausa intenzionale, non punizione
-- [ ] Base: off-white #F8F9FA (light), navy #1C1C2E (dark) — mai bianco puro o nero puro
+- [x] Verde (#2E7D32), arancio (#E65100), rosso (#C62828) ESCLUSIVI per classificazione mosse
+- [x] Rimuovere usi di verde/rosso per pulsanti generici, stati UI, elementi decorativi
+- [x] Colori freeze: indaco #283593 (dominante), #3949AB (timer), #E8EAF6 (testo) — pausa intenzionale, non punizione
+- [x] Base: off-white #F8F9FA (light), navy #1C1C2E (dark) — mai bianco puro o nero puro
+- [x] Pulsanti e azioni UI: indaco #283593 (coerente con palette freeze)
 
-### 7.3 Freeze visual evoluto
+### 7.3 Freeze visual evoluto — COMPLETATO
 
-- [ ] Vignettatura radiale: trasparente al centro (scacchiera), rgba(28,28,46,0.75) ai bordi
-- [ ] Sfocatura sfondo: blur(6-8px) moderata
-- [ ] Transizioni: 400-500ms ease-in entrata, 400-600ms ease-out uscita
-- [ ] Scacchiera emerge nitida da sfondo gia sfocato — attivazione PRIMA della posizione
-- [ ] Timer: barra sottile 4-6px, colore indaco fisso, MAI cambia colore
+- [x] Vignettatura radiale: trasparente al centro (scacchiera), rgba(28,28,46,0.75) ai bordi
+- [x] Sfocatura sfondo: blur(7px) — tutto tranne la scacchiera
+- [x] Transizioni: 450ms ease-in entrata, 500ms ease-out uscita
+- [x] Scacchiera emerge nitida sopra overlay (z-index), titolo e turno visibili
+- [x] Timer: barra sottile 5px, colore indaco fisso #3949AB, countdown numerico 32px
 
 ### 7.4 Tema chiaro / scuro
 
@@ -494,6 +495,15 @@ src/v2/
 ---
 
 ## Changelog
+
+### 8 Marzo 2026 (sessione 7)
+- Design System applicato all'intera app: Strato 7.1, 7.2, 7.3 completati
+- Font: Outfit → Nunito + Atkinson Hyperlegible (Google Fonts)
+- Colori esclusivi mosse: verde/arancio/rosso rimossi da tutti i pulsanti/badge/stats, UI usa indaco #283593
+- Freeze riscritto: overlay full-screen con vignettatura radiale + blur(7px), scacchiera emerge nitida (z-index), titolo e turno visibili
+- Testo primario #212121, secondario #546E7A, card off-white #FAFBFC
+- Indicatore turno (Muove il Bianco/Nero) aggiunto sopra la scacchiera
+- PDF: html2pdf.js rimosso, sostituito con @react-pdf/renderer (MetodoPDF.jsx)
 
 ### 8 Marzo 2026 (sessione 6)
 - Agente IA per il coach spostato nello Strato 4 come strumento di lavoro immediato (ex Strato 8)

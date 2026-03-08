@@ -75,9 +75,9 @@ export default function MetodoRoadmap() {
           status="future"
           subtitle="Identita visiva ADHD-friendly"
           items={[
-            { label: 'Font Nunito + Atkinson Hyperlegible', done: false, pillar: 'Accessibilita' },
-            { label: 'Colori funzionali esclusivi per classificazione mosse', done: false, pillar: 'Regolazione emotiva' },
-            { label: 'Freeze visual: vignettatura + sfocatura + indaco', done: false, pillar: 'Inibizione' },
+            { label: 'Font Nunito + Atkinson Hyperlegible', done: true, pillar: 'Accessibilita' },
+            { label: 'Colori funzionali esclusivi per classificazione mosse', done: true, pillar: 'Regolazione emotiva' },
+            { label: 'Freeze visual: vignettatura + sfocatura + indaco', done: true, pillar: 'Inibizione' },
             { label: 'Tema chiaro / scuro con contrasto calibrato', done: false, pillar: 'Accessibilita' },
             { label: 'Layout single-action per schermata', done: false, pillar: 'Memoria di lavoro' },
             { label: 'Scala tipografica ADHD-optimized', done: false, pillar: 'Accessibilita' },

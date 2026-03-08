@@ -3,3 +3,6 @@ dist/
 .env
 .env.local
 .env.*.local
+
+# Stockfish WASM binaries (copiati da node_modules via postinstall)
+public/stockfish/
