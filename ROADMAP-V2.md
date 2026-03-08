@@ -304,12 +304,17 @@ src/v2/
 - [x] TrainingSession passa contesto reale (deltaEval, timeMs, classification, totalErrors)
 - [x] Frequenza controllata dal profilo cognitivo (metacognizione) — invariata
 
-### 4.6 Validazione automatica posizioni esistenti
+### 4.6 Validazione automatica posizioni esistenti — COMPLETATO
 
-- [ ] Script che ri-analizza tutte le posizioni in `positions.json` con Stockfish
-- [ ] Segnala soluzioni sub-ottimali o sbagliate
-- [ ] Propone la mossa migliore del motore come alternativa/sostituzione
-- [ ] Ricalcola difficolta per ogni posizione
+- [x] Script `scripts/validate-positions-stockfish.cjs` — analizza tutte le posizioni con Stockfish WASM
+- [x] Analisi a depth crescenti (1-20) per ogni posizione
+- [x] Segnala soluzioni sub-ottimali (deltaEval 1.0-2.5) o sbagliate (deltaEval > 2.5)
+- [x] Propone la mossa migliore del motore come alternativa
+- [x] Ricalcola difficolta basata sulla depth a cui Stockfish trova la soluzione
+- [x] Gestione intelligente matti (entrambe le mosse danno matto → equivalenti)
+- [x] Rispetta posizioni curate dal coach (`origin: "manual"`) — segnala ma non sovrascrive
+- [x] Flag: `--fix` (soluzioni), `--fix-all` (+difficolta), `--json`, `--depth N`
+- [x] Comando: `npm run validate:stockfish`
 
 ### 4.7 Agente IA per il coach — strumento di lavoro immediato
 
