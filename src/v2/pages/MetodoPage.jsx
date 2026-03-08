@@ -29,7 +29,7 @@ export default function MetodoPage({ onBack }) {
           windowWidth: contentRef.current.scrollWidth,
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] },
+        pagebreak: { mode: ['css'] },
       })
       .from(contentRef.current)
       .save()
