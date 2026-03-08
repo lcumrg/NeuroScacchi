@@ -57,7 +57,11 @@ export default function MetodoPage({ onBack }) {
         </span>
       </div>
 
-      {/* --- Sezione 1: La visione --- */}
+      {/* ====== PARTE 1: IL METODO — FONDAMENTI SCIENTIFICI ====== */}
+
+      <h3 style={styles.partTitle}>Il Metodo — Fondamenti Scientifici</h3>
+
+      {/* --- 1. La visione --- */}
       <Section status="solid" title="La visione">
         <p>
           NeuroScacchi nasce per scacchisti con ADHD che competono e vogliono migliorare.
@@ -65,113 +69,110 @@ export default function MetodoPage({ onBack }) {
           e adatta il training di conseguenza.
         </p>
         <p>
-          L'idea di fondo: le difficolta delle funzioni esecutive (impulsivita, scarsa pianificazione,
-          bassa tolleranza alla frustrazione) non sono difetti da nascondere, ma variabili misurabili
-          su cui costruire un percorso di allenamento personalizzato.
+          L'architettura del Metodo si fonda su un'ipotesi precisa: le difficolta delle funzioni
+          esecutive non sono ostacoli insormontabili, ma <strong>variabili misurabili</strong> su cui
+          costruire un percorso di allenamento personalizzato. Questa prospettiva si allinea con i
+          modelli neuropsicologici contemporanei che vedono l'ADHD non come una mancanza di conoscenza,
+          ma come una difficolta nell'applicazione della stessa nel <em>"punto di prestazione"</em>.
         </p>
       </Section>
 
-      {/* --- Sezione 2: I 4 parametri cognitivi --- */}
-      <Section status="solid" title="Profilo cognitivo — 4 parametri">
+      {/* --- 2. Inibizione comportamentale — Il Freeze --- */}
+      <Section status="solid" title="1. Inibizione comportamentale — Il Freeze">
         <p>
-          Ogni studente ha un profilo con 4 parametri, ciascuno regolabile su 3 livelli
-          (alta / media / bassa). Ogni parametro controlla un comportamento concreto dell'app:
+          Il controllo inibitorio e' spesso considerato il deficit primario nell'ADHD.
+          Senza un'adeguata inibizione, il soggetto risponde agli stimoli in modo immediato e automatico,
+          impedendo l'attivazione dei processi di pensiero superiore.
         </p>
-        <div style={styles.paramGrid}>
-          <ParamCard
-            name="Impulsivita"
-            desc="Quanto tendi a muovere senza pensare"
-            effect="Freeze: 5s (alta) / 3s (media) / 1s (bassa)"
-            detail="Prima di ogni posizione l'app ti blocca e ti obbliga a osservare la scacchiera.
-                    Se sei impulsivo, il freeze dura di piu."
-          />
-          <ParamCard
-            name="Consapevolezza minacce"
-            desc="Quanto noti le minacce dell'avversario"
-            effect="Profilassi: sempre / ogni 3 / mai"
-            detail="Prima di giocare, l'app ti mostra 3 mosse dell'avversario e ti chiede quale sia
-                    la piu pericolosa. Se la tua consapevolezza e' bassa, lo fa sempre."
-          />
-          <ParamCard
-            name="Metacognizione"
-            desc="Quanto rifletti sui tuoi errori"
-            effect="Domande post-errore: ogni errore / ogni 2 / ogni 4"
-            detail="Dopo un errore, l'app ti pone una domanda ('Avevi un piano in mente?').
-                    Se la tua metacognizione e' bassa, lo fa piu spesso."
-          />
-          <ParamCard
-            name="Tolleranza frustrazione"
-            desc="Quanto reggi l'errore senza demotivarti"
-            effect="Hint: 2 (bassa) / 3 (media) / illimitati (alta)"
-            detail="L'app ti da suggerimenti progressivi. Se la tua tolleranza e' bassa, dopo 2 hint
-                    ti rivela la soluzione per non bloccarti."
-          />
+        <div style={styles.implBox}>
+          <strong>Applicazione</strong>: il "Freeze" impone un blocco forzato della scacchiera
+          (da 1 a 5 secondi) prima di ogni posizione. Se l'impulsivita dell'utente e' alta,
+          il blocco dura di piu.
+        </div>
+        <p>
+          <strong>Fondamento scientifico:</strong> questo meccanismo agisce come una "protesi"
+          per l'inibizione mancante. L'allenamento alla risposta ritardata e' una strategia cardine
+          per spostare il processamento dal <strong>Sistema 1</strong> (intuitivo/impulsivo) al
+          <strong> Sistema 2</strong> (analitico/riflessivo). Imponendo il tempo di latenza, si permette
+          alla corteccia prefrontale di elaborare i dati prima che avvenga l'atto motorio.
+        </p>
+        <div style={styles.evolutionBox}>
+          <strong>Evoluzione agonistica:</strong> l'estensione del freeze a ogni singola mossa della
+          partita serve a contrastare il fenomeno del "decadimento della vigilanza", tipico dell'ADHD,
+          dove la precisione cala drasticamente col passare dei minuti. Il profilo cognitivo calibra
+          l'intensita: freeze lungo a inizio posizione, freeze breve sulle mosse successive, nessun
+          freeze se l'impulsivita e' bassa.
         </div>
       </Section>
 
-      {/* --- Sezione 3: Spaced Repetition --- */}
-      <Section status="solid" title="Ripetizione spaziata (Leitner)">
+      {/* --- 3. Memoria di lavoro — La Profilassi --- */}
+      <Section status="solid" title="2. Memoria di lavoro — La Profilassi guidata">
         <p>
-          Le posizioni vengono ripetute a intervalli crescenti: 1, 3, 7, 14, 30 giorni.
-          Se sbagli, la posizione torna all'inizio. Se la azzecchi, avanza.
-          Dopo 5 passaggi consecutivi corretti, la posizione e' "consolidata".
+          La memoria di lavoro e' il "taccuino" mentale che permette di mantenere e manipolare
+          informazioni. Negli scacchi, questo significa ricordare le minacce dell'avversario
+          mentre si calcola la propria mossa.
         </p>
+        <div style={styles.implBox}>
+          <strong>Applicazione</strong>: il sistema di "Profilassi" obbliga l'utente a identificare
+          la mossa piu pericolosa dell'avversario prima di giocare. Se la consapevolezza e' bassa,
+          questo passaggio viene richiesto sistematicamente.
+        </div>
         <p>
-          Il sistema Leitner e' usato da decenni nella didattica ed e' ben validato.
-          Applicato agli scacchi, assicura che le posizioni difficili vengano riviste piu spesso,
-          senza sovraccaricare con quelle gia acquisite.
+          <strong>Fondamento scientifico:</strong> lo "scaffolding cognitivo" (impalcatura) riduce
+          il carico sulla memoria di lavoro. Esternalizzando la domanda ("Cosa vuole fare l'altro?"),
+          l'app libera risorse mentali per il calcolo profondo. Studi sulla riabilitazione cognitiva
+          suggeriscono che automatizzare queste routine di pensiero aiuti a compensare i deficit di
+          attenzione divisa.
         </p>
+        <div style={styles.evolutionBox}>
+          <strong>Evoluzione con Stockfish:</strong> oggi la profilassi mostra mosse legali,
+          non necessariamente minacce reali. Con il motore, la domanda diventa significativa:
+          la differenza tra "il cavallo puo andare in d5" e "il cavallo in d5 ti costa la
+          qualita (-3.2)" e' enorme per chi deve imparare a valutare il pericolo.
+        </div>
       </Section>
 
-      {/* --- Sezione 4: Sessioni adattive --- */}
-      <Section status="solid" title="Sessioni generate su misura">
+      {/* --- 4. Metacognizione --- */}
+      <Section status="solid" title="3. Metacognizione — Monitoraggio dell'errore">
         <p>
-          Il session engine combina tre criteri per generare ogni sessione:
+          L'ADHD e' spesso associato a una scarsa auto-osservazione durante l'esecuzione
+          di un compito (metacognizione).
         </p>
-        <ul style={styles.list}>
-          <li><strong>Spaced repetition</strong> — prima le posizioni scadute</li>
-          <li><strong>Difficolta adattiva</strong> — il livello si calibra sui tuoi risultati per tema</li>
-          <li><strong>Direttive del coach</strong> — il coach puo forzare temi, difficolta, posizioni specifiche</li>
-        </ul>
+        <div style={styles.implBox}>
+          <strong>Applicazione</strong>: dopo un errore, l'app pone domande dirette
+          (es. "Avevi un piano in mente?"). La frequenza delle domande aumenta se la
+          capacita metacognitiva dell'utente e' valutata come bassa.
+        </div>
         <p>
-          Il risultato: ogni sessione e' diversa e calibrata su dove sei adesso, non su dove eri ieri.
+          <strong>Fondamento scientifico:</strong> il monitoraggio dell'errore e' legato all'attivita
+          della corteccia cingolata anteriore. Negli individui con ADHD, la risposta neurale
+          all'errore e' spesso attenuata. Obbligare a una riflessione post-errore aiuta a "marcare"
+          l'evento a livello cognitivo, favorendo l'apprendimento dai propri sbagli anziche
+          la loro ripetizione impulsiva.
         </p>
+        <div style={styles.evolutionBox}>
+          <strong>Evoluzione con Stockfish:</strong> la metacognizione diventa contestuale.
+          Non piu "Avevi un piano?" generico, ma "Hai perso 3 punti di valutazione nelle
+          ultime 5 mosse. Stai andando troppo veloce?" — basato su dati reali del motore.
+        </div>
       </Section>
 
-      {/* --- Sezione 5: Stockfish --- */}
-      <Section status="open" title="Integrazione Stockfish — il salto di qualita">
+      {/* --- 5. Regolazione emotiva — Il Feedback --- */}
+      <Section status="critical" title="4. Regolazione emotiva — Il dilemma del feedback">
         <p>
-          Oggi l'app verifica le mosse contro una lista di soluzioni pre-scritte.
-          Con Stockfish (motore scacchistico open source, gira nel browser via WebAssembly),
-          l'analisi diventa in tempo reale:
+          Il cervello ADHD e' estremamente sensibile ai segnali di errore e gratificazione,
+          un fenomeno noto come <strong>Reward Deficiency Syndrome</strong>.
         </p>
-        <ul style={styles.list}>
-          <li><strong>Soluzioni calcolate</strong>, non pre-scritte — qualsiasi FEN funziona</li>
-          <li><strong>Profilassi reale</strong> — minacce con valutazione numerica, non mosse casuali</li>
-          <li><strong>Difficolta oggettiva</strong> — misurata dalla profondita necessaria per trovare la mossa</li>
-          <li><strong>Metacognizione contestuale</strong> — "Hai perso 3 punti nelle ultime 5 mosse. Stai andando troppo veloce?"</li>
-          <li><strong>Modalita partita</strong> — non solo puzzle, ma partite intere con scaffolding cognitivo</li>
-        </ul>
-        <p style={styles.note}>
-          Stockfish WASM analizza a depth 15-18 in ~200-500ms su telefono moderno.
-          Nessun server necessario. Alternative valutate: Lc0 (troppo pesante per WASM),
-          Lichess Cloud API (limitata a posizioni gia nel DB), motori JS nativi (troppo deboli).
-          Stockfish resta la scelta migliore per rapporto potenza/praticita.
-        </p>
-      </Section>
-
-      {/* --- Sezione 6: Feedback graduato vs muro rosso --- */}
-      <Section status="critical" title="Il problema del feedback: muro rosso vs sfumature">
+        <div style={styles.warningBox}>
+          <strong>Il problema del "muro rosso":</strong> un feedback binario (corretto/sbagliato)
+          puo generare una saturazione di segnali negativi che porta alla demotivazione e
+          all'abbandono della sessione. Per un giocatore ADHD con bassa tolleranza alla
+          frustrazione, una sequenza di schermate rosse e' un muro contro cui si infrange
+          la motivazione.
+        </div>
         <p>
-          Questa e' la decisione di design piu delicata e ancora aperta.
-        </p>
-        <p>
-          <strong>Il sistema attuale</strong>: feedback binario — la mossa e' giusta (verde) o sbagliata (rosso).
-          Chiaro, immediato, inequivocabile. Ma per un giocatore ADHD con bassa tolleranza alla frustrazione,
-          una sequenza di schermate rosse puo generare un "muro rosso" che porta ad abbandonare la sessione.
-        </p>
-        <p>
-          <strong>L'alternativa con Stockfish</strong>: feedback graduato su 4 livelli basati sulla valutazione del motore:
+          <strong>Soluzione con Stockfish:</strong> feedback graduato basato sulla valutazione
+          numerica (&#916;eval):
         </p>
         <ul style={styles.list}>
           <li style={{ color: '#2E7D32' }}><strong>Ottima</strong> — la mossa migliore o equivalente (&#916;eval &lt; 0.3)</li>
@@ -180,78 +181,266 @@ export default function MetodoPage({ onBack }) {
           <li style={{ color: '#C62828' }}><strong>Errore</strong> — perdita significativa (&#916;eval &gt; 2.5)</li>
         </ul>
         <p>
-          Il feedback graduato e' piu informativo e meno punitivo. "Buona mossa, ma c'era di meglio"
-          e' piu costruttivo di "SBAGLIATO". Ma introduce un rischio opposto:
+          <strong>Fondamento scientifico:</strong> un feedback informativo e sfumato e' piu costruttivo
+          di uno punitivo. "Buona mossa, ma c'era di meglio" e' piu costruttivo di "SBAGLIATO".
+          Tuttavia, esiste un rischio opposto:
         </p>
         <div style={styles.warningBox}>
-          <strong>Rischio</strong>: un giocatore ADHD che compete potrebbe usare il "buona" come scusa
+          <strong>Rischio:</strong> un giocatore ADHD che compete potrebbe usare il "buona" come scusa
           per non cercare la mossa migliore. La comodita del "abbastanza bene" puo diventare
           una trappola che impedisce il vero progresso. Chi vuole competere ha bisogno di sapere
           quando una mossa e' <em>sbagliata</em>, non solo "non ottimale".
         </div>
         <p>
-          <strong>Possibile soluzione ibrida</strong>: feedback graduato per default, ma con un indicatore
-          chiaro di quanto si e' lontani dalla mossa migliore. Il coach potrebbe configurare la soglia
-          di "errore" per ogni studente: per qualcuno &#916;eval &gt; 1.0 e' gia errore, per altri serve &gt; 2.5.
+          <strong>Soluzione ibrida:</strong> feedback graduato per default, con soglia di errore
+          configurabile dal coach per ogni studente. La calibrazione della soglia e' un atto
+          di bilanciamento clinico tra protezione della motivazione e spinta al progresso tecnico.
+          Il profilo cognitivo (tolleranza frustrazione) influenza la soglia.
         </p>
         <p style={styles.note}>
-          Questa decisione richiede una validazione con dati reali: come reagiscono diversi profili ADHD
-          al feedback graduato vs binario? Il profilo cognitivo (tolleranza frustrazione) dovrebbe
-          influenzare la soglia? Servono test con utenti reali prima di decidere.
+          Questa decisione richiede validazione con dati reali: come reagiscono diversi profili ADHD
+          al feedback graduato vs binario? Servono test con utenti reali prima di decidere.
         </p>
       </Section>
 
-      {/* --- Sezione 7: Freeze per mossa --- */}
-      <Section status="open" title="Freeze per ogni mossa, non solo a inizio posizione">
+      {/* --- 6. Consolidamento mnestico --- */}
+      <Section status="solid" title="5. Consolidamento mnestico — Ripetizione spaziata">
         <p>
-          Oggi il freeze si applica solo all'inizio di ogni posizione: lo studente osserva
-          la scacchiera per qualche secondo prima di poter muovere.
+          La difficolta nel consolidare gli schemi tattici e' un problema comune per chi ha
+          deficit di memoria di lavoro e attenzione sostenuta.
         </p>
+        <div style={styles.implBox}>
+          <strong>Applicazione</strong>: il sistema Leitner ripete le posizioni a intervalli crescenti
+          di 1, 3, 7, 14 e 30 giorni. Se sbagli, la posizione torna all'inizio. Se la azzecchi, avanza.
+          Una posizione e' considerata "consolidata" solo dopo 5 successi consecutivi.
+        </div>
         <p>
-          Con Stockfish e la modalita partita, il freeze potrebbe applicarsi prima di <em>ogni</em> mossa,
-          non solo alla prima. Un giocatore impulsivo spesso parte bene ma accelera a meta partita —
-          proprio quando serve piu attenzione.
-        </p>
-        <p>
-          La domanda aperta: il freeze per ogni mossa sarebbe troppo invasivo? O e' proprio quello
-          che serve a un giocatore ADHD impulsivo che compete? Il profilo cognitivo potrebbe calibrarlo:
-          freeze lungo a inizio posizione, freeze breve sulle mosse successive, nessun freeze
-          se l'impulsivita e' bassa.
+          <strong>Fondamento scientifico:</strong> la ripetizione spaziata sfrutta l'effetto
+          di distanziamento (<em>spacing effect</em>), il modo piu efficace per trasferire le
+          informazioni nella memoria a lungo termine. Per l'utente ADHD, questo sistema previene
+          il sovraccarico e assicura che il tempo di studio sia ottimizzato sulle posizioni
+          non ancora acquisite.
         </p>
       </Section>
 
-      {/* --- Sezione 8: Puzzle vs Partite --- */}
-      <Section status="open" title="Puzzle singoli o partite con scaffolding?">
+      {/* ====== PARTE 2: L'IMPLEMENTAZIONE ====== */}
+
+      <h3 style={styles.partTitle}>L'Implementazione</h3>
+
+      {/* --- Profilo cognitivo: 4 parametri --- */}
+      <Section status="solid" title="Profilo cognitivo — 4 parametri">
         <p>
-          Oggi l'app funziona a puzzle: una posizione, una mossa corretta, avanti.
-          Con Stockfish e' possibile un modello diverso: giocare partite intere con lo scaffolding
-          cognitivo attivo (freeze, profilassi, metacognizione).
+          I 5 fondamenti scientifici si traducono in un profilo con 4 parametri, ciascuno
+          regolabile su 3 livelli (alta / media / bassa). Ogni parametro controlla un
+          comportamento concreto dell'app:
         </p>
+        <div style={styles.paramGrid}>
+          <ParamCard
+            name="Impulsivita"
+            foundation="Inibizione comportamentale"
+            desc="Quanto tendi a muovere senza pensare"
+            effect="Freeze: 5s (alta) / 3s (media) / 1s (bassa)"
+            detail="Sistema 1 → Sistema 2. Il freeze impone il tempo di latenza per attivare
+                    la corteccia prefrontale prima dell'atto motorio."
+          />
+          <ParamCard
+            name="Consapevolezza minacce"
+            foundation="Memoria di lavoro"
+            desc="Quanto noti le minacce dell'avversario"
+            effect="Profilassi: sempre / ogni 3 / mai"
+            detail="Lo scaffolding esternalizza la domanda 'Cosa vuole fare l'altro?',
+                    liberando risorse mentali per il calcolo profondo."
+          />
+          <ParamCard
+            name="Metacognizione"
+            foundation="Monitoraggio errore"
+            desc="Quanto rifletti sui tuoi errori"
+            effect="Domande post-errore: ogni errore / ogni 2 / ogni 4"
+            detail="Attiva la corteccia cingolata anteriore, aiuta a 'marcare' l'errore
+                    a livello cognitivo per favorire l'apprendimento."
+          />
+          <ParamCard
+            name="Tolleranza frustrazione"
+            foundation="Regolazione emotiva"
+            desc="Quanto reggi l'errore senza demotivarti"
+            effect="Hint: 2 (bassa) / 3 (media) / illimitati (alta)"
+            detail="Contrasta la Reward Deficiency Syndrome. Meno muri rossi,
+                    piu sfumature. Soglia errore calibrabile dal coach."
+          />
+        </div>
+      </Section>
+
+      {/* --- Sessioni adattive --- */}
+      <Section status="solid" title="Sessioni generate su misura">
+        <p>
+          Il session engine combina tre criteri per generare ogni sessione:
+        </p>
+        <ul style={styles.list}>
+          <li><strong>Spaced repetition</strong> — prima le posizioni scadute (spacing effect)</li>
+          <li><strong>Difficolta adattiva</strong> — il livello si calibra sui tuoi risultati per tema</li>
+          <li><strong>Direttive del coach</strong> — il coach puo forzare temi, difficolta, posizioni specifiche</li>
+        </ul>
+        <p>
+          Il risultato: ogni sessione e' diversa e calibrata su dove sei adesso, non su dove eri ieri.
+        </p>
+      </Section>
+
+      {/* --- Integrazione Stockfish --- */}
+      <Section status="open" title="Integrazione Stockfish — il cuore dell'evoluzione">
+        <p>
+          Stockfish (motore scacchistico open source, WebAssembly) e' la chiave per portare
+          tutti i fondamenti scientifici al livello successivo. Analizza una posizione a depth 15-18
+          in ~200-500ms su telefono moderno. Nessun server necessario.
+        </p>
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.th}>Aspetto</th>
+              <th style={styles.th}>Oggi</th>
+              <th style={styles.th}>Con Stockfish</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={styles.td}>Soluzioni</td><td style={styles.td}>Lista fissa pre-scritta</td><td style={styles.td}>Calcolate in tempo reale</td></tr>
+            <tr><td style={styles.td}>Feedback</td><td style={styles.td}>Giusto / Sbagliato</td><td style={styles.td}>Ottima / Buona / Imprecisione / Errore</td></tr>
+            <tr><td style={styles.td}>Profilassi</td><td style={styles.td}>Minacce finte (mosse legali)</td><td style={styles.td}>Minacce reali (eval-based)</td></tr>
+            <tr><td style={styles.td}>Difficolta</td><td style={styles.td}>Numero manuale 1-10</td><td style={styles.td}>Calcolata: profondita per trovare la mossa</td></tr>
+            <tr><td style={styles.td}>Posizioni</td><td style={styles.td}>Database curato a mano</td><td style={styles.td}>Qualsiasi FEN funziona</td></tr>
+            <tr><td style={styles.td}>Metacognizione</td><td style={styles.td}>Domanda generica</td><td style={styles.td}>Contestuale, basata su eval</td></tr>
+            <tr><td style={styles.td}>Modalita</td><td style={styles.td}>Solo puzzle singoli</td><td style={styles.td}>Puzzle + partite con scaffolding</td></tr>
+          </tbody>
+        </table>
+      </Section>
+
+      {/* --- Puzzle vs Partite --- */}
+      <Section status="open" title="Due pilastri: puzzle tattici e partite con scaffolding">
         <p>
           Per uno scacchista che compete, il puzzle tattico e' solo una parte dell'allenamento.
           La capacita di applicare il pensiero strutturato per 30-40 mosse consecutive e' altrettanto
           importante — e per un giocatore ADHD, e' spesso la parte piu difficile.
         </p>
+        <ul style={styles.list}>
+          <li><strong>Puzzle</strong> — allenano il pattern recognition. Una posizione, una mossa
+              corretta (o graduata con Stockfish). Modalita "tattiche mirate".</li>
+          <li><strong>Partite con scaffolding</strong> — allenano la tenuta attentiva. Freeze prima
+              di ogni mossa, profilassi contestuale, metacognizione su dati reali. Il vero
+              banco di prova per le funzioni esecutive.</li>
+        </ul>
         <p>
-          Il piano: mantenere i puzzle come modalita "tattiche mirate" e aggiungere la modalita partita
-          come secondo pilastro. I due si completano: i puzzle allenano il pattern recognition,
-          le partite allenano la tenuta attentiva.
+          I due si completano: i puzzle costruiscono gli schemi, le partite li mettono alla prova
+          nella continuita. Lo studente non risolve piu "indovinelli con una risposta sola" —
+          gioca a scacchi, e l'app lo accompagna con strumenti cognitivi calibrati.
         </p>
       </Section>
 
-      {/* --- Sezione 9: Cosa manca --- */}
+      {/* ====== ROADMAP VISUALE ====== */}
+
+      <h3 style={styles.partTitle}>Roadmap di Sviluppo</h3>
+
+      <div style={styles.roadmapContainer}>
+        {/* Strato 0-3: completati */}
+        <RoadmapPhase
+          number="0-3"
+          title="Fondamenta"
+          status="done"
+          items={[
+            { label: 'Schema posizioni + 25 puzzle', done: true },
+            { label: 'Training session con freeze', done: true },
+            { label: 'Spaced repetition (Leitner 5 box)', done: true },
+            { label: 'Profilo cognitivo (4 parametri)', done: true },
+            { label: 'Profilassi + Metacognizione', done: true },
+            { label: 'Difficolta adattiva + Session engine', done: true },
+            { label: 'Statistiche e insight', done: true },
+          ]}
+        />
+
+        {/* Strato 4: Stockfish Core */}
+        <RoadmapPhase
+          number="4"
+          title="Stockfish Core"
+          status="next"
+          subtitle="Il motore che cambia tutto"
+          items={[
+            { label: 'Wrapper Stockfish WASM + Web Worker', done: false, pillar: 'Infrastruttura' },
+            { label: 'Feedback graduato (ottima/buona/imprecisione/errore)', done: false, pillar: 'Regolazione emotiva' },
+            { label: 'Profilassi reale con eval numerica', done: false, pillar: 'Memoria di lavoro' },
+            { label: 'Difficolta calcolata automaticamente', done: false, pillar: 'Infrastruttura' },
+            { label: 'Metacognizione contestuale (basata su eval)', done: false, pillar: 'Metacognizione' },
+            { label: 'Ri-validazione posizioni esistenti', done: false, pillar: 'Qualita' },
+            { label: 'Upload posizioni semplificato (coach)', done: false, pillar: 'Infrastruttura' },
+          ]}
+        />
+
+        {/* Strato 5: Partite */}
+        <RoadmapPhase
+          number="5"
+          title="Freeze Evoluto + Partite"
+          status="future"
+          subtitle="Dal puzzle alla partita completa"
+          items={[
+            { label: 'Freeze prima di ogni mossa (anti-decadimento vigilanza)', done: false, pillar: 'Inibizione' },
+            { label: 'Partita vs Stockfish con scaffolding completo', done: false, pillar: 'Tutti i pilastri' },
+            { label: 'Analisi post-partita con errori e trend', done: false, pillar: 'Metacognizione' },
+            { label: 'Errori di partita → puzzle nel sistema Leitner', done: false, pillar: 'Consolidamento' },
+          ]}
+        />
+
+        {/* Strato 6: Validazione */}
+        <RoadmapPhase
+          number="6"
+          title="Test e Validazione"
+          status="future"
+          subtitle="Verifica sul campo con utenti reali"
+          items={[
+            { label: 'Protocollo osservazione (aiuto vs interferenza)', done: false, pillar: 'Clinico' },
+            { label: 'Test duale padre-figlio', done: false, pillar: 'Clinico' },
+            { label: 'Adattamento automatico profilo cognitivo', done: false, pillar: 'Tutti i pilastri' },
+            { label: 'Modalita esame (senza aiuti)', done: false, pillar: 'Validazione' },
+            { label: 'Dashboard coach multi-utente', done: false, pillar: 'Infrastruttura' },
+            { label: 'Export dati (CSV, PDF report)', done: false, pillar: 'Infrastruttura' },
+          ]}
+        />
+      </div>
+
+      {/* ====== PARTE 3: EVOLUZIONE ====== */}
+
+      <h3 style={styles.partTitle}>Evoluzione e Validazione</h3>
+
+      {/* --- Test duale --- */}
+      <Section status="open" title="Test duale — padre e figlio">
+        <p>
+          I test coinvolgeranno due generazioni con ADHD. Sara utile osservare come i parametri
+          cambino non solo tra i due soggetti, ma anche nella stessa persona in base ai
+          livelli di stanchezza.
+        </p>
+        <p>
+          Il passo successivo e' la creazione di un <strong>protocollo di osservazione</strong> per
+          annotare se lo scaffolding (il supporto dell'app) viene percepito come un aiuto
+          necessario o, in certi momenti, come un'interferenza eccessiva.
+        </p>
+        <p style={styles.note}>
+          Questa osservazione e' clinicamente rilevante: lo scaffolding deve essere una protesi
+          temporanea, non una dipendenza. Il successo del metodo si misura nella progressiva
+          riduzione del supporto necessario.
+        </p>
+      </Section>
+
+      {/* --- Cosa manca --- */}
       <Section status="open" title="Cosa manca ancora">
         <ul style={styles.list}>
           <li><strong>Validazione clinica</strong> — il metodo si basa su principi consolidati
-              (spaced repetition, scaffolding cognitivo, calibrazione individuale) ma non e' stato
-              ancora testato sistematicamente su una popolazione ADHD</li>
+              (spaced repetition, scaffolding cognitivo, inibizione comportamentale, monitoraggio
+              errore, regolazione emotiva) ma non e' stato ancora testato sistematicamente su
+              una popolazione ADHD</li>
           <li><strong>Adattamento automatico del profilo</strong> — oggi il profilo e' statico,
-              impostato manualmente. L'app dovrebbe analizzare i dati (tempi di risposta, pattern di errore)
-              e suggerire aggiustamenti</li>
+              impostato manualmente. L'app dovrebbe analizzare i dati (tempi di risposta,
+              pattern di errore, decadimento vigilanza) e suggerire aggiustamenti</li>
           <li><strong>Dashboard coach</strong> — il coach deve poter monitorare i progressi
               e impostare direttive senza accedere al telefono dello studente</li>
           <li><strong>Modalita esame</strong> — sessione senza aiuti per misurare
               l'interiorizzazione reale degli strumenti cognitivi</li>
+          <li><strong>Protocollo di osservazione</strong> — strumento per annotare reazioni
+              qualitative durante le sessioni (scaffolding percepito come aiuto o interferenza)</li>
         </ul>
       </Section>
 
@@ -299,10 +488,125 @@ function Section({ status, title, children }) {
   )
 }
 
-function ParamCard({ name, desc, effect, detail }) {
+const PHASE_STYLES = {
+  done:   { accent: '#2E7D32', bg: '#E8F5E9', border: '#A5D6A7', badge: '#2E7D32', badgeText: 'Completato' },
+  next:   { accent: '#1565C0', bg: '#E3F2FD', border: '#90CAF9', badge: '#1565C0', badgeText: 'Prossimo' },
+  future: { accent: '#78909C', bg: '#ECEFF1', border: '#CFD8DC', badge: '#78909C', badgeText: 'Futuro' },
+}
+
+function RoadmapPhase({ number, title, status, subtitle, items }) {
+  const ps = PHASE_STYLES[status]
+  return (
+    <div style={{
+      position: 'relative',
+      paddingLeft: 36,
+      paddingBottom: status === 'future' && !subtitle ? 0 : 24,
+    }}>
+      {/* Vertical line */}
+      <div style={{
+        position: 'absolute',
+        left: 13,
+        top: 0,
+        bottom: 0,
+        width: 2,
+        background: ps.border,
+      }} />
+      {/* Circle node */}
+      <div style={{
+        position: 'absolute',
+        left: 4,
+        top: 2,
+        width: 20,
+        height: 20,
+        borderRadius: '50%',
+        background: ps.accent,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#fff',
+        fontSize: 9,
+        fontWeight: 800,
+        boxShadow: status === 'next' ? `0 0 0 4px ${ps.border}` : 'none',
+      }}>
+        {status === 'done' ? '\u2713' : number}
+      </div>
+      {/* Content */}
+      <div style={{
+        background: ps.bg,
+        border: `1px solid ${ps.border}`,
+        borderRadius: 10,
+        padding: '14px 16px',
+        borderLeft: `4px solid ${ps.accent}`,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: subtitle ? 2 : 8, flexWrap: 'wrap' }}>
+          <span style={{
+            background: ps.badge,
+            color: '#fff',
+            fontSize: 9,
+            fontWeight: 700,
+            padding: '2px 7px',
+            borderRadius: 6,
+            textTransform: 'uppercase',
+            letterSpacing: 0.5,
+          }}>
+            {ps.badgeText}
+          </span>
+          <span style={{ fontSize: 15, fontWeight: 700, color: '#2C3E50' }}>
+            Strato {number} — {title}
+          </span>
+        </div>
+        {subtitle && (
+          <div style={{ fontSize: 12, color: '#78909C', marginBottom: 8, fontStyle: 'italic' }}>
+            {subtitle}
+          </div>
+        )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+          {items.map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 13 }}>
+              <span style={{
+                flexShrink: 0,
+                width: 18,
+                height: 18,
+                borderRadius: 4,
+                border: item.done ? 'none' : `2px solid ${ps.border}`,
+                background: item.done ? ps.accent : 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+                fontSize: 11,
+                fontWeight: 700,
+                marginTop: 1,
+              }}>
+                {item.done ? '\u2713' : ''}
+              </span>
+              <span style={{ color: item.done ? '#78909C' : '#37474F', textDecoration: item.done ? 'line-through' : 'none', lineHeight: 1.4 }}>
+                {item.label}
+                {item.pillar && (
+                  <span style={{
+                    marginLeft: 6,
+                    fontSize: 10,
+                    color: ps.accent,
+                    fontWeight: 600,
+                    opacity: 0.7,
+                  }}>
+                    [{item.pillar}]
+                  </span>
+                )}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ParamCard({ name, foundation, desc, effect, detail }) {
   return (
     <div style={styles.paramCard}>
       <div style={styles.paramName}>{name}</div>
+      {foundation && <div style={styles.paramFoundation}>{foundation}</div>}
       <div style={styles.paramDesc}>{desc}</div>
       <div style={styles.paramEffect}>{effect}</div>
       <div style={styles.paramDetail}>{detail}</div>
@@ -380,6 +684,22 @@ const styles = {
     height: 10,
     borderRadius: '50%',
   },
+  partTitle: {
+    fontSize: 16,
+    fontWeight: 700,
+    color: '#78909C',
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    margin: '24px 0 4px',
+    paddingBottom: 8,
+    borderBottom: '2px solid #CFD8DC',
+  },
+  roadmapContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 0,
+    padding: '8px 0',
+  },
   section: {
     borderRadius: 10,
     padding: '16px 20px',
@@ -424,6 +744,26 @@ const styles = {
     fontStyle: 'italic',
     marginTop: 8,
   },
+  implBox: {
+    background: '#E8F5E9',
+    border: '1px solid #C8E6C9',
+    borderRadius: 8,
+    padding: '10px 14px',
+    fontSize: 13,
+    color: '#2E7D32',
+    lineHeight: 1.6,
+    margin: '10px 0',
+  },
+  evolutionBox: {
+    background: '#FFF8E1',
+    border: '1px solid #FFE082',
+    borderRadius: 8,
+    padding: '10px 14px',
+    fontSize: 13,
+    color: '#E65100',
+    lineHeight: 1.6,
+    margin: '10px 0',
+  },
   warningBox: {
     background: '#FFF3E0',
     border: '1px solid #FFE0B2',
@@ -433,6 +773,27 @@ const styles = {
     color: '#E65100',
     lineHeight: 1.6,
     margin: '10px 0',
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    marginTop: 12,
+    fontSize: 13,
+  },
+  th: {
+    textAlign: 'left',
+    padding: '8px 10px',
+    background: '#ECEFF1',
+    borderBottom: '2px solid #CFD8DC',
+    fontSize: 12,
+    fontWeight: 700,
+    color: '#37474F',
+  },
+  td: {
+    padding: '6px 10px',
+    borderBottom: '1px solid #E0E0E0',
+    color: '#546E7A',
+    lineHeight: 1.5,
   },
   paramGrid: {
     display: 'grid',
@@ -451,6 +812,14 @@ const styles = {
     fontWeight: 700,
     color: '#2C3E50',
     marginBottom: 2,
+  },
+  paramFoundation: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: '#78909C',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
   },
   paramDesc: {
     fontSize: 12,

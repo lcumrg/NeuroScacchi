@@ -1,7 +1,7 @@
 # NeuroScacchi 2.0 — Roadmap
 
 > Training engine adattivo per scacchi + riabilitazione funzioni esecutive.
-> Ultimo aggiornamento: 8 Marzo 2026 (Strati 0-3 implementati)
+> Ultimo aggiornamento: 8 Marzo 2026 (Strati 0-3 implementati, Strati 4-6 pianificati)
 
 ---
 
@@ -14,22 +14,29 @@
 
 ---
 
-## Architettura a 4 blocchi
+## Architettura a 5 blocchi
 
 ### Blocco 1 — Il Magazzino (Position Database)
-Database di posizioni con metadati: tema, difficolta (1-10), mossa/e corrette, origine.
-Fonti: coach (upload semplificato), Lichess puzzle DB, engine.
+Database di posizioni con metadati: tema, difficolta, mossa/e corrette, origine.
+Fonti: coach (upload semplificato), Lichess puzzle DB, partite dello studente.
+Con Stockfish: qualsiasi FEN funziona, la soluzione e' calcolata dal motore.
 
-### Blocco 2 — Il Cervello (Session Engine)
+### Blocco 2 — Il Motore (Stockfish WASM)
+Cuore dell'app. Analizza posizioni in tempo reale nel browser via Web Worker.
+Fornisce: valutazione, mossa migliore, minacce reali, classificazione mosse, difficolta calcolata.
+Abilita: feedback graduato, profilassi reale, metacognizione contestuale, modalita partita.
+
+### Blocco 3 — Il Cervello (Session Engine)
 Genera sessioni su misura guardando: direttive coach, storico studente (spaced repetition),
 livello attuale (difficolta adattiva), bilanciamento tematico.
 
-### Blocco 3 — Lo Scaffolding Cognitivo (Cognitive Layer)
-Profilo per studente con parametri: impulsivita, consapevolezza minacce, metacognizione,
-tolleranza frustrazione. Si applica automaticamente e si adatta nel tempo.
+### Blocco 4 — Lo Scaffolding Cognitivo (Cognitive Layer)
+Profilo per studente con 4 parametri: impulsivita, consapevolezza minacce, metacognizione,
+tolleranza frustrazione. Ogni parametro fondato su un pilastro scientifico (vedi pagina Metodo).
+Si applica automaticamente e si adatta nel tempo.
 
-### Blocco 4 — Il Cruscotto Coach
-Dashboard: progressi studenti, direttive attive, alert, gestione posizioni.
+### Blocco 5 — Il Cruscotto Coach
+Dashboard: progressi studenti, direttive attive, alert, gestione posizioni, export dati.
 
 ---
 
@@ -105,7 +112,7 @@ Dashboard: progressi studenti, direttive attive, alert, gestione posizioni.
 
 ---
 
-## STRATO 2 — Adattivita e Coach — PARZIALMENTE COMPLETATO
+## STRATO 2 — Adattivita — COMPLETATO
 
 ### 2.1 Difficolta adattiva — COMPLETATO
 - [x] `adaptiveDifficulty.js`: calcola livello studente per tema (media pesata dei risultati)
@@ -123,23 +130,12 @@ Dashboard: progressi studenti, direttive attive, alert, gestione posizioni.
 - [x] `generateSession({ count, theme, directives })` — API unica per tutte le modalita
 - [x] Supporto direttive coach (tema, min/max difficolta, posizioni specifiche)
 
-### 2.4 Direttive del coach
-- [ ] UI per impostare direttive per studente
-- [ ] Lo studente vede le direttive attive in home
-- [ ] Richiede sistema multi-utente (coach + studenti su Firebase)
-
-### 2.5 Dashboard Coach
-- [ ] Lista studenti con progressi
-- [ ] Gestione direttive e profili cognitivi
-- [ ] Richiede sistema multi-utente
-
-### 2.6 Adattamento automatico profilo cognitivo
-- [ ] Analisi automatica dei dati per regolare il profilo
-- [ ] Log dei cambiamenti per il coach
+> **Nota:** le feature coach (direttive, dashboard, adattamento automatico) previste qui
+> sono state ripianificate nello Strato 6 come parte del piano Stockfish.
 
 ---
 
-## STRATO 3 — Analytics e Completamento — PARZIALMENTE COMPLETATO
+## STRATO 3 — Analytics — COMPLETATO
 
 ### 3.1 Analytics studente — COMPLETATO
 - [x] `StatsPage.jsx`: panoramica con barra visiva (consolidate/in corso/da rivedere/nuove)
@@ -148,25 +144,8 @@ Dashboard: progressi studenti, direttive attive, alert, gestione posizioni.
 - [x] Insight in linguaggio naturale: tema forte/debole, confronto sessioni, conteggio consolidate
 - [x] Accessibile da HomePage via bottone "Statistiche"
 
-### 3.2 Alert coach
-- [ ] Notifica se lo studente non si allena da X giorni
-- [ ] Notifica se lo studente e bloccato su un tema
-- [ ] Richiede sistema multi-utente
-
-### 3.3 Upload posizioni semplificato (coach)
-- [ ] Scacchiera interattiva: posiziona i pezzi, indica la mossa giusta
-- [ ] Tag tema e difficolta con dropdown
-- [ ] Opzionale: aggiungi 1-2 hint testuali
-- [ ] Nessun wizard complesso — salva in 30 secondi
-
-### 3.4 Modalita "esame"
-- [ ] Sessione senza nessun supporto cognitivo (no freeze, no profilassi, no hint)
-- [ ] Confronto risultati con sessioni supportate ("Con gli aiuti: 80%. Da solo: 65%")
-- [ ] Utile per misurare l'interiorizzazione nel tempo
-
-### 3.5 Export dati
-- [ ] Export CSV delle sessioni per analisi esterna
-- [ ] Export PDF del report studente per i genitori/scuola
+> **Nota:** alert coach, upload posizioni, modalita esame ed export dati previsti qui
+> sono stati ripianificati negli Strati 4-6 come parte del piano Stockfish.
 
 ---
 
@@ -175,6 +154,7 @@ Dashboard: progressi studenti, direttive attive, alert, gestione posizioni.
 ### Stack
 - React 18 + Vite (come v1)
 - chess.js + react-chessboard (condivisi con v1)
+- **Stockfish WASM** — motore scacchistico nel browser via Web Worker (Strato 4+)
 - Firebase Auth (condiviso con v1)
 - Firestore per dati v2 (collezioni separate: `v2_positions`, `v2_sessions`, `v2_profiles`)
 - Nessun backend custom — tutto client-side + Firestore + Cloud Functions per aggregazioni
@@ -203,6 +183,7 @@ src/v2/
     spacedRepetition.js   # Algoritmo SR
     cognitiveLayer.js     # Applica scaffolding cognitivo
     adaptiveDifficulty.js # Calibra difficolta
+    stockfishWorker.js  # Web Worker Stockfish WASM (Strato 4)
   data/
     positions.json        # Posizioni iniziali
   utils/
@@ -248,74 +229,176 @@ src/v2/
 
 ---
 
-## RIFLESSIONE APERTA — Integrazione Motore Scacchistico
+## DECISIONI ARCHITETTURALI — Prese l'8 Marzo 2026
 
-> Stato: IN VALUTAZIONE — da discutere prima di procedere con la roadmap
-> Data: 8 Marzo 2026
+> Le 4 questioni aperte sono state discusse e risolte.
 
-### Il problema di fondo
+1. **Si integra Stockfish?** → **SI.** Diventa il cuore dell'app. Stockfish WASM nel browser via Web Worker.
+2. **Si mantengono i puzzle classici?** → **SI.** Convivono come modalita "tattiche mirate". Stockfish li migliora (feedback graduato, validazione) ma non li sostituisce.
+3. **Si aggiunge la modalita partita con scaffolding?** → **SI**, ma come fase successiva. Prima Stockfish nei puzzle, poi partite.
+4. **Priorita?** → **Direttamente Stockfish.** Niente passaggio intermedio Lichess API (limiti: 1 req/s, solo posizioni nel DB, richiede rete). Stockfish risolve tutto offline.
 
-L'app non ha un motore scacchistico reale. Claude (AI) puo verificare se una mossa e' legale, ma non se e' la migliore. Questo causa:
-- Posizioni con soluzioni sbagliate (es. endgame-01: f2f4 regalava il pedone)
-- Profilassi che mostra minacce "finte" (mosse legali, non minacce reali con valutazione)
-- Feedback binario giusto/sbagliato, frustrante per ragazzi ADHD
-- Difficolta assegnata a mano (1-10), non misurabile oggettivamente
-- Ogni posizione richiede soluzioni pre-scritte e verificate manualmente
+---
 
-### Opzione: Stockfish WASM nel browser
+## STRATO 4 — Stockfish Core — DA FARE
 
-Stockfish e' il motore scacchistico piu forte al mondo (open source, GPL). Esiste un port WebAssembly che gira direttamente nel browser via Web Worker. Analizza una posizione a depth 15-18 in ~200-500ms su un telefono moderno. Nessun server necessario. Pacchetti npm disponibili: `stockfish`, `stockfish.js`.
+> Riferimento: pagina Metodo, sezioni 1-5 (fondamenti scientifici)
+> Principio guida: ogni feature deve servire almeno uno dei 5 pilastri del Metodo
+> (inibizione, memoria di lavoro, metacognizione, regolazione emotiva, consolidamento)
 
-Alternativa leggera: Lichess Cloud Evaluation API (gratuita, no auth, ma limitata a 1 req/s e solo posizioni gia nel database Lichess).
+### 4.1 Wrapper Stockfish WASM
 
-### Cosa cambierebbe nell'app
+- [ ] Installare `stockfish.wasm` (o `lila-stockfish-web`) via npm
+- [ ] Creare `src/v2/engine/stockfishWorker.js` — Web Worker che carica e comunica con Stockfish via UCI
+- [ ] API: `evaluate(fen, depth)` → `{ bestMove, eval, pv, depth }`
+- [ ] API: `analyzeMove(fen, move, depth)` → `{ evalBefore, evalAfter, deltaEval, classification }`
+- [ ] API: `getThreats(fen, depth)` → top 3 mosse avversario con eval (per profilassi reale)
+- [ ] Gestione lifecycle: init → ready → analyzing → idle. Timeout su analisi lunghe.
+- [ ] Depth configurabile: default 16, riducibile a 12 su dispositivi lenti
+- [ ] Test: verificare funzionamento su Chrome, Firefox, Safari mobile
 
-| Aspetto | Oggi (senza motore) | Con Stockfish |
-|---|---|---|
-| **Soluzioni** | Lista fissa pre-scritta | Calcolate in tempo reale |
-| **Feedback** | Giusto/Sbagliato | Spettro graduato: ottima / buona / imprecisione / errore |
-| **Profilassi** | Minacce finte (mosse legali) | Minacce reali (eval-based) |
-| **Difficolta** | Numero manuale 1-10 | Calcolata: profondita necessaria per trovare la mossa |
-| **Posizioni** | Database curato a mano | Qualsiasi FEN funziona (Lichess, partite vere, coach) |
-| **Metacognizione** | Domanda generica post-errore | Contestuale: "Hai mosso in 2s, il motore dice che perdi un pezzo. Cosa non hai visto?" |
-| **Modalita** | Solo puzzle singoli | Puzzle + partite intere con scaffolding cognitivo |
+### 4.2 Feedback graduato (Regolazione emotiva — pilastro 4)
 
-### Impatto sul layer cognitivo (ADHD / funzioni esecutive)
+- [ ] Classificazione mossa basata su deltaEval:
+  - Ottima: deltaEval < 0.3 (verde)
+  - Buona: deltaEval 0.3–1.0 (blu)
+  - Imprecisione: deltaEval 1.0–2.5 (arancione)
+  - Errore: deltaEval > 2.5 (rosso)
+- [ ] UI: sostituire il feedback binario in `TrainingSession` con barra graduata
+- [ ] Mostrare la mossa migliore quando la mossa giocata e' imprecisione/errore
+- [ ] Soglia "errore" configurabile dal coach nel profilo (per bilanciare motivazione vs rigore)
+- [ ] Collegamento con tolleranza frustrazione: soglia piu permissiva se bassa
 
-**Freeze**: potrebbe applicarsi prima di OGNI mossa (non solo a inizio posizione), calibrato sull'impulsivita. Lo studente impulsivo viene frenato dove serve davvero.
+### 4.3 Profilassi reale (Memoria di lavoro — pilastro 2)
 
-**Profilassi**: il motore evidenzia la minaccia reale con valutazione numerica. La differenza tra "il cavallo puo andare in d5" e "il cavallo in d5 ti costa la qualita (-3.2)" e' enorme per chi deve imparare a valutare il pericolo.
+- [ ] Sostituire `ProfilassiPrompt` attuale (mosse legali casuali) con analisi Stockfish
+- [ ] Mostrare 3 mosse avversario ordinate per eval (le vere minacce)
+- [ ] Aggiungere valutazione numerica: "Cd5 ti costa la qualita (-3.2)"
+- [ ] Mantenere la meccanica: lo studente sceglie la piu pericolosa prima di giocare
+- [ ] Frequenza controllata dal profilo cognitivo (consapevolezza minacce)
 
-**Feedback graduato**: "buona mossa, ma c'era di meglio" e' meno frustrante di "SBAGLIATO" per un ragazzo con bassa tolleranza alla frustrazione. Meno muri rossi, piu sfumature.
+### 4.4 Difficolta calcolata
 
-**Metacognizione contestuale**: "Hai perso 3 punti di valutazione nelle ultime 5 mosse. Stai andando troppo veloce?" — basato su dati reali, non domande generiche.
+- [ ] Per ogni posizione: analizzare a depth crescenti (8, 12, 16, 20)
+- [ ] La depth a cui Stockfish trova la mossa migliore = indicatore di difficolta
+- [ ] Mappare depth → scala 1-10 (depth 8 = facile, depth 20 = molto difficile)
+- [ ] Aggiornare `adaptiveDifficulty.js` per usare la difficolta calcolata
+- [ ] Mantenere retrocompatibilita con difficolta manuale per posizioni curate dal coach
 
-### Cosa resta uguale
+### 4.5 Metacognizione contestuale (pilastro 3)
 
-- Spaced repetition (servono ancora posizioni da ripetere)
-- Profilo cognitivo (4 parametri controllano il comportamento)
-- Sessioni generate dal session engine
-- Struttura coach → direttive → studente si allena
-- Stack tecnico (React + Vite + Firebase)
+- [ ] Dopo errore, generare domanda basata su dati reali del motore:
+  - "Hai mosso in 2 secondi. Il motore dice che perdi un pezzo. Cosa non hai visto?"
+  - "Nelle ultime 3 posizioni hai perso 5 punti di eval. Stai andando troppo veloce?"
+- [ ] Pool di template con placeholder: `{deltaEval}`, `{tempoRisposta}`, `{minaccia}`
+- [ ] Frequenza controllata dal profilo cognitivo (metacognizione)
 
-### La visione
+### 4.6 Validazione automatica posizioni esistenti
 
-Lo studente non risolve piu "indovinelli con una risposta sola". **Gioca a scacchi, e l'app lo accompagna** con gli strumenti cognitivi calibrati sul suo profilo. I puzzle restano come modalita di allenamento mirato, ma non sono piu l'unica cosa che l'app sa fare.
+- [ ] Script che ri-analizza tutte le posizioni in `positions.json` con Stockfish
+- [ ] Segnala soluzioni sub-ottimali o sbagliate
+- [ ] Propone la mossa migliore del motore come alternativa/sostituzione
+- [ ] Ricalcola difficolta per ogni posizione
 
-Cambio di natura: da "quiz di scacchi con supporto ADHD" a "allenatore di scacchi adattivo per funzioni esecutive".
+### 4.7 Upload posizioni semplificato (coach)
 
-### Decisioni da prendere
+- [ ] Scacchiera interattiva: posiziona i pezzi o incolla FEN, indica la mossa giusta
+- [ ] Stockfish valida automaticamente la mossa e calcola la difficolta
+- [ ] Tag tema con dropdown, hint testuali opzionali
+- [ ] Nessun wizard complesso — salva in 30 secondi
+- [ ] Con Stockfish: il coach puo inserire qualsiasi FEN senza pre-verificare la soluzione
 
-1. **Si integra Stockfish?** Se si, diventa il cuore dell'app.
-2. **Si mantengono anche i puzzle classici?** (Probabilmente si, come modalita "tattiche")
-3. **Si aggiunge la modalita partita con scaffolding?** (Il vero salto di qualita, ma richiede piu lavoro)
-4. **Priorita**: prima sostituire le posizioni manuali con Lichess (fix immediato) e poi integrare Stockfish? O direttamente Stockfish?
+---
+
+## STRATO 5 — Freeze Evoluto e Partite — DA FARE
+
+> Prerequisito: Strato 4 completato
+> Riferimento: pagina Metodo, sezione 1 (inibizione) e sezione "Puzzle vs Partite"
+
+### 5.1 Freeze per ogni mossa (Inibizione — pilastro 1)
+
+- [ ] Estendere FreezeOverlay per attivarsi prima di ogni mossa (non solo a inizio posizione)
+- [ ] Calibrazione dal profilo: freeze lungo (3-5s) a inizio, freeze breve (1-2s) sulle mosse successive
+- [ ] Nessun freeze se impulsivita = bassa
+- [ ] Contrastare il "decadimento della vigilanza": il freeze puo allungarsi se il giocatore accelera troppo (deltaEval in peggioramento + tempo risposta in calo)
+- [ ] Toggle on/off per modalita puzzle classici (dove il freeze a inizio basta)
+
+### 5.2 Modalita partita con scaffolding
+
+- [ ] Nuova pagina `GamePage.jsx`: partita completa contro Stockfish
+- [ ] Stockfish come avversario con livello regolabile (depth/elo limitato)
+- [ ] Scaffolding cognitivo attivo su ogni mossa:
+  - Freeze (pilastro 1) — prima di ogni mossa
+  - Profilassi (pilastro 2) — "Cosa minaccia l'avversario?" con eval reale
+  - Metacognizione (pilastro 3) — dopo imprecisioni/errori
+  - Feedback graduato (pilastro 4) — dopo ogni mossa
+- [ ] Barra eval live (opzionale, disattivabile) per visualizzare l'andamento
+- [ ] Riepilogo partita con analisi completa: errori, imprecisioni, tempo medio per mossa
+- [ ] Confronto con partite precedenti (consolidamento — pilastro 5)
+
+### 5.3 Spaced repetition per partite (Consolidamento — pilastro 5)
+
+- [ ] Salvare le posizioni critiche della partita (dove lo studente ha sbagliato)
+- [ ] Inserirle automaticamente nel sistema Leitner come "posizioni da rivedere"
+- [ ] Lo studente rivede le proprie posizioni sbagliate come puzzle tattici
+- [ ] Ciclo virtuoso: partita → errori → puzzle mirati → partita migliore
+
+---
+
+## STRATO 6 — Test Duale e Validazione — DA FARE
+
+> Prerequisito: Strati 4-5 funzionanti
+> Riferimento: pagina Metodo, sezione "Test duale padre-figlio"
+
+### 6.1 Protocollo di osservazione
+
+- [ ] Strumento per annotare reazioni qualitative durante le sessioni
+- [ ] Domande chiave: lo scaffolding e' percepito come aiuto o interferenza?
+- [ ] Log automatico: quando lo studente "forza" il freeze (impazienza), quando salta la profilassi
+- [ ] Confronto parametri tra i due soggetti (padre e figlio)
+- [ ] Osservare variazioni nella stessa persona in base a stanchezza/momento della giornata
+
+### 6.2 Adattamento automatico del profilo
+
+- [ ] Analisi automatica dei dati per suggerire aggiustamenti al profilo cognitivo
+- [ ] Indicatori: tempo medio risposta in calo → impulsivita in aumento → suggerire freeze piu lungo
+- [ ] Indicatori: errori profilassi in calo → consapevolezza in miglioramento → ridurre frequenza
+- [ ] Il coach approva o rifiuta i suggerimenti (nessun cambiamento automatico senza supervisione)
+- [ ] Log dei cambiamenti per tracciare l'evoluzione nel tempo
+
+### 6.3 Modalita esame
+
+- [ ] Sessione senza nessun supporto cognitivo (no freeze, no profilassi, no hint, no feedback graduato)
+- [ ] Confronto risultati: "Con gli aiuti: 80%. Da solo: 65%"
+- [ ] Misura dell'interiorizzazione: quanto lo scaffolding e' stato assorbito?
+- [ ] Report per il coach con trend nel tempo
+
+### 6.4 Dashboard coach
+
+- [ ] Lista studenti con progressi
+- [ ] Gestione direttive e profili cognitivi per ogni studente
+- [ ] UI direttive: il coach imposta tema, difficolta, posizioni specifiche per studente
+- [ ] Lo studente vede le direttive attive nella home
+- [ ] Alert: studente non si allena da X giorni, bloccato su un tema, scaffolding percepito come interferenza
+- [ ] Richiede sistema multi-utente (coach + studenti su Firebase)
+
+### 6.5 Export dati
+
+- [ ] Export CSV delle sessioni per analisi esterna
+- [ ] Export PDF del report studente per genitori/scuola
+- [ ] Report partite con analisi Stockfish (errori, imprecisioni, trend)
 
 ---
 
 ## Changelog
 
-### 8 Marzo 2026
+### 8 Marzo 2026 (sessione 4)
+- Decisioni architetturali prese: SI a Stockfish, SI a puzzle + partite, direttamente Stockfish senza passaggio Lichess
+- Pagina Metodo ristrutturata con 5 fondamenti scientifici (inibizione, memoria di lavoro, metacognizione, regolazione emotiva, consolidamento)
+- Roadmap estesa: Strato 4 (Stockfish Core), Strato 5 (Freeze evoluto + Partite), Strato 6 (Test duale + Validazione)
+- Ogni feature mappata al pilastro scientifico di riferimento
+
+### 8 Marzo 2026 (sessioni 1-3)
 - Ristrutturazione app in v1/v2 con selettore versione
 - **Strato 0**: schema posizioni, 25 puzzle, TrainingSession, SessionRunner, FreezeOverlay, SessionSummary, HomePage
 - Fix 2 posizioni con mosse illegali + validazione automatica pre-build
