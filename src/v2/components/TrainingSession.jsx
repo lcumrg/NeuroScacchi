@@ -113,8 +113,11 @@ export default function TrainingSession({ position, positionIndex, cognitiveProf
     <div style={styles.container}>
       {position.title && <h3 style={styles.title}>{position.title}</h3>}
 
-      {/* Scacchiera — sempre visibile */}
-      <div style={styles.boardWrapper}>
+      {/* Scacchiera — sempre visibile, emerge sopra il freeze */}
+      <div style={{
+        ...styles.boardWrapper,
+        ...(phase === 'freeze' ? styles.boardFreeze : {}),
+      }}>
         <Chessboard
           position={gameRef.current.fen()}
           onPieceDrop={handleDrop}
@@ -123,15 +126,19 @@ export default function TrainingSession({ position, positionIndex, cognitiveProf
           arePiecesDraggable={phase === 'play' && !solved && !showSolution}
           customBoardStyle={{
             borderRadius: 8,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+            boxShadow: phase === 'freeze'
+              ? '0 8px 32px rgba(0,0,0,0.3)'
+              : '0 4px 16px rgba(0,0,0,0.12)',
           }}
           customDarkSquareStyle={{ backgroundColor: '#779952' }}
           customLightSquareStyle={{ backgroundColor: '#edeed1' }}
         />
-        {phase === 'freeze' && (
-          <FreezeOverlay duration={freezeDuration} onComplete={handleFreezeEnd} />
-        )}
       </div>
+
+      {/* Freeze: overlay full-screen che sfoca TUTTO tranne la scacchiera */}
+      {phase === 'freeze' && (
+        <FreezeOverlay duration={freezeDuration} onComplete={handleFreezeEnd} />
+      )}
 
       {/* Profilassi — dopo il freeze, prima di giocare */}
       {phase === 'profilassi' && (
@@ -191,6 +198,10 @@ const styles = {
   },
   boardWrapper: {
     position: 'relative',
+  },
+  boardFreeze: {
+    position: 'relative',
+    zIndex: 60,
   },
   feedback: {
     padding: '10px 16px',

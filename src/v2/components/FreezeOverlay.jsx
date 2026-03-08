@@ -1,18 +1,23 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 
+/**
+ * Freeze: overlay a schermo intero che sfoca TUTTO tranne la scacchiera.
+ * La scacchiera emerge nitida grazie a z-index superiore (gestito dal parent).
+ * Vignettatura radiale: trasparente al centro, scuro ai bordi.
+ * Timer indaco fisso, countdown grande, barra sottile.
+ */
 export default function FreezeOverlay({ duration, onComplete }) {
   const [remaining, setRemaining] = useState(duration)
   const [visible, setVisible] = useState(false)
-  const overlayRef = useRef(null)
 
-  // Fade-in on mount
+  // Fade-in progressivo
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true))
   }, [])
 
   useEffect(() => {
     if (remaining <= 0) {
-      // Fade-out before completing
+      // Fade-out prima di completare
       setVisible(false)
       const timer = setTimeout(onComplete, 500)
       return () => clearTimeout(timer)
@@ -25,14 +30,14 @@ export default function FreezeOverlay({ duration, onComplete }) {
   const seconds = Math.ceil(remaining / 1000)
 
   return (
-    <div
-      ref={overlayRef}
-      style={{
-        ...styles.overlay,
-        opacity: visible ? 1 : 0,
-      }}
-    >
+    <div style={{
+      ...styles.overlay,
+      opacity: visible ? 1 : 0,
+    }}>
+      {/* Vignettatura: scuro ai bordi, trasparente al centro (dove c'è la scacchiera) */}
       <div style={styles.vignette} />
+
+      {/* Contenuto sotto la scacchiera */}
       <div style={styles.content}>
         <p style={styles.text}>Osserva la posizione</p>
         <div style={styles.timer}>{seconds}</div>
@@ -46,41 +51,43 @@ export default function FreezeOverlay({ duration, onComplete }) {
 
 const styles = {
   overlay: {
-    position: 'absolute',
+    position: 'fixed',
     inset: 0,
+    zIndex: 50,
+    backdropFilter: 'blur(7px)',
+    WebkitBackdropFilter: 'blur(7px)',
+    transition: 'opacity 450ms ease-in',
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 10,
-    borderRadius: 8,
-    backdropFilter: 'blur(6px)',
-    WebkitBackdropFilter: 'blur(6px)',
-    transition: 'opacity 500ms ease-in',
+    justifyContent: 'flex-end',
+    paddingBottom: 80,
   },
   vignette: {
     position: 'absolute',
     inset: 0,
-    borderRadius: 8,
-    background: 'radial-gradient(circle at center, rgba(28,28,46,0.15) 0%, rgba(28,28,46,0.75) 100%)',
+    background: 'radial-gradient(ellipse at center, rgba(28,28,46,0.05) 30%, rgba(28,28,46,0.65) 100%)',
     pointerEvents: 'none',
   },
   content: {
     position: 'relative',
-    textAlign: 'center',
     zIndex: 1,
+    textAlign: 'center',
   },
   text: {
     fontSize: 17,
     fontWeight: 600,
     color: '#E8EAF6',
-    marginBottom: 8,
+    marginBottom: 6,
     letterSpacing: 0.5,
+    textShadow: '0 1px 4px rgba(0,0,0,0.5)',
   },
   timer: {
     fontSize: 32,
     fontWeight: 800,
     color: '#E8EAF6',
-    marginBottom: 12,
+    marginBottom: 10,
+    textShadow: '0 1px 4px rgba(0,0,0,0.5)',
   },
   barContainer: {
     width: 180,
