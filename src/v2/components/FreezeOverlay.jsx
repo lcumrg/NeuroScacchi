@@ -57,11 +57,7 @@ const styles = {
     backdropFilter: 'blur(7px)',
     WebkitBackdropFilter: 'blur(7px)',
     transition: 'opacity 450ms ease-in',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingBottom: 80,
+    pointerEvents: 'none',
   },
   vignette: {
     position: 'absolute',
@@ -70,8 +66,11 @@ const styles = {
     pointerEvents: 'none',
   },
   content: {
-    position: 'relative',
-    zIndex: 1,
+    position: 'fixed',
+    bottom: 40,
+    left: 0,
+    right: 0,
+    zIndex: 51,
     textAlign: 'center',
   },
   text: {
