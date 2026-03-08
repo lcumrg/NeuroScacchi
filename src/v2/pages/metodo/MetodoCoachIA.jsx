@@ -7,7 +7,7 @@ export default function MetodoCoachIA() {
       <h3 style={styles.partTitle}>Intelligenza Artificiale — Due Fasi</h3>
 
       {/* --- Fase 1: Agente IA per il coach (IMMEDIATO) --- */}
-      <Section status="open" title="6. Agente IA per il coach — strumento di lavoro immediato">
+      <Section status="solid" title="6. Agente IA per il coach — strumento di lavoro immediato">
         <p>
           La sezione Coach dell'app diventa un'<strong>interfaccia conversazionale con un agente IA</strong>.
           Non e' un wizard o un form — e' un dialogo continuo in cui il coach (tu) interagisce con l'IA

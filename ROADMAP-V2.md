@@ -284,13 +284,14 @@ src/v2/
 - [x] Frequenza controllata dal profilo cognitivo (consapevolezza minacce)
 - [x] Fallback automatico a chess.js se Stockfish non disponibile
 
-### 4.4 Difficolta calcolata
+### 4.4 Difficolta calcolata — COMPLETATO
 
-- [ ] Per ogni posizione: analizzare a depth crescenti (8, 12, 16, 20)
-- [ ] La depth a cui Stockfish trova la mossa migliore = indicatore di difficolta
-- [ ] Mappare depth → scala 1-10 (depth 8 = facile, depth 20 = molto difficile)
-- [ ] Aggiornare `adaptiveDifficulty.js` per usare la difficolta calcolata
-- [ ] Mantenere retrocompatibilita con difficolta manuale per posizioni curate dal coach
+- [x] `depthToDifficulty(depth)` — mappa depth Stockfish (1-20) → difficolta 1-10
+- [x] `calculateDifficulty(fen, solutionMoves)` — analizza a depth crescenti (1-20)
+- [x] `getEffectiveDifficulty(position)` — usa `calculatedDifficulty` se presente, altrimenti `difficulty` manuale
+- [x] `filterByDifficulty` aggiornato per usare la difficolta effettiva
+- [x] Session engine aggiornato: direttive coach, enrichRecords usano difficolta effettiva
+- [x] Retrocompatibilita: posizioni senza `calculatedDifficulty` usano il valore manuale
 
 ### 4.5 Metacognizione contestuale (pilastro 3) — COMPLETATO
 
@@ -323,24 +324,25 @@ src/v2/
 > Mentre il coach lavora, l'agente accumula contesto — sara gia "formato" quando evolvera
 > per interagire con lo studente (Strato 8).
 
-- [ ] Backend API key (Node.js su Railway/Render) — pre-requisito per qualsiasi chiamata IA
-- [ ] Interfaccia chat nella sezione Coach dell'app
-- [ ] Generazione posizioni: "Generami 10 posizioni sui finali di torre" → FEN + soluzione + spiegazione
-- [ ] Validazione automatica con Stockfish di ogni posizione generata dall'IA
-- [ ] Percorsi di studio: "Percorso aperture per 1200 Elo impulsivo" → sequenza ragionata con progressione
-- [ ] Analisi PGN: coach incolla un PGN → IA identifica momenti critici → genera posizioni di studio
-- [ ] Consulenza sul metodo: "Studente sbaglia finali sotto pressione" → strategie personalizzate
-- [ ] Salvataggio posizioni generate direttamente nel database dell'app (positions.json o Firestore)
-- [ ] Piattaforma consigliata: Anthropic Claude (ragionamento strutturato, feedback pedagogici)
+- [x] Backend API key — Netlify Function come proxy sicuro per Anthropic API
+- [x] Interfaccia chat nella sezione Coach dell'app (CoachAIPage.jsx)
+- [x] Generazione posizioni: "Generami 10 posizioni sui finali di torre" → FEN + soluzione + spiegazione
+- [x] Validazione automatica con Stockfish di ogni posizione generata dall'IA
+- [x] Percorsi di studio: "Percorso aperture per 1200 Elo impulsivo" → sequenza ragionata con progressione
+- [x] Analisi PGN: coach incolla un PGN → IA identifica momenti critici → genera posizioni di studio
+- [x] Consulenza sul metodo: "Studente sbaglia finali sotto pressione" → strategie personalizzate
+- [x] Salvataggio posizioni generate in localStorage (ns2_ai_positions)
+- [x] Piattaforma: Anthropic Claude (claude-sonnet-4-20250514 via Netlify Function)
 
-### 4.8 Architettura dati Firebase + logging per-mossa
+### 4.8 Architettura dati Firebase + logging per-mossa — COMPLETATO
 
-- [ ] Struttura Firebase: `users/profile`, `sessions/metadata`, `sessions/moves`, `sessions/summary`, `positions/leitner`, `positions/performance`
-- [ ] Livello 1 — per-mossa: timestamp freeze start/end, mossa giocata, FEN, eval prima/dopo, deltaEval, classificazione, mossa migliore Stockfish
-- [ ] Livello 1 — comportamentali: profilassi richiesta/risposta, metacognizione richiesta/risposta, testo libero metacognizione
-- [ ] Livello 2 — per-sessione: distribuzione qualita, deltaEval medio, errori consecutivi, curva tempo per mossa, mosse veloci, compliance freeze/profilassi, trend intra-sessione
-- [ ] Livello 2 — contestuali: ora del giorno, tipo sessione, temi, profilo cognitivo attivo
-- [ ] Principio: raccogliere costa quasi niente (Firebase gratuito fino 1GB), non raccogliere costa carissimo
+- [x] `src/v2/utils/firestoreService.js` — servizio completo Firestore per v2
+- [x] Struttura: `users/{uid}/profile`, `users/{uid}/sessions/{id}`, `users/{uid}/sessions/{id}/moves/{n}`, `users/{uid}/leitner/{posId}`
+- [x] Livello 1 — per-mossa: `buildMoveLog()` con FEN, mossa, eval, deltaEval, classificazione, bestMove SF, tempo, profilassi, metacognizione
+- [x] Livello 2 — per-sessione: `buildSessionSummary()` con distribuzione qualita, deltaEval medio, errori consecutivi, mosse veloci, ora del giorno, temi, profilo
+- [x] Integrato in `SessionRunner`: crea sessione Firestore all'avvio, logga mosse e SR in tempo reale, completa sessione a fine
+- [x] Firestore rules aggiornate: ogni utente accede solo ai propri dati
+- [x] Fire-and-forget: i log non bloccano l'UX, fallback silenzioso se Firebase non disponibile
 
 ---
 
