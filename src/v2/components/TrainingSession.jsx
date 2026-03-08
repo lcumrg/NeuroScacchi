@@ -286,7 +286,7 @@ export default function TrainingSession({ position, positionIndex, cognitiveProf
 
       {/* Profilassi */}
       {phase === 'profilassi' && (
-        <ProfilassiPrompt fen={position.fen} onComplete={handleProfilassiComplete} />
+        <ProfilassiPrompt fen={position.fen} onComplete={handleProfilassiComplete} useStockfish={useStockfish} />
       )}
 
       {/* Metacognizione */}

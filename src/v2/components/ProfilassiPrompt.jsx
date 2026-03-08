@@ -1,32 +1,72 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Chess } from 'chess.js'
+import { getThreats } from '../engine/stockfishService'
 
 /**
  * Mostra le 3 minacce principali dell'avversario e chiede allo studente
  * di identificare la piu pericolosa prima di muovere.
+ *
+ * Con Stockfish: usa getThreats() per le vere minacce ordinate per eval.
+ * Senza Stockfish: fallback a chess.js (scacchi, catture, sviluppo).
  */
-export default function ProfilassiPrompt({ fen, onComplete }) {
+export default function ProfilassiPrompt({ fen, onComplete, useStockfish }) {
   const [selected, setSelected] = useState(null)
   const [answered, setAnswered] = useState(false)
+  const [threats, setThreats] = useState(null) // null = loading
+  const [revealed, setRevealed] = useState(false)
 
-  // Genera le minacce dell'avversario
-  const threats = generateThreats(fen)
-
-  const handleSelect = (index) => {
-    setSelected(index)
-  }
+  useEffect(() => {
+    if (useStockfish) {
+      getThreats(fen, 12)
+        .then((sfThreats) => {
+          if (sfThreats.length === 0) {
+            // Nessuna minaccia, skip
+            onComplete({ selectedThreat: null, index: -1 })
+            return
+          }
+          // Converti mosse UCI in etichette leggibili con eval
+          const labeled = sfThreats.map(t => ({
+            ...t,
+            label: formatThreatLabel(fen, t.move, t.eval),
+            evalDisplay: t.mate ? `Matto in ${Math.abs(t.mate)}` : formatEval(t.eval),
+          }))
+          setThreats(labeled)
+        })
+        .catch(() => {
+          // Fallback a chess.js
+          const fallback = generateThreatsClassic(fen)
+          if (fallback.length === 0) {
+            onComplete({ selectedThreat: null, index: -1 })
+            return
+          }
+          setThreats(fallback)
+        })
+    } else {
+      const fallback = generateThreatsClassic(fen)
+      if (fallback.length === 0) {
+        onComplete({ selectedThreat: null, index: -1 })
+        return
+      }
+      setThreats(fallback)
+    }
+  }, [fen, useStockfish, onComplete])
 
   const handleConfirm = () => {
     setAnswered(true)
+    setRevealed(true)
     setTimeout(() => {
-      onComplete({ selectedThreat: threats[selected], index: selected })
-    }, 1000)
+      onComplete({ selectedThreat: threats[selected], index: selected, wasCorrect: selected === 0 })
+    }, 2000)
   }
 
-  if (threats.length === 0) {
-    // Nessuna minaccia trovata, skip
-    onComplete({ selectedThreat: null, index: -1 })
-    return null
+  // Loading
+  if (threats === null) {
+    return (
+      <div style={styles.container}>
+        <h3 style={styles.title}>Prima di muovere...</h3>
+        <div style={styles.loading}>Analisi delle minacce...</div>
+      </div>
+    )
   }
 
   return (
@@ -36,20 +76,31 @@ export default function ProfilassiPrompt({ fen, onComplete }) {
       <p style={styles.hint}>Scegli la minaccia che ritieni piu pericolosa:</p>
 
       <div style={styles.options}>
-        {threats.map((threat, i) => (
-          <button
-            key={i}
-            style={{
-              ...styles.option,
-              ...(selected === i ? styles.optionSelected : {}),
-              ...(answered ? styles.optionDisabled : {}),
-            }}
-            onClick={() => handleSelect(i)}
-            disabled={answered}
-          >
-            {threat.label}
-          </button>
-        ))}
+        {threats.map((threat, i) => {
+          // Dopo la conferma, evidenzia la risposta corretta (indice 0 = minaccia piu forte)
+          const isCorrectAnswer = i === 0
+          const showResult = revealed
+
+          return (
+            <button
+              key={i}
+              style={{
+                ...styles.option,
+                ...(selected === i && !showResult ? styles.optionSelected : {}),
+                ...(showResult && isCorrectAnswer ? styles.optionCorrect : {}),
+                ...(showResult && selected === i && !isCorrectAnswer ? styles.optionWrong : {}),
+                ...(answered ? styles.optionDisabled : {}),
+              }}
+              onClick={() => setSelected(i)}
+              disabled={answered}
+            >
+              <span style={styles.optionLabel}>{threat.label}</span>
+              {showResult && threat.evalDisplay && (
+                <span style={styles.evalBadge}>{threat.evalDisplay}</span>
+              )}
+            </button>
+          )
+        })}
       </div>
 
       {selected !== null && !answered && (
@@ -60,21 +111,61 @@ export default function ProfilassiPrompt({ fen, onComplete }) {
 
       {answered && (
         <div style={styles.feedback}>
-          Bene, hai analizzato le minacce. Ora fai la tua mossa!
+          {selected === 0
+            ? 'Esatto! Hai identificato la minaccia principale.'
+            : 'La minaccia piu pericolosa era la prima. Ora fai la tua mossa!'}
         </div>
       )}
     </div>
   )
 }
 
-/**
- * Genera le minacce dell'avversario analizzando la posizione.
- * Cambia turno, guarda le mosse dell'avversario, trova catture e scacchi.
- */
-function generateThreats(fen) {
+// ── Formattazione minacce Stockfish ──
+
+function formatThreatLabel(fen, moveUci, evalScore) {
+  try {
+    // Inverti turno per giocare la mossa dell'avversario
+    const parts = fen.split(' ')
+    parts[1] = parts[1] === 'w' ? 'b' : 'w'
+    const opponentFen = parts.join(' ')
+
+    const game = new Chess(opponentFen)
+    const move = game.move({ from: moveUci.slice(0, 2), to: moveUci.slice(2, 4), promotion: moveUci[4] || undefined })
+    if (!move) return moveUci
+
+    // Costruisci etichetta in italiano
+    const piece = pieceName(move.piece)
+    if (move.san === 'O-O') return 'Arrocco corto'
+    if (move.san === 'O-O-O') return 'Arrocco lungo'
+
+    let label = `${piece} in ${move.to}`
+    if (move.captured) {
+      label = `${piece} cattura ${pieceName(move.captured)} in ${move.to}`
+    }
+    if (game.isCheck()) {
+      label += ' (scacco)'
+    }
+    if (game.isCheckmate()) {
+      label = `${piece} in ${move.to} — scacco matto!`
+    }
+
+    return label
+  } catch {
+    return moveUci
+  }
+}
+
+function formatEval(evalScore) {
+  if (evalScore === null || evalScore === undefined) return ''
+  const sign = evalScore > 0 ? '+' : ''
+  return `${sign}${evalScore.toFixed(1)}`
+}
+
+// ── Fallback chess.js (logica originale) ──
+
+function generateThreatsClassic(fen) {
   try {
     const parts = fen.split(' ')
-    // Inverti il turno per vedere le mosse dell'avversario
     parts[1] = parts[1] === 'w' ? 'b' : 'w'
     const opponentFen = parts.join(' ')
 
@@ -84,13 +175,13 @@ function generateThreats(fen) {
     const threats = []
     const seen = new Set()
 
-    // Prima: scacchi
+    // Scacchi
     for (const m of moves) {
       game.move(m)
       if (game.isCheck()) {
-        const label = `Scacco con ${pieceName(m.piece)} in ${m.to}`
+        const label = `${pieceName(m.piece)} in ${m.to} (scacco)`
         if (!seen.has(label)) {
-          threats.push({ label, type: 'check', move: m })
+          threats.push({ label, type: 'check', move: m.lan })
           seen.add(label)
         }
       }
@@ -98,25 +189,25 @@ function generateThreats(fen) {
       if (threats.length >= 1) break
     }
 
-    // Poi: catture
+    // Catture
     for (const m of moves) {
       if (m.captured) {
-        const label = `Cattura ${pieceName(m.captured)} con ${pieceName(m.piece)}`
+        const label = `${pieceName(m.piece)} cattura ${pieceName(m.captured)} in ${m.to}`
         if (!seen.has(label)) {
-          threats.push({ label, type: 'capture', move: m })
+          threats.push({ label, type: 'capture', move: m.lan })
           seen.add(label)
         }
       }
       if (threats.length >= 3) break
     }
 
-    // Se poche minacce, aggiungi mosse di sviluppo
+    // Mosse di sviluppo
     if (threats.length < 3) {
       for (const m of moves) {
         if (!m.captured) {
           const label = `${pieceName(m.piece)} in ${m.to}`
           if (!seen.has(label)) {
-            threats.push({ label, type: 'move', move: m })
+            threats.push({ label, type: 'move', move: m.lan })
             seen.add(label)
           }
         }
@@ -131,9 +222,11 @@ function generateThreats(fen) {
 }
 
 function pieceName(piece) {
-  const names = { p: 'pedone', n: 'cavallo', b: 'alfiere', r: 'torre', q: 'donna', k: 're' }
+  const names = { p: 'Pedone', n: 'Cavallo', b: 'Alfiere', r: 'Torre', q: 'Donna', k: 'Re' }
   return names[piece.toLowerCase()] || piece
 }
+
+// ── Stili ──
 
 const styles = {
   container: {
@@ -162,6 +255,13 @@ const styles = {
     color: '#546E7A',
     margin: '0 0 12px 0',
   },
+  loading: {
+    fontSize: 14,
+    color: '#546E7A',
+    textAlign: 'center',
+    padding: '12px 0',
+    animation: 'pulse 1.5s infinite',
+  },
   options: {
     display: 'flex',
     flexDirection: 'column',
@@ -178,6 +278,22 @@ const styles = {
     textAlign: 'left',
     fontFamily: 'inherit',
     transition: 'all 0.15s',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 8,
+  },
+  optionLabel: {
+    flex: 1,
+  },
+  evalBadge: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: '#546E7A',
+    background: '#ECEFF1',
+    padding: '2px 6px',
+    borderRadius: 4,
+    flexShrink: 0,
   },
   optionSelected: {
     background: '#E8EAF6',
@@ -185,8 +301,18 @@ const styles = {
     color: '#283593',
     fontWeight: 600,
   },
+  optionCorrect: {
+    background: '#E8F5E9',
+    borderColor: '#2E7D32',
+    color: '#2E7D32',
+    fontWeight: 600,
+  },
+  optionWrong: {
+    background: '#FFEBEE',
+    borderColor: '#EF9A9A',
+    color: '#C62828',
+  },
   optionDisabled: {
-    opacity: 0.7,
     cursor: 'default',
   },
   confirmBtn: {

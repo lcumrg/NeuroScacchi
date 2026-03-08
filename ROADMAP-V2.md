@@ -273,13 +273,16 @@ src/v2/
 - [ ] Soglia "errore" configurabile dal coach nel profilo (per bilanciare motivazione vs rigore)
 - [ ] Collegamento con tolleranza frustrazione: soglia piu permissiva se bassa
 
-### 4.3 Profilassi reale (Memoria di lavoro — pilastro 2)
+### 4.3 Profilassi reale (Memoria di lavoro — pilastro 2) — COMPLETATO
 
-- [ ] Sostituire `ProfilassiPrompt` attuale (mosse legali casuali) con analisi Stockfish
-- [ ] Mostrare 3 mosse avversario ordinate per eval (le vere minacce)
-- [ ] Aggiungere valutazione numerica: "Cd5 ti costa la qualita (-3.2)"
-- [ ] Mantenere la meccanica: lo studente sceglie la piu pericolosa prima di giocare
-- [ ] Frequenza controllata dal profilo cognitivo (consapevolezza minacce)
+- [x] Sostituire `ProfilassiPrompt` attuale (mosse legali casuali) con analisi Stockfish (getThreats via MultiPV)
+- [x] Mostrare 3 mosse avversario ordinate per eval (le vere minacce)
+- [x] Valutazione numerica rivelata dopo la risposta (eval badge per ogni minaccia)
+- [x] Dopo conferma: evidenzia risposta corretta (verde) e sbagliata (rosso), mostra eval di tutte
+- [x] Etichette in italiano: "Cavallo cattura Torre in d5 (scacco)", "Donna in h7 — scacco matto!"
+- [x] Mantenere la meccanica: lo studente sceglie la piu pericolosa prima di giocare
+- [x] Frequenza controllata dal profilo cognitivo (consapevolezza minacce)
+- [x] Fallback automatico a chess.js se Stockfish non disponibile
 
 ### 4.4 Difficolta calcolata
 
