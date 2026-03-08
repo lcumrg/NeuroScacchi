@@ -81,8 +81,8 @@ export function shouldShowMetacognition(profile, totalErrorsInSession) {
   return totalErrorsInSession > 0 && totalErrorsInSession % freq === 0
 }
 
-// Pool domande metacognitive
-export const METACOGNITION_QUESTIONS = [
+// Pool domande metacognitive generiche (fallback)
+const GENERIC_QUESTIONS = [
   'Ti eri accorto che c\'era una minaccia?',
   'Hai guardato tutta la scacchiera prima di muovere?',
   'Avevi un piano in mente o hai mosso d\'istinto?',
@@ -92,6 +92,63 @@ export const METACOGNITION_QUESTIONS = [
   'Hai controllato se i tuoi pezzi erano al sicuro?',
 ]
 
+/**
+ * Genera una domanda metacognitiva contestuale basata su dati reali del motore.
+ * @param {object} context - { deltaEval, timeMs, classification, bestMove, totalErrors }
+ * @returns {string} domanda
+ */
+export function getContextualMetaQuestion(context) {
+  if (!context) return getRandomMetaQuestion()
+
+  const { deltaEval, timeMs, classification, totalErrors } = context
+  const timeSec = timeMs ? Math.round(timeMs / 1000) : null
+
+  const contextual = []
+
+  // Domande basate su velocita
+  if (timeSec !== null && timeSec <= 3) {
+    contextual.push(
+      `Hai mosso in ${timeSec} secondi. Hai davvero valutato le alternative?`,
+      `Risposta molto veloce (${timeSec}s). Stavi vedendo la posizione o reagendo d'istinto?`,
+    )
+  }
+
+  // Domande basate su deltaEval
+  if (deltaEval > 2.5) {
+    contextual.push(
+      `Hai perso ${Math.abs(deltaEval).toFixed(1)} punti con questa mossa. Cosa non hai visto?`,
+      `Il motore dice che perdi materiale importante. Riesci a capire perche?`,
+    )
+  } else if (deltaEval > 1.0) {
+    contextual.push(
+      `La tua mossa non era terribile, ma potevi fare meglio (-${Math.abs(deltaEval).toFixed(1)}). Avevi visto l'alternativa?`,
+    )
+  }
+
+  // Domande basate su pattern di errori
+  if (totalErrors >= 3) {
+    contextual.push(
+      `E' il ${totalErrors}o errore in questa sessione. Stai rallentando o stai accelerando?`,
+      `Diversi errori di fila. Hai bisogno di una pausa per rinfrescare la concentrazione?`,
+    )
+  }
+
+  // Domande basate su classificazione
+  if (classification === 'errore') {
+    contextual.push(
+      'Questa mossa perde molto materiale. Hai controllato se il pezzo era difeso?',
+      'Prima di muovere, avevi guardato cosa minacciava l\'avversario?',
+    )
+  }
+
+  // Se abbiamo domande contestuali, scegline una. Altrimenti fallback.
+  if (contextual.length > 0) {
+    return contextual[Math.floor(Math.random() * contextual.length)]
+  }
+
+  return getRandomMetaQuestion()
+}
+
 export function getRandomMetaQuestion() {
-  return METACOGNITION_QUESTIONS[Math.floor(Math.random() * METACOGNITION_QUESTIONS.length)]
+  return GENERIC_QUESTIONS[Math.floor(Math.random() * GENERIC_QUESTIONS.length)]
 }
