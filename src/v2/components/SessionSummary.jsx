@@ -6,13 +6,6 @@ export default function SessionSummary({ results, onRestart, onHome }) {
   const avgTime = total > 0 ? Math.round(totalTime / total / 1000) : 0
   const percentage = total > 0 ? Math.round((correct / total) * 100) : 0
 
-  const getEmoji = () => {
-    if (percentage >= 90) return '🏆'
-    if (percentage >= 70) return '💪'
-    if (percentage >= 50) return '👍'
-    return '📚'
-  }
-
   const getMessage = () => {
     if (percentage >= 90) return 'Eccezionale! Quasi perfetto.'
     if (percentage >= 70) return 'Ottimo lavoro! Stai migliorando.'
@@ -23,7 +16,6 @@ export default function SessionSummary({ results, onRestart, onHome }) {
   return (
     <div style={styles.overlay}>
       <div style={styles.card}>
-        <div style={styles.emoji}>{getEmoji()}</div>
         <h2 style={styles.title}>Sessione completata!</h2>
         <p style={styles.message}>{getMessage()}</p>
 
@@ -71,7 +63,7 @@ const styles = {
     padding: 20,
   },
   card: {
-    background: '#fff',
+    background: '#FAFBFC',
     borderRadius: 20,
     padding: '36px 32px',
     maxWidth: 400,
@@ -80,19 +72,15 @@ const styles = {
     boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
     animation: 'fadeIn 0.3s ease',
   },
-  emoji: {
-    fontSize: 48,
-    marginBottom: 8,
-  },
   title: {
     fontSize: 22,
     fontWeight: 700,
-    color: '#2C3E50',
+    color: '#212121',
     margin: '0 0 4px 0',
   },
   message: {
     fontSize: 15,
-    color: '#5A6C7D',
+    color: '#546E7A',
     margin: '0 0 24px 0',
   },
   stats: {
@@ -107,7 +95,7 @@ const styles = {
   statValue: {
     fontSize: 22,
     fontWeight: 700,
-    color: '#2C3E50',
+    color: '#212121',
   },
   statLabel: {
     fontSize: 11,
@@ -123,7 +111,7 @@ const styles = {
   },
   btnPrimary: {
     padding: '12px 24px',
-    background: '#2E7D32',
+    background: '#283593',
     color: '#fff',
     border: 'none',
     borderRadius: 10,
@@ -135,7 +123,7 @@ const styles = {
   btnSecondary: {
     padding: '10px 24px',
     background: 'none',
-    color: '#5A6C7D',
+    color: '#546E7A',
     border: '1px solid #E0E0E0',
     borderRadius: 10,
     fontSize: 14,

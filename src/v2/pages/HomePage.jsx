@@ -41,15 +41,15 @@ export default function HomePage({ onStartSession, onOpenProfile, onOpenStats, o
       {totalSeen > 0 && (
         <div style={styles.statsRow}>
           <div style={styles.stat}>
-            <div style={{ ...styles.statValue, color: '#C62828' }}>{toReview}</div>
+            <div style={{ ...styles.statValue, color: '#455A64' }}>{toReview}</div>
             <div style={styles.statLabel}>Da rivedere</div>
           </div>
           <div style={styles.stat}>
-            <div style={{ ...styles.statValue, color: '#F57F17' }}>{totalSeen - consolidated}</div>
+            <div style={{ ...styles.statValue, color: '#5C6BC0' }}>{totalSeen - consolidated}</div>
             <div style={styles.statLabel}>In corso</div>
           </div>
           <div style={styles.stat}>
-            <div style={{ ...styles.statValue, color: '#2E7D32' }}>{consolidated}</div>
+            <div style={{ ...styles.statValue, color: '#1565C0' }}>{consolidated}</div>
             <div style={styles.statLabel}>Consolidate</div>
           </div>
           <div style={styles.stat}>
@@ -113,12 +113,12 @@ const styles = {
   },
   hero: { textAlign: 'center' },
   heroIcon: { fontSize: 56, marginBottom: 8 },
-  heroTitle: { fontSize: 26, fontWeight: 700, color: '#2C3E50', margin: '0 0 4px 0' },
-  heroSubtitle: { fontSize: 15, color: '#5A6C7D', margin: 0 },
+  heroTitle: { fontSize: 26, fontWeight: 700, color: '#212121', margin: '0 0 4px 0' },
+  heroSubtitle: { fontSize: 15, color: '#546E7A', margin: 0 },
   statsRow: {
     display: 'flex',
     gap: 16,
-    background: '#fff',
+    background: '#FAFBFC',
     borderRadius: 12,
     padding: '16px 24px',
     boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
@@ -128,8 +128,8 @@ const styles = {
     justifyContent: 'space-around',
   },
   stat: { textAlign: 'center' },
-  statValue: { fontSize: 22, fontWeight: 700, color: '#2C3E50' },
-  statLabel: { fontSize: 10, color: '#90A4AE', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.3 },
+  statValue: { fontSize: 22, fontWeight: 700, color: '#212121' },
+  statLabel: { fontSize: 11, color: '#90A4AE', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.3 },
   sessionOptions: {
     display: 'flex',
     flexDirection: 'column',
@@ -139,7 +139,7 @@ const styles = {
   },
   btnPrimary: {
     padding: '14px 24px',
-    background: '#2E7D32',
+    background: '#283593',
     color: '#fff',
     border: 'none',
     borderRadius: 12,
@@ -150,8 +150,8 @@ const styles = {
   },
   btnSecondary: {
     padding: '12px 24px',
-    background: '#fff',
-    color: '#2C3E50',
+    background: '#FAFBFC',
+    color: '#212121',
     border: '1px solid #E0E0E0',
     borderRadius: 12,
     fontSize: 15,
@@ -167,8 +167,8 @@ const styles = {
     border: '1px solid #E0E0E0',
     borderRadius: 16,
     padding: '6px 14px',
-    fontSize: 13,
-    color: '#5A6C7D',
+    fontSize: 14,
+    color: '#546E7A',
     textTransform: 'capitalize',
     cursor: 'pointer',
     fontFamily: 'inherit',
@@ -180,8 +180,8 @@ const styles = {
     background: '#F5F5F5',
     border: '1px solid #E0E0E0',
     borderRadius: 8,
-    fontSize: 13,
-    color: '#5A6C7D',
+    fontSize: 14,
+    color: '#546E7A',
     cursor: 'pointer',
     fontFamily: 'inherit',
   },

@@ -1,39 +1,50 @@
 :root {
   /* Palette Colori NeuroScacchi */
   --bg-main: #F8F9FA;
-  --bg-card: #FFFFFF;
-  --text-primary: #2C3E50;
-  --text-secondary: #5A6C7D;
-  
-  /* Colori Pulsanti Intent */
-  --color-attack: #FFB74D;
-  --color-develop: #81C784;
-  --color-defend: #64B5F6;
-  
-  /* Feedback */
+  --bg-card: #FAFBFC;
+  --text-primary: #212121;
+  --text-secondary: #546E7A;
+  --text-label: #90A4AE;
+
+  /* Colori classificazione mosse — USO ESCLUSIVO */
+  --move-ottima: #2E7D32;
+  --move-buona: #558B2F;
+  --move-imprecisione: #E65100;
+  --move-errore: #C62828;
+
+  /* Colori UI (azioni, stati) — mai verde/arancio/rosso */
+  --color-primary: #283593;
+  --color-primary-light: #3949AB;
+  --color-primary-bg: #E8EAF6;
+  --color-freeze: #283593;
+
+  /* Feedback classificazione mosse */
   --feedback-positive: #E8F5E9;
   --feedback-negative: #FFEBEE;
   --feedback-neutral: #FFF9C4;
-  
+
   /* Bordi e Ombre */
   --border-color: #E0E0E0;
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
-  
+
   /* Scacchiera */
   --square-light: #E8E8E8;
   --square-dark: #B8B8B8;
-  
+
   /* Transizioni */
   --transition-fast: 0.2s ease;
   --transition-medium: 0.3s ease;
   --transition-slow: 0.5s ease;
-  
-  /* Typography */
-  --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Typography — Nunito + Atkinson Hyperlegible */
+  --font-main: 'Nunito', 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
+
+/* Font: Nunito (principale) + Atkinson Hyperlegible (fallback leggibilita) */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap');
 
 * {
   margin: 0;

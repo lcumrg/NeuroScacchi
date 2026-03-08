@@ -26,14 +26,14 @@ const styles = {
   },
   barInner: {
     height: '100%',
-    background: '#66BB6A',
+    background: '#5C6BC0',
     borderRadius: 4,
     transition: 'width 0.4s ease',
   },
   label: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: 600,
-    color: '#5A6C7D',
+    color: '#546E7A',
     minWidth: 40,
     textAlign: 'right',
   },

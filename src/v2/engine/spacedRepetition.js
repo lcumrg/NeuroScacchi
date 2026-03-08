@@ -88,10 +88,10 @@ export function getSRStatusLabel(record) {
 export function getSRStatusColor(record) {
   const status = getSRStatus(record)
   switch (status) {
-    case 'consolidata': return '#2E7D32'
-    case 'in_apprendimento': return '#F57F17'
-    case 'da_rivedere': return '#C62828'
-    default: return '#5A6C7D'
+    case 'consolidata': return '#1565C0'
+    case 'in_apprendimento': return '#5C6BC0'
+    case 'da_rivedere': return '#455A64'
+    default: return '#546E7A'
   }
 }
 

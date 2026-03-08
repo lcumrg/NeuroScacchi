@@ -98,6 +98,6 @@ const styles = {
   empty: {
     textAlign: 'center',
     padding: 40,
-    color: '#5A6C7D',
+    color: '#546E7A',
   },
 }

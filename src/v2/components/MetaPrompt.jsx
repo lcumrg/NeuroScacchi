@@ -16,7 +16,6 @@ export default function MetaPrompt({ question, onAnswer }) {
 
   return (
     <div style={styles.container}>
-      <div style={styles.icon}>&#129300;</div>
       <p style={styles.question}>{question}</p>
 
       {!answered ? (
@@ -37,8 +36,8 @@ export default function MetaPrompt({ question, onAnswer }) {
 
 const styles = {
   container: {
-    background: '#EDE7F6',
-    border: '1px solid #B39DDB',
+    background: '#E8EAF6',
+    border: '1px solid #C5CAE9',
     borderRadius: 12,
     padding: '16px 20px',
     textAlign: 'center',
@@ -46,14 +45,10 @@ const styles = {
     width: '100%',
     animation: 'fadeIn 0.3s ease',
   },
-  icon: {
-    fontSize: 28,
-    marginBottom: 4,
-  },
   question: {
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: 600,
-    color: '#311B92',
+    color: '#1A237E',
     margin: '0 0 14px 0',
     lineHeight: 1.4,
   },
@@ -64,7 +59,7 @@ const styles = {
   },
   btnSi: {
     padding: '10px 32px',
-    background: '#7C4DFF',
+    background: '#283593',
     color: '#fff',
     border: 'none',
     borderRadius: 8,
@@ -75,8 +70,8 @@ const styles = {
   },
   btnNo: {
     padding: '10px 32px',
-    background: '#fff',
-    color: '#5A6C7D',
+    background: '#FAFBFC',
+    color: '#546E7A',
     border: '1px solid #E0E0E0',
     borderRadius: 8,
     fontSize: 15,
@@ -86,7 +81,7 @@ const styles = {
   },
   thanks: {
     fontSize: 14,
-    color: '#5A6C7D',
+    color: '#546E7A',
     margin: 0,
     fontStyle: 'italic',
   },
