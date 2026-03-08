@@ -111,12 +111,18 @@ export default function TrainingSession({ position, positionIndex, cognitiveProf
 
   return (
     <div style={styles.container}>
-      {/* Blocco titolo + scacchiera: emerge sopra il freeze overlay */}
+      {/* Blocco titolo + turno + scacchiera: emerge sopra il freeze overlay */}
       <div style={phase === 'freeze' ? styles.boardFreeze : undefined}>
         {position.title && <h3 style={{
           ...styles.title,
           ...(phase === 'freeze' ? styles.titleFreeze : {}),
         }}>{position.title}</h3>}
+        <div style={{
+          ...styles.turnLabel,
+          ...(phase === 'freeze' ? styles.turnLabelFreeze : {}),
+        }}>
+          Muove il {turn === 'w' ? 'Bianco' : 'Nero'}
+        </div>
 
         <div style={styles.boardWrapper}>
           <Chessboard
@@ -202,7 +208,18 @@ const styles = {
     color: '#E8EAF6',
     textShadow: '0 1px 4px rgba(0,0,0,0.5)',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 2,
+  },
+  turnLabel: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: '#546E7A',
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  turnLabelFreeze: {
+    color: '#C5CAE9',
+    textShadow: '0 1px 4px rgba(0,0,0,0.5)',
   },
   boardWrapper: {
     position: 'relative',
