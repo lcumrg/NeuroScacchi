@@ -1,7 +1,7 @@
 # NeuroScacchi 2.0 — Roadmap
 
 > Training engine adattivo per scacchi + riabilitazione funzioni esecutive.
-> Ultimo aggiornamento: 8 Marzo 2026 (Strati 0-3 implementati, Strati 4-6 pianificati)
+> Ultimo aggiornamento: 8 Marzo 2026 (Strati 0-3 implementati, Strati 4-8 pianificati)
 
 ---
 
@@ -308,6 +308,15 @@ src/v2/
 - [ ] Nessun wizard complesso — salva in 30 secondi
 - [ ] Con Stockfish: il coach puo inserire qualsiasi FEN senza pre-verificare la soluzione
 
+### 4.8 Architettura dati Firebase + logging per-mossa
+
+- [ ] Struttura Firebase: `users/profile`, `sessions/metadata`, `sessions/moves`, `sessions/summary`, `positions/leitner`, `positions/performance`
+- [ ] Livello 1 — per-mossa: timestamp freeze start/end, mossa giocata, FEN, eval prima/dopo, deltaEval, classificazione, mossa migliore Stockfish
+- [ ] Livello 1 — comportamentali: profilassi richiesta/risposta, metacognizione richiesta/risposta, testo libero metacognizione
+- [ ] Livello 2 — per-sessione: distribuzione qualita, deltaEval medio, errori consecutivi, curva tempo per mossa, mosse veloci, compliance freeze/profilassi, trend intra-sessione
+- [ ] Livello 2 — contestuali: ora del giorno, tipo sessione, temi, profilo cognitivo attivo
+- [ ] Principio: raccogliere costa quasi niente (Firebase gratuito fino 1GB), non raccogliere costa carissimo
+
 ---
 
 ## STRATO 5 — Freeze Evoluto e Partite — DA FARE
@@ -390,7 +399,106 @@ src/v2/
 
 ---
 
+## STRATO 7 — Design System — DA FARE
+
+> Prerequisito: Strati 4-5 (il design si applica ai componenti evoluti)
+> Riferimento: pagina Metodo, sezioni "Design System — Ergonomia Cognitiva"
+> Principio: ogni elemento visivo che non ha una funzione cognitiva precisa non deve esistere
+
+### 7.1 Tipografia ADHD-friendly
+
+- [ ] Installare e applicare Nunito / Atkinson Hyperlegible come font principale
+- [ ] Scala tipografica: 17-18px operativo, 14-15px secondario, 20-22px classificazione mossa, 28-32px timer freeze
+- [ ] Mai sotto 14px per nessun elemento. Mai font decorativi per testo operativo
+
+### 7.2 Colori funzionali esclusivi
+
+- [ ] Verde (#2E7D32), arancio (#E65100), rosso (#C62828) ESCLUSIVI per classificazione mosse
+- [ ] Rimuovere usi di verde/rosso per pulsanti generici, stati UI, elementi decorativi
+- [ ] Colori freeze: indaco #283593 (dominante), #3949AB (timer), #E8EAF6 (testo) — pausa intenzionale, non punizione
+- [ ] Base: off-white #F8F9FA (light), navy #1C1C2E (dark) — mai bianco puro o nero puro
+
+### 7.3 Freeze visual evoluto
+
+- [ ] Vignettatura radiale: trasparente al centro (scacchiera), rgba(28,28,46,0.75) ai bordi
+- [ ] Sfocatura sfondo: blur(6-8px) moderata
+- [ ] Transizioni: 400-500ms ease-in entrata, 400-600ms ease-out uscita
+- [ ] Scacchiera emerge nitida da sfondo gia sfocato — attivazione PRIMA della posizione
+- [ ] Timer: barra sottile 4-6px, colore indaco fisso, MAI cambia colore
+
+### 7.4 Tema chiaro / scuro
+
+- [ ] Sfondo light: #F8F9FA, superfici #FFFFFF + ombra, bordi #E0E0E0
+- [ ] Sfondo dark: #1C1C2E, superfici #252540, bordi #37374F
+- [ ] Contrasto 4.5:1 - 7:1 in entrambi i temi
+- [ ] Toggle utente, preferenza salvata in localStorage
+
+### 7.5 Layout single-action
+
+- [ ] Un'unica azione principale per schermata, visivamente dominante
+- [ ] Scacchiera 60-70% verticale, mai spostata da popup/notifiche
+- [ ] Statistiche accessibili ma non visibili durante sessione attiva
+- [ ] Animazioni solo per eventi cognitivi (classificazione, fine freeze). Zero decorative
+
+---
+
+## STRATO 8 — Integrazione IA — DA FARE
+
+> Prerequisito: Strato 6 completato (validazione umana prima, amplificazione IA dopo)
+> Riferimento: pagina Metodo, sezioni "Coach IA" e "Architettura IA"
+> Principio: l'IA amplifica cio che funziona, ma amplifica anche cio che non funziona
+
+### 8.1 Backend per API key (pre-requisito)
+
+- [ ] Server Node.js (Railway o Render, ~$7-20/mese)
+- [ ] Gestisce tutte le chiamate IA lato server — API key mai nel client
+- [ ] Rate limiting e autenticazione Firebase token
+- [ ] Obbligatorio prima di aprire l'app ad altri utenti
+
+### 8.2 Livello 1 — IA come analista (post-sessione)
+
+- [ ] Chiamata API a fine sessione con dati aggregati (Livello 2)
+- [ ] Report testuale: trend, errori ricorrenti, suggerimenti
+- [ ] Feedback post-errore contestuali (basati su eval e tempo)
+- [ ] Microlezioni contestuali: 2-3 minuti, ancorate all'errore appena commesso
+- [ ] Piattaforma consigliata: Anthropic Claude (ragionamento strutturato, feedback pedagogici calibrati)
+- [ ] Alternativa per task semplici: Google Gemini Flash (economico, integrato Firebase)
+
+### 8.3 Livello 1 — Modalita pedagogiche
+
+- [ ] Scaffolding dialogico: conversazione, non testo statico. L'IA fa domande nell'ordine giusto
+- [ ] Apprendimento situato: microlezioni proposte a fine sessione, max 3-5 minuti
+- [ ] Analisi repertorio: l'IA identifica dove il repertorio crolla, suggerisce studio mirato
+
+### 8.4 Livello 2 — Agente real-time (futuro)
+
+- [ ] Loop agente con stato persistente durante la sessione
+- [ ] Calibra freeze, profilassi, difficolta in tempo reale in base all'andamento
+- [ ] Piattaforma consigliata: Groq (latenza ultra-bassa) o OpenAI GPT-4o (function calling robusto)
+- [ ] Richiede architettura piu complessa: stato agente, feedback loop, timeout
+
+### 8.5 Validazione contenuti generati
+
+- [ ] Stockfish verifica correttezza delle posizioni generate/suggerite dall'IA
+- [ ] Consulente umano (maestro di scacchi) revisiona periodicamente le spiegazioni
+- [ ] L'IA non produce contenuti — il maestro li valida
+
+### 8.6 Stima costi
+
+- Beta (2 utenti, ~25 sessioni/mese): ~$2/mese — trascurabile
+- 50 utenti: ~$45/mese — sostenibile con abbonamento minimo
+- 500 utenti: ~$450/mese — richiede ottimizzazione (modelli diversi per task)
+- 5.000 utenti: ~$4.500/mese — architettura ibrida (caching, routing intelligente)
+
+---
+
 ## Changelog
+
+### 8 Marzo 2026 (sessione 5)
+- Pagina Metodo ristrutturata in moduli (metodo/ subfolder): fondamenti, implementazione, coach IA, design system, architettura dati, roadmap, evoluzione
+- Integrati 3 documenti supplementari: Coach IA (2 livelli, piattaforme, costi), Design System (tipografia, palette, freeze visual, checklist), Architettura Dati (3 livelli raccolta, Firebase, privacy)
+- Roadmap estesa: Strato 7 (Design System ADHD-friendly), Strato 8 (Integrazione IA a 2 livelli)
+- Strato 4 esteso: aggiunta sezione 4.8 (architettura dati Firebase + logging per-mossa)
 
 ### 8 Marzo 2026 (sessione 4)
 - Decisioni architetturali prese: SI a Stockfish, SI a puzzle + partite, direttamente Stockfish senza passaggio Lichess
