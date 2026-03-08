@@ -75,7 +75,8 @@ export async function sendMessage(messages, cognitiveProfile) {
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({ error: 'Errore di rete' }))
-    throw new Error(err.error || err.details || `Errore ${response.status}`)
+    const detail = err.details || ''
+    throw new Error(`${err.error || 'Errore ' + response.status}${detail ? ': ' + detail : ''}`)
   }
 
   const data = await response.json()
