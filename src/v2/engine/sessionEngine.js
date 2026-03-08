@@ -3,7 +3,7 @@
 // Combina: spaced repetition + difficolta adattiva + percorsi tematici + direttive coach
 
 import { selectPositionsForSession } from './spacedRepetition'
-import { filterByDifficulty, getStudentLevel } from './adaptiveDifficulty'
+import { filterByDifficulty, getStudentLevel, getEffectiveDifficulty } from './adaptiveDifficulty'
 import { getSRRecords } from '../utils/storage'
 import allPositions from '../data/positions.json'
 
@@ -31,10 +31,10 @@ export function generateSession({ count = 10, theme = null, directives = null } 
       pool = pool.filter(p => p.theme === directives.theme)
     }
     if (directives.minDifficulty) {
-      pool = pool.filter(p => p.difficulty >= directives.minDifficulty)
+      pool = pool.filter(p => getEffectiveDifficulty(p) >= directives.minDifficulty)
     }
     if (directives.maxDifficulty) {
-      pool = pool.filter(p => p.difficulty <= directives.maxDifficulty)
+      pool = pool.filter(p => getEffectiveDifficulty(p) <= directives.maxDifficulty)
     }
     if (directives.specificPositions && directives.specificPositions.length > 0) {
       const specificIds = new Set(directives.specificPositions)
@@ -72,7 +72,7 @@ function enrichRecords(srRecords) {
   return srRecords.map(r => ({
     ...r,
     theme: posMap[r.positionId]?.theme || 'tactics',
-    difficulty: posMap[r.positionId]?.difficulty || 3,
+    difficulty: posMap[r.positionId] ? getEffectiveDifficulty(posMap[r.positionId]) : 3,
   }))
 }
 

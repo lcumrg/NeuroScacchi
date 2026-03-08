@@ -31,9 +31,9 @@ export default function MetodoRoadmap() {
             { label: 'Wrapper Stockfish WASM + Web Worker', done: true, pillar: 'Infrastruttura' },
             { label: 'Feedback graduato (ottima/buona/imprecisione/errore)', done: true, pillar: 'Regolazione emotiva' },
             { label: 'Profilassi reale con eval numerica', done: true, pillar: 'Memoria di lavoro' },
-            { label: 'Difficolta calcolata automaticamente', done: false, pillar: 'Infrastruttura' },
+            { label: 'Difficolta calcolata automaticamente', done: true, pillar: 'Infrastruttura' },
             { label: 'Metacognizione contestuale (basata su eval)', done: true, pillar: 'Metacognizione' },
-            { label: 'Architettura dati Firebase + logging per-mossa', done: false, pillar: 'Infrastruttura' },
+            { label: 'Architettura dati Firebase + logging per-mossa', done: true, pillar: 'Infrastruttura' },
             { label: 'Ri-validazione posizioni esistenti con Stockfish', done: true, pillar: 'Qualita' },
             { label: 'Agente IA coach: generazione posizioni e percorsi', done: true, pillar: 'Contenuti' },
             { label: 'Agente IA coach: analisi PGN e consulenza metodo', done: true, pillar: 'Contenuti' },
@@ -78,8 +78,8 @@ export default function MetodoRoadmap() {
             { label: 'Font Nunito + Atkinson Hyperlegible', done: true, pillar: 'Accessibilita' },
             { label: 'Colori funzionali esclusivi per classificazione mosse', done: true, pillar: 'Regolazione emotiva' },
             { label: 'Freeze visual: vignettatura + sfocatura + indaco', done: true, pillar: 'Inibizione' },
-            { label: 'Tema chiaro / scuro con contrasto calibrato', done: false, pillar: 'Accessibilita' },
-            { label: 'Layout single-action per schermata', done: false, pillar: 'Memoria di lavoro' },
+            { label: 'Tema chiaro / scuro con contrasto calibrato', done: true, pillar: 'Accessibilita' },
+            { label: 'Layout single-action per schermata', done: true, pillar: 'Memoria di lavoro' },
             { label: 'Scala tipografica ADHD-optimized', done: false, pillar: 'Accessibilita' },
           ]}
         />

@@ -3,8 +3,63 @@
 // Ogni studente ha un "livello" per tema (1-10).
 // Il sistema sceglie posizioni nella zona ~60-70% probabilita di successo.
 // Se lo studente azzecca molte di fila → sale. Se sbaglia molte → scende.
+//
+// Con Stockfish (Strato 4.4): la difficolta puo essere calcolata automaticamente
+// in base alla depth minima a cui il motore trova la soluzione.
+// Le posizioni curate dal coach mantengono la difficolta manuale come fallback.
+
+import { evaluate } from './stockfishService'
 
 const DEFAULT_LEVEL = 3
+
+// Depths a cui testare per trovare la soluzione
+const DIFFICULTY_DEPTHS = [1, 2, 3, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+
+/**
+ * Mappa la depth minima a cui Stockfish trova la soluzione → difficolta 1-10.
+ */
+export function depthToDifficulty(depthFound) {
+  if (depthFound <= 1) return 1
+  if (depthFound <= 3) return 2
+  if (depthFound <= 4) return 3
+  if (depthFound <= 6) return 4
+  if (depthFound <= 8) return 5
+  if (depthFound <= 10) return 6
+  if (depthFound <= 12) return 7
+  if (depthFound <= 14) return 8
+  if (depthFound <= 16) return 9
+  return 10
+}
+
+/**
+ * Calcola la difficolta di una posizione con Stockfish.
+ * Analizza a depth crescenti e restituisce la depth minima
+ * a cui la bestMove coincide con una delle solutionMoves.
+ *
+ * @returns {{ difficulty: number, depthFound: number|null, bestMove: string }}
+ */
+export async function calculateDifficulty(fen, solutionMoves) {
+  for (const depth of DIFFICULTY_DEPTHS) {
+    const result = await evaluate(fen, depth)
+    if (solutionMoves.includes(result.bestMove)) {
+      return {
+        difficulty: depthToDifficulty(depth),
+        depthFound: depth,
+        bestMove: result.bestMove,
+      }
+    }
+  }
+  // Stockfish non trova la soluzione — posizione molto difficile o tematica
+  return { difficulty: 10, depthFound: null, bestMove: null }
+}
+
+/**
+ * Restituisce la difficolta effettiva di una posizione.
+ * Usa `calculatedDifficulty` se presente, altrimenti `difficulty` manuale.
+ */
+export function getEffectiveDifficulty(position) {
+  return position.calculatedDifficulty ?? position.difficulty
+}
 
 /**
  * Calcola il livello dello studente per un dato tema
@@ -45,16 +100,19 @@ export function getOptimalDifficultyRange(level) {
  */
 export function filterByDifficulty(positions, level, minCount = 5) {
   const range = getOptimalDifficultyRange(level)
-  let filtered = positions.filter(p => p.difficulty >= range.min && p.difficulty <= range.max)
+  let filtered = positions.filter(p => {
+    const diff = getEffectiveDifficulty(p)
+    return diff >= range.min && diff <= range.max
+  })
 
   // Se troppo poche, espandi il range
   let expand = 1
   while (filtered.length < minCount && expand < 5) {
     expand++
-    filtered = positions.filter(p =>
-      p.difficulty >= Math.max(1, level - expand) &&
-      p.difficulty <= Math.min(10, level + expand)
-    )
+    filtered = positions.filter(p => {
+      const diff = getEffectiveDifficulty(p)
+      return diff >= Math.max(1, level - expand) && diff <= Math.min(10, level + expand)
+    })
   }
 
   return filtered

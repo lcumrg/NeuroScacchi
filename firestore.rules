@@ -3,6 +3,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // Ogni utente può leggere/scrivere solo i propri dati
+    // Struttura v2: users/{uid}/profile, sessions, leitner
     match /users/{userId}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
