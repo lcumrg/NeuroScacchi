@@ -1,7 +1,7 @@
 # NeuroScacchi 2.0 — Roadmap
 
 > Training engine adattivo per scacchi + riabilitazione funzioni esecutive.
-> Ultimo aggiornamento: 8 Marzo 2026 (Strati 0-3 implementati, Strati 4-8 pianificati)
+> Ultimo aggiornamento: 9 Marzo 2026 (Strati 0-4 implementati, Strato 4.9 pianificato, Strati 5-8 da fare)
 
 ---
 
@@ -346,9 +346,142 @@ src/v2/
 
 ---
 
-## STRATO 5 — Freeze Evoluto e Partite — DA FARE
+## STRATO 4.9 — Sistema Lezioni e Coach IA Evoluto — DA FARE
 
 > Prerequisito: Strato 4 completato
+> Principio guida: l'IA struttura la didattica, Stockfish garantisce la verita scacchistica.
+> Il coach umano da la direzione, seleziona, modifica. Lo studente sceglie e segue.
+
+### Visione
+
+Il Coach IA diventa l'assistente alla creazione didattica del coach umano.
+Produce contenuti a 4 livelli di granularita:
+
+| Livello | Cosa | Esempio |
+|---------|------|---------|
+| Puzzle | Singola posizione con soluzione | "Trova il matto in 2" |
+| Lezione | Sequenza guidata passo-passo | "I finali di torre" — 8 step con spiegazioni, demo, esercizi |
+| Percorso | Raccolta ordinata di lezioni | "Fondamenti dei finali" — 6 lezioni + 20 puzzle |
+| Piano | Programma con obiettivo e timeline | "Da 1200 a 1400 Elo in 3 mesi" |
+
+Gerarchia: Piano → Percorsi → Lezioni → Puzzle/Step
+
+### Ruoli
+
+- **Coach IA**: propone, elabora, genera bozze a tutti i livelli. Risponde alle domande del coach umano.
+- **Stockfish**: co-creatore — valida, corregge, arricchisce, calibra ogni contenuto scacchistico.
+- **Coach umano**: da la direzione, seleziona tra le proposte, modifica via chat o console, pubblica.
+- **Studente**: vede i contenuti pubblicati, sceglie quali seguire, si allena con lo scaffolding cognitivo.
+
+### Modello dati
+
+**Lezione** (entita centrale):
+```
+{
+  id, title, description,
+  theme,                          // tema principale
+  difficultyRange: [min, max],
+  estimatedMinutes,
+  steps: [
+    { type: "text", content: "markdown" },
+    { type: "puzzle", position: { fen, solutionMoves, hints, difficulty } },
+    { type: "demo", fen, moves: [], explanation: "markdown" }
+  ],
+  status: "draft" | "published",
+  origin: "coach" | "ai",
+  tags: [],
+  createdAt, updatedAt
+}
+```
+
+**Percorso**: `{ id, title, description, goal, lessonIds: [], estimatedDays, status }`
+**Piano**: `{ id, title, goal, targetDate, pathIds: [], milestones: [{ label, atLesson }], status }`
+
+Storage: Firestore `lessons/`, `paths/`, `plans/` + `users/{uid}/lessonProgress/{id}`
+
+### 4.9.1 Modello dati e storage lezioni — DA FARE
+
+- [ ] Schema Lezione con validazione (`lessonSchema.js`): titolo, step tipizzati, status, timestamps
+- [ ] Schema Percorso e Piano con validazione
+- [ ] Collezioni Firestore: `lessons/`, `paths/`, `plans/`, `users/{uid}/lessonProgress/{id}`
+- [ ] Firestore rules: coach puo creare/modificare, studente puo leggere le pubblicate + scrivere il proprio progresso
+- [ ] Service CRUD: `lessonService.js` — create, read, update, delete, publish, list (bozze/pubblicate)
+- [ ] Migrazione: posizioni esistenti in `ns2_ai_positions` (localStorage) convertibili in lezioni singole
+
+### 4.9.2 Console gestione lezioni (Coach) — DA FARE
+
+- [ ] Pagina `LessonManagerPage.jsx`: lista lezioni con filtro per stato (bozza/pubblicata), tema, difficolta
+- [ ] Editor lezione: aggiungere step (testo/puzzle/demo), riordinare con drag-and-drop, eliminare
+- [ ] Editing inline di ogni tipo di step:
+  - Testo: editor markdown con preview
+  - Puzzle: scacchiera interattiva per impostare FEN + mossa soluzione
+  - Demo: scacchiera con registrazione sequenza mosse + campo spiegazione
+- [ ] Validazione Stockfish integrata: bottone "Valida lezione" controlla tutti i puzzle in un colpo
+- [ ] Preview: "Vedi come la vedra lo studente" — apre il Lesson Player in modalita anteprima
+- [ ] Azioni: Salva bozza, Pubblica, Ritira, Duplica, Elimina
+- [ ] Gestione percorsi: lista lezioni assegnate, ordine, descrizione obiettivo
+- [ ] Gestione piani: lista percorsi, timeline, milestones
+
+### 4.9.3 Coach IA potenziato + integrazioni Stockfish — DA FARE
+
+> Principio: IA + Stockfish lavorano insieme come co-creatori.
+> L'IA scrive la didattica, Stockfish fornisce la verita scacchistica.
+
+**Chat IA evoluta:**
+- [ ] System prompt aggiornato: genera lezioni intere (non solo puzzle singoli)
+- [ ] Formati output strutturati: lezione con step, percorso con piu lezioni, piano con percorsi
+- [ ] Flusso: IA genera bozza → coach rivede in chat → "Salva come lezione" → apre in console per rifinitura
+- [ ] Streaming risposta (mostra testo progressivamente, elimina percezione lentezza ~20s)
+
+**7 integrazioni Stockfish nella creazione contenuti:**
+
+1. **Correzione automatica** — posizione rifiutata → Stockfish sostituisce la mossa con la migliore → posizione diventa valida (zero posizioni sprecate)
+2. **Arricchimento PV multi-mossa** — Stockfish calcola la variante principale completa → soluzioni a 2-3-4 mosse invece di 1 sola
+3. **MultiPV per alternative valide** — analisi con MultiPV=3 → identifica mosse equivalenti (deltaEval < 0.3 tra loro) → puzzle accetta piu soluzioni corrette
+4. **Calibrazione difficolta nella lezione** — ogni puzzle auto-calibrato con `calculateDifficulty()` → verifica che la progressione sia realmente crescente, corregge l'ordine se necessario
+5. **Generazione hint intelligenti** — Stockfish conosce la mossa e la casa obiettivo → genera hint ancorati alla realta ("Osserva la diagonale a2-g8") invece di hint vaghi dell'IA
+6. **Analisi PGN con momenti critici** — Stockfish analizza mossa per mossa → identifica deltaEval > 2.0 → quei momenti diventano i puzzle della lezione (errori veri, non inventati)
+7. **Verifica step demo** — sequenze dimostrative verificate come gioco corretto + generazione confutazione ("e se invece...? ecco perche non funziona")
+
+**Automazione:** le integrazioni 1-5 e 7 sono automatiche al salvataggio. La 6 si attiva quando il coach incolla un PGN.
+
+### 4.9.4 Lesson Player (Studente) — DA FARE
+
+- [ ] Pagina studente: catalogo lezioni/percorsi pubblicati, filtrabili per tema e difficolta
+- [ ] Lesson Player step-by-step: navigazione avanti/indietro tra gli step della lezione
+- [ ] Rendering step per tipo:
+  - **Testo**: markdown renderizzato
+  - **Demo**: scacchiera animata con sequenza mosse, play/pausa, velocita regolabile, spiegazione a fianco
+  - **Puzzle**: riutilizza TrainingSession esistente (freeze, profilassi, metacognizione, feedback graduato Stockfish)
+- [ ] Progresso per lezione: step completati, puzzle risolti/sbagliati, tempo impiegato
+- [ ] Salvataggio progresso in Firestore (`users/{uid}/lessonProgress/{lessonId}`)
+- [ ] Puzzle errati delle lezioni → entrano nel sistema Leitner esistente (ripasso automatico nelle sessioni smart)
+- [ ] Vista percorso: mappa visuale con lezioni completate/in corso/da fare
+- [ ] Vista piano: obiettivo, timeline, avanzamento complessivo
+
+### 4.9.5 Percorsi e piani di allenamento — DA FARE
+
+- [ ] CRUD percorsi nel console coach: lista ordinata di lezioni, descrizione obiettivo, durata stimata
+- [ ] CRUD piani: lista percorsi + timeline + milestones + obiettivo finale
+- [ ] IA genera percorsi e piani su richiesta del coach ("Preparazione torneo regionale 15 aprile, giocatore 1200 Elo impulsivo")
+- [ ] Stockfish valida la coerenza: progressione difficolta tra lezioni, copertura tematica
+- [ ] UI studente: vista percorso con progresso visuale (barra avanzamento per lezione)
+- [ ] UI studente: vista piano con obiettivo, deadline, milestones raggiunti
+
+### Dipendenze e ordine di implementazione
+
+```
+4.9.1 (modello dati)
+  ├→ 4.9.2 (console coach) ──→ 4.9.3 (IA potenziato)
+  └→ 4.9.4 (lesson player)
+                                 4.9.5 (percorsi/piani) — dopo 4.9.2 + 4.9.4
+```
+
+---
+
+## STRATO 5 — Freeze Evoluto e Partite — DA FARE
+
+> Prerequisito: Strato 4.9 completato (il sistema lezioni e' il fondamento)
 > Riferimento: pagina Metodo, sezione 1 (inibizione) e sezione "Puzzle vs Partite"
 
 ### 5.1 Freeze per ogni mossa (Inibizione — pilastro 1)
@@ -517,6 +650,16 @@ src/v2/
 ---
 
 ## Changelog
+
+### 9 Marzo 2026 (sessione 9)
+- Analisi approfondita del Coach IA (Strato 4.7): identificati limiti e mancanze
+- Diagnosi: lentezza (by design, migliorabile con streaming), posizioni salvate inutilizzabili (manca il "dopo"), posizioni rifiutate senza azioni
+- Definita visione completa: Coach IA come assistente alla creazione didattica del coach umano
+- 4 livelli di contenuto: Puzzle → Lezione → Percorso → Piano di allenamento
+- 3 ruoli: Coach IA (propone/genera), Coach umano (seleziona/modifica/pubblica), Studente (sceglie/segue)
+- Pianificato **Strato 4.9** — Sistema Lezioni e Coach IA Evoluto (5 sotto-fasi)
+- 7 integrazioni Stockfish come co-creatore (non solo validatore): correzione automatica, PV multi-mossa, MultiPV alternative, calibrazione difficolta, hint intelligenti, analisi PGN momenti critici, verifica step demo
+- Strato 4.9 diventa prerequisito per Strati 5-8
 
 ### 8 Marzo 2026 (sessione 8)
 - Strato 4.5 completato: metacognizione contestuale basata su dati reali Stockfish
