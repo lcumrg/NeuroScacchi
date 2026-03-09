@@ -4,58 +4,144 @@ import { styles } from './metodoStyles'
 export default function MetodoCoachIA() {
   return (
     <>
-      <h3 style={styles.partTitle}>Intelligenza Artificiale — Due Fasi</h3>
+      <h3 style={styles.partTitle}>Intelligenza Artificiale — Sistema Lezioni</h3>
 
-      {/* --- Fase 1: Agente IA per il coach (IMMEDIATO) --- */}
-      <Section status="solid" title="6. Agente IA per il coach — strumento di lavoro immediato">
+      {/* --- Sistema Lezioni: Coach IA come assistente alla creazione didattica --- */}
+      <Section status="solid" title="6. Coach IA — Assistente alla creazione didattica">
         <p>
-          La sezione Coach dell'app diventa un'<strong>interfaccia conversazionale con un agente IA</strong>.
-          Non e' un wizard o un form — e' un dialogo continuo in cui il coach (tu) interagisce con l'IA
-          per creare contenuti, progettare percorsi e analizzare il materiale di studio.
+          Il Coach IA e' l'<strong>assistente del coach umano</strong> per creare contenuti didattici.
+          L'IA struttura la didattica, Stockfish garantisce la verita scacchistica,
+          il coach umano da la direzione e pubblica. Lo studente sceglie e segue.
         </p>
+
         <div style={styles.implBox}>
-          <strong>Cosa fa l'agente per il coach:</strong>
+          <strong>4 livelli di contenuto:</strong>
         </div>
         <div style={styles.paramGrid}>
           <div style={styles.paramCard}>
-            <div style={styles.paramName}>Generazione posizioni</div>
-            <div style={styles.paramFoundation}>Contenuti su richiesta</div>
+            <div style={styles.paramName}>Puzzle</div>
+            <div style={styles.paramFoundation}>Singola posizione</div>
             <div style={styles.paramDetail}>
-              "Generami 10 posizioni sui finali di torre, difficolta crescente" — l'IA propone
-              FEN + soluzione + spiegazione. Stockfish valida automaticamente ogni posizione.
+              Posizione con soluzione, validata da Stockfish. La base di tutto.
+              Gia implementato nello Strato 4.7.
             </div>
           </div>
           <div style={styles.paramCard}>
-            <div style={styles.paramName}>Percorsi di studio</div>
-            <div style={styles.paramFoundation}>Aperture, finali, tattiche</div>
+            <div style={styles.paramName}>Lezione</div>
+            <div style={styles.paramFoundation}>Sequenza passo-passo</div>
             <div style={styles.paramDetail}>
-              "Costruisci un percorso aperture per un 1200 Elo impulsivo" — l'IA genera
-              una sequenza ragionata di posizioni con progressione logica e hint mirati.
+              Insegna un argomento con step ordinati: spiegazioni testuali,
+              dimostrazioni interattive sulla scacchiera, esercizi-puzzle.
             </div>
           </div>
           <div style={styles.paramCard}>
-            <div style={styles.paramName}>Analisi partite</div>
-            <div style={styles.paramFoundation}>Da PGN a posizioni di studio</div>
+            <div style={styles.paramName}>Percorso</div>
+            <div style={styles.paramFoundation}>Raccolta di lezioni</div>
             <div style={styles.paramDetail}>
-              Il coach incolla un PGN e l'IA identifica i momenti critici, genera posizioni
-              di studio mirate e le inserisce nel percorso dello studente.
+              Serie ordinata di lezioni su un tema. Es: "Fondamenti dei finali" —
+              6 lezioni + 20 puzzle, dalla teoria alla pratica.
             </div>
           </div>
           <div style={styles.paramCard}>
-            <div style={styles.paramName}>Consulenza sul metodo</div>
-            <div style={styles.paramFoundation}>Ragionamento pedagogico</div>
+            <div style={styles.paramName}>Piano di allenamento</div>
+            <div style={styles.paramFoundation}>Programma con obiettivo</div>
             <div style={styles.paramDetail}>
-              "Questo studente sbaglia sempre i finali sotto pressione" — l'agente conosce
-              il profilo cognitivo e propone strategie di allenamento personalizzate.
+              Programma con timeline e milestones. Es: "Da 1200 a 1400 Elo in 3 mesi"
+              o "Preparazione torneo regionale del 15 aprile".
             </div>
           </div>
         </div>
+
+        <div style={styles.implBox}>
+          <strong>3 ruoli nel sistema:</strong>
+        </div>
+        <div style={styles.paramGrid}>
+          <div style={styles.paramCard}>
+            <div style={styles.paramName}>Coach IA + Stockfish</div>
+            <div style={styles.paramFoundation}>Co-creatori</div>
+            <div style={styles.paramDetail}>
+              L'IA genera bozze a tutti i livelli. Stockfish non si limita a validare:
+              corregge mosse, arricchisce soluzioni (PV multi-mossa), identifica alternative
+              valide (MultiPV), calibra difficolta, genera hint intelligenti, analizza PGN
+              per trovare i momenti critici reali.
+            </div>
+          </div>
+          <div style={styles.paramCard}>
+            <div style={styles.paramName}>Coach umano</div>
+            <div style={styles.paramFoundation}>Direttore didattico</div>
+            <div style={styles.paramDetail}>
+              Da la direzione ("voglio un percorso sui finali per un ragazzo impulsivo").
+              Seleziona le proposte migliori, modifica via chat o console di gestione,
+              pubblica i contenuti per lo studente.
+            </div>
+          </div>
+          <div style={styles.paramCard}>
+            <div style={styles.paramName}>Studente</div>
+            <div style={styles.paramFoundation}>Fruisce e si allena</div>
+            <div style={styles.paramDetail}>
+              Vede le lezioni e i percorsi pubblicati dal coach. Sceglie cosa seguire.
+              Ogni puzzle nella lezione attiva lo scaffolding cognitivo completo
+              (freeze, profilassi, metacognizione, feedback graduato).
+            </div>
+          </div>
+        </div>
+
+        <div style={styles.implBox}>
+          <strong>7 integrazioni Stockfish come co-creatore:</strong>
+        </div>
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.th}>Integrazione</th>
+              <th style={styles.th}>Cosa fa</th>
+              <th style={styles.th}>Perche</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ ...styles.td, fontWeight: 600 }}>Correzione automatica</td>
+              <td style={styles.td}>Mossa IA sbagliata → Stockfish la sostituisce con la migliore</td>
+              <td style={styles.td}>Zero posizioni sprecate</td>
+            </tr>
+            <tr>
+              <td style={{ ...styles.td, fontWeight: 600 }}>PV multi-mossa</td>
+              <td style={styles.td}>Calcola la variante principale completa (2-4 mosse)</td>
+              <td style={styles.td}>Soluzioni ricche, lo studente segue tutta la combinazione</td>
+            </tr>
+            <tr>
+              <td style={{ ...styles.td, fontWeight: 600 }}>MultiPV alternative</td>
+              <td style={styles.td}>Identifica mosse equivalenti (deltaEval &lt; 0.3)</td>
+              <td style={styles.td}>Accetta piu soluzioni corrette, meno frustrazione</td>
+            </tr>
+            <tr>
+              <td style={{ ...styles.td, fontWeight: 600 }}>Calibrazione difficolta</td>
+              <td style={styles.td}>Auto-calibra ogni puzzle, verifica progressione crescente</td>
+              <td style={styles.td}>L'IA dice "facile→difficile", Stockfish conferma o corregge</td>
+            </tr>
+            <tr>
+              <td style={{ ...styles.td, fontWeight: 600 }}>Hint intelligenti</td>
+              <td style={styles.td}>Genera hint dalla mossa reale ("Osserva la diagonale a2-g8")</td>
+              <td style={styles.td}>Hint ancorati alla realta, non vaghi</td>
+            </tr>
+            <tr>
+              <td style={{ ...styles.td, fontWeight: 600 }}>Analisi PGN</td>
+              <td style={styles.td}>Trova i momenti critici reali (deltaEval &gt; 2.0)</td>
+              <td style={styles.td}>Lezioni da partite vere con errori veri</td>
+            </tr>
+            <tr>
+              <td style={{ ...styles.td, fontWeight: 600 }}>Verifica demo</td>
+              <td style={styles.td}>Controlla che le sequenze dimostrative siano gioco corretto</td>
+              <td style={styles.td}>Step didattici verificati + confutazioni "e se invece...?"</td>
+            </tr>
+          </tbody>
+        </table>
+
         <div style={styles.evolutionBox}>
-          <strong>Vantaggio strategico doppio:</strong> mentre il coach crea contenuti, l'agente
-          accumula contesto sul metodo, sui percorsi, sulle posizioni. Quando in futuro evolvera
-          per interagire direttamente con lo studente, sara gia "formato" — avra gia visto
-          centinaia di posizioni validate, percorsi costruiti, decisioni pedagogiche prese.
-          Piu contenuti il coach crea ora, migliore sara l'agente domani.
+          <strong>Principio fondamentale:</strong> l'IA non ha conoscenze scacchistiche sufficienti
+          per garantire la correttezza. Stockfish compensa questo limite non come validatore a posteriori,
+          ma come <strong>co-creatore</strong> che partecipa attivamente alla costruzione dei contenuti.
+          Tutto cio che riguarda la correttezza scacchistica passa da Stockfish automaticamente —
+          il coach non deve preoccuparsene.
         </div>
       </Section>
 

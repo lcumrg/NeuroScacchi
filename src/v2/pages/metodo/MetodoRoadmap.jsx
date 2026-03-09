@@ -25,7 +25,7 @@ export default function MetodoRoadmap() {
         <RoadmapPhase
           number="4"
           title="Stockfish Core"
-          status="next"
+          status="done"
           subtitle="Il motore che cambia tutto"
           items={[
             { label: 'Wrapper Stockfish WASM + Web Worker', done: true, pillar: 'Infrastruttura' },
@@ -38,6 +38,23 @@ export default function MetodoRoadmap() {
             { label: 'Agente IA coach: generazione posizioni e percorsi', done: true, pillar: 'Contenuti' },
             { label: 'Agente IA coach: analisi PGN e consulenza metodo', done: true, pillar: 'Contenuti' },
             { label: 'Backend API key per agente IA (Netlify Function)', done: true, pillar: 'Infrastruttura' },
+          ]}
+        />
+
+        <RoadmapPhase
+          number="4.9"
+          title="Sistema Lezioni e Coach IA Evoluto"
+          status="next"
+          subtitle="L'IA struttura la didattica, Stockfish garantisce la verita scacchistica"
+          items={[
+            { label: 'Modello dati lezioni (Lezione, Percorso, Piano)', done: false, pillar: 'Infrastruttura' },
+            { label: 'Console gestione lezioni per il coach', done: false, pillar: 'Contenuti' },
+            { label: 'Coach IA potenziato: genera lezioni, percorsi, piani', done: false, pillar: 'Contenuti' },
+            { label: 'Stockfish co-creatore: correzione, PV multi-mossa, hint intelligenti', done: false, pillar: 'Qualita' },
+            { label: 'Stockfish co-creatore: MultiPV alternative, calibrazione, analisi PGN', done: false, pillar: 'Qualita' },
+            { label: 'Streaming risposta IA (elimina lentezza percepita)', done: false, pillar: 'UX' },
+            { label: 'Lesson Player per lo studente (testo, demo, puzzle)', done: false, pillar: 'Tutti i pilastri' },
+            { label: 'Percorsi e piani di allenamento', done: false, pillar: 'Contenuti' },
           ]}
         />
 
