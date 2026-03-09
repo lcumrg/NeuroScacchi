@@ -36,8 +36,7 @@ export default async (req) => {
       })
     }
 
-    // Usa claude-3-5-sonnet (fallback a haiku se non disponibile)
-    const model = 'claude-3-5-sonnet-20241022'
+    const model = 'claude-sonnet-4-20250514'
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
