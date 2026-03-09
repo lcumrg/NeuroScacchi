@@ -1,10 +1,50 @@
 import { RoadmapPhase } from './metodoComponents'
 import { styles } from './metodoStyles'
 
-export default function MetodoRoadmap() {
+export default function MetodoRoadmap({ onOpenDettagliata }) {
   return (
     <>
       <h3 style={styles.partTitle}>Roadmap di Sviluppo</h3>
+
+      {/* Bottone per aprire la roadmap dettagliata */}
+      <div style={{
+        background: '#E8EAF6',
+        border: '1px solid #C5CAE9',
+        borderRadius: 10,
+        padding: '14px 18px',
+        marginBottom: 12,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        flexWrap: 'wrap',
+      }}>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#283593' }}>
+            Roadmap Dettagliata
+          </div>
+          <div style={{ fontSize: 12, color: '#546E7A', marginTop: 2 }}>
+            Gap analysis v1.0 → v2.0, piano fase per fase, sviluppo parallelo su 2 finestre
+          </div>
+        </div>
+        <button
+          onClick={onOpenDettagliata}
+          style={{
+            padding: '8px 16px',
+            background: '#283593',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 8,
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Apri Roadmap Completa &#8594;
+        </button>
+      </div>
 
       <div style={styles.roadmapContainer}>
         <RoadmapPhase

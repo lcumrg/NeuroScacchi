@@ -10,9 +10,11 @@ import MetodoDataArchitecture from './metodo/MetodoDataArchitecture'
 import MetodoRoadmap from './metodo/MetodoRoadmap'
 import MetodoEvoluzione from './metodo/MetodoEvoluzione'
 import MetodoPDF from './metodo/MetodoPDF'
+import MetodoRoadmapDettagliata from './metodo/MetodoRoadmapDettagliata'
 
 export default function MetodoPage({ onBack }) {
   const [exporting, setExporting] = useState(false)
+  const [subpage, setSubpage] = useState(null) // null | 'roadmap-dettagliata'
 
   const handleDownloadPDF = async () => {
     if (exporting) return
@@ -32,6 +34,11 @@ export default function MetodoPage({ onBack }) {
     } finally {
       setExporting(false)
     }
+  }
+
+  // Sottopagina Roadmap Dettagliata
+  if (subpage === 'roadmap-dettagliata') {
+    return <MetodoRoadmapDettagliata onBack={() => setSubpage(null)} />
   }
 
   return (
@@ -84,7 +91,7 @@ export default function MetodoPage({ onBack }) {
         <MetodoDataArchitecture />
 
         {/* Roadmap visuale (Strati 0-8) */}
-        <MetodoRoadmap />
+        <MetodoRoadmap onOpenDettagliata={() => setSubpage('roadmap-dettagliata')} />
 
         {/* Parte 6: Evoluzione e validazione */}
         <MetodoEvoluzione />

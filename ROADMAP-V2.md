@@ -649,7 +649,55 @@ Storage: Firestore `lessons/`, `paths/`, `plans/` + `users/{uid}/lessonProgress/
 
 ---
 
+## Gap Analysis v1.0 → v2.0
+
+> Analisi condotta il 9 Marzo 2026. Confronto sistematico delle idee principali.
+
+### Idee ASSENTI in v2.0 (da recuperare)
+
+| ID | Idea | Pilastro | Priorita | Proposta |
+|----|------|----------|----------|----------|
+| GAP-A | **Visual Chunking + Arrow Patterns** — evidenziazione case chiave + frecce strategiche | Memoria di lavoro | Alta | Overlay scacchiera, auto-generato da PV Stockfish |
+| GAP-B | **Modalita Intent + Detective + Candidate** — 3 modi di interazione attiva (domanda strategica, click casa, mosse candidate) | Inibizione + Metacognizione | Alta | Diventano tipi di step nelle lezioni (4.9) |
+| GAP-C | **Calibrazione fiducia (Sicuro/Dubbio/Non lo so)** + 22 messaggi di confronto | Metacognizione | Alta | Fase opzionale pre-mossa, integrata con deltaEval |
+| GAP-D | **Reflection Prompts con attribuzione** — "Perche hai sbagliato?" con opzioni strutturate | Metacognizione | Media | Si combina con metacognizione contestuale SF |
+| GAP-E | **Self-assessment a fine sessione** — percezione soggettiva vs dati oggettivi | Metacognizione | Media | 2-3 domande rapide prima del riepilogo numerico |
+
+### Idee TRASFORMATE (presenti in forma diversa)
+
+- **Profilassi**: v1 = calibrazione fiducia → v2 = identificazione minacce con Stockfish (entrambe utili, da combinare)
+- **Metacognizione**: v1 = domande random Si/No → v2 = domande contestuali basate su eval/tempo (miglioramento)
+- **Admin Console**: v1 = wizard 8 step → v2 = interfaccia conversazionale IA (miglioramento)
+- **Sequenze multi-step**: v1 = implementate con intent/detective/candidate → v2 = pianificate in 4.9 con step text/puzzle/demo (da estendere con i tipi v1)
+
+---
+
+## Piano di Sviluppo Parallelo (2 Finestre)
+
+> 8 sessioni sequenziali, ognuna con 2 task paralleli su file diversi.
+> Risparmio stimato: ~50% rispetto a sviluppo sequenziale.
+
+| Sessione | Finestra A | Finestra B | Note |
+|----------|-----------|-----------|------|
+| S1 | **4.9.1** Modello dati lezioni | **GAP-A** Visual Chunking + Arrows | A: engine/data, B: components/UI |
+| S2 | **4.9.2** Console coach | **4.9.4** Lesson Player studente | Parallelo ideale: entrambi dipendono da 4.9.1 |
+| S3 | **4.9.3** Coach IA + 7 integrazioni SF | **GAP-B** Intent + Detective + Candidate | A: CoachAI + engine, B: components gioco |
+| S4 | **4.9.5** Percorsi e piani | **GAP-C** Calibrazione fiducia + Self-assessment | A: pagine gestione, B: componenti sessione |
+| S5 | **5.1** Freeze per ogni mossa | **5.2** Partita vs Stockfish | A: FreezeOverlay, B: nuova GamePage |
+| S6 | **5.3** SR per partite | **6.3** Modalita esame | A: sessionEngine/SR, B: nuovo mode in SessionRunner |
+| S7 | **6.1+6.2** Osservazione + Auto-profilo | **6.4** Dashboard coach | A: raccolta dati, B: visualizzazione |
+| S8 | **8.1+8.2** IA analista + Scaffolding | **6.5** Export dati | A: CoachAI/nuove pagine, B: utils/report |
+
+---
+
 ## Changelog
+
+### 9 Marzo 2026 (sessione 10)
+- **Gap Analysis v1.0 → v2.0**: identificate 5 idee principali assenti (Intent/Detective/Candidate, Calibrazione fiducia, Visual Chunking, Reflection Prompts, Self-assessment) e 4 trasformate
+- Creata sottopagina **Roadmap Dettagliata** nella pagina Metodo (`MetodoRoadmapDettagliata.jsx`)
+- Contiene: gap analysis interattiva, grafo dipendenze, roadmap fase per fase con dettagli, tabella sviluppo parallelo su 2 finestre (8 sessioni)
+- Piano parallelo: 16 blocchi di lavoro organizzati in 8 sessioni con 2 finestre simultanee (~50% risparmio)
+- Le fasi GAP sono distribuite nelle prime 4 sessioni parallele per non accumularle
 
 ### 9 Marzo 2026 (sessione 9)
 - Analisi approfondita del Coach IA (Strato 4.7): identificati limiti e mancanze
