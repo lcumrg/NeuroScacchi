@@ -1,23 +1,19 @@
 {
   "name": "neuroscacchi",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "validate": "node scripts/validate-positions.cjs",
-    "validate:stockfish": "node scripts/validate-positions-stockfish.cjs",
-    "dev": "node scripts/validate-positions.cjs && vite",
-    "build": "node scripts/validate-positions.cjs && vite build",
+    "dev": "vite",
+    "build": "vite build",
     "preview": "vite preview",
     "postinstall": "node scripts/copy-stockfish.cjs"
   },
   "dependencies": {
-    "@react-pdf/renderer": "^4.3.2",
-    "chess.js": "^1.0.0-beta.8",
+    "@lichess-org/chessground": "^10.1.0",
+    "chessops": "^0.15.0",
     "firebase": "^12.9.0",
-    "pako": "^2.1.0",
     "react": "^18.3.1",
-    "react-chessboard": "^4.6.0",
     "react-dom": "^18.3.1",
     "stockfish": "^18.0.5"
   },

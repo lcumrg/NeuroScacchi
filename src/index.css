@@ -1,3 +1,6 @@
+/* Font: Nunito (principale) + Atkinson Hyperlegible (fallback leggibilita) */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap');
+
 :root, [data-theme="light"] {
   /* Palette Colori NeuroScacchi — Tema Chiaro */
   --bg-main: #F8F9FA;
@@ -80,9 +83,6 @@
   --square-light: #B0B0B0;
   --square-dark: #707070;
 }
-
-/* Font: Nunito (principale) + Atkinson Hyperlegible (fallback leggibilita) */
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap');
 
 * {
   margin: 0;
