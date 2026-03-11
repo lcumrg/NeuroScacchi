@@ -1,0 +1,190 @@
+// Client-side service per le interazioni con l'IA (Anthropic Claude via Netlify Function)
+
+import { LESSON_SYSTEM_PROMPT } from './lessonSystemPrompt.js'
+
+const AI_CHAT_ENDPOINT = '/api/ai-chat'
+
+/**
+ * Invia un messaggio all'IA e restituisce la risposta.
+ *
+ * @param {Array<{role: string, content: string}>} messages - Cronologia messaggi
+ * @param {string} [systemPrompt] - System prompt opzionale
+ * @returns {Promise<{content: string, usage: {input_tokens: number, output_tokens: number}}>}
+ */
+export async function sendMessage(messages, systemPrompt) {
+  const body = { messages }
+  if (systemPrompt) {
+    body.system = systemPrompt
+  }
+
+  const response = await fetch(AI_CHAT_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    const message = errorData.details || errorData.error || `Errore HTTP ${response.status}`
+    throw new AIServiceError(message, response.status)
+  }
+
+  return response.json()
+}
+
+/**
+ * Genera una bozza di lezione usando l'IA.
+ *
+ * @param {Object} params
+ * @param {string} params.tema - Tema della lezione (es. "doppio di cavallo", "arrocco", "finale di torri")
+ * @param {string} params.livello - Livello target: "beginner" | "intermediate" | "advanced"
+ * @param {number} [params.ratingMin] - Rating minimo dello studente target
+ * @param {number} [params.ratingMax] - Rating massimo dello studente target
+ * @param {string} [params.obiettivo] - Obiettivo didattico specifico
+ * @param {string} [params.fenPartenza] - FEN di partenza opzionale (se il coach ha già una posizione)
+ * @returns {Promise<Object>} La lezione parsata come oggetto JSON
+ */
+export async function generateLesson(params) {
+  const { tema, livello, ratingMin, ratingMax, obiettivo, fenPartenza } = params
+
+  // Costruisci il prompt utente con i parametri specifici
+  const parts = [`Crea una lezione sul tema: "${tema}".`]
+
+  parts.push(`Livello di difficoltà: ${translateLevel(livello)}.`)
+
+  if (ratingMin != null || ratingMax != null) {
+    const range = []
+    if (ratingMin != null) range.push(`da ${ratingMin}`)
+    if (ratingMax != null) range.push(`a ${ratingMax}`)
+    parts.push(`Rating target: ${range.join(' ')}.`)
+  }
+
+  if (obiettivo) {
+    parts.push(`Obiettivo didattico: ${obiettivo}.`)
+  }
+
+  if (fenPartenza) {
+    parts.push(`Parti da questa posizione FEN: ${fenPartenza}`)
+  } else {
+    parts.push(
+      'Usa una posizione classica e ben nota per questo tema. ' +
+      'Se non conosci una posizione appropriata con certezza, segnalalo e suggerisci di cercare nel database puzzle.'
+    )
+  }
+
+  parts.push('La lezione deve avere almeno 2-4 step che seguano il ciclo Osserva → Ragiona → Scegli.')
+  parts.push('Rispondi SOLO con il JSON della lezione, senza testo aggiuntivo.')
+
+  const userMessage = parts.join('\n')
+
+  const result = await sendMessage(
+    [{ role: 'user', content: userMessage }],
+    LESSON_SYSTEM_PROMPT
+  )
+
+  // Estrai e parsa il JSON dalla risposta
+  const lesson = extractJSON(result.content)
+
+  if (!lesson) {
+    throw new AIServiceError(
+      'L\'IA non ha restituito un JSON valido. Risposta ricevuta:\n' + result.content.substring(0, 500)
+    )
+  }
+
+  // Se l'IA ha segnalato un errore
+  if (lesson.error) {
+    throw new AIServiceError(`L'IA ha segnalato un problema: ${lesson.error}`)
+  }
+
+  return {
+    lesson,
+    usage: result.usage,
+  }
+}
+
+/**
+ * Estrae un oggetto JSON da una stringa che potrebbe contenere testo aggiuntivo,
+ * blocchi di codice markdown, ecc.
+ */
+function extractJSON(text) {
+  if (!text || typeof text !== 'string') return null
+
+  // Prova prima il parsing diretto
+  try {
+    return JSON.parse(text.trim())
+  } catch { /* continua */ }
+
+  // Cerca un blocco ```json ... ```
+  const jsonBlockMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/)
+  if (jsonBlockMatch) {
+    try {
+      return JSON.parse(jsonBlockMatch[1].trim())
+    } catch { /* continua */ }
+  }
+
+  // Cerca il primo { ... } bilanciato
+  const firstBrace = text.indexOf('{')
+  if (firstBrace === -1) return null
+
+  let depth = 0
+  let inString = false
+  let escape = false
+
+  for (let i = firstBrace; i < text.length; i++) {
+    const ch = text[i]
+
+    if (escape) {
+      escape = false
+      continue
+    }
+
+    if (ch === '\\' && inString) {
+      escape = true
+      continue
+    }
+
+    if (ch === '"') {
+      inString = !inString
+      continue
+    }
+
+    if (inString) continue
+
+    if (ch === '{') depth++
+    else if (ch === '}') {
+      depth--
+      if (depth === 0) {
+        try {
+          return JSON.parse(text.substring(firstBrace, i + 1))
+        } catch {
+          return null
+        }
+      }
+    }
+  }
+
+  return null
+}
+
+/**
+ * Traduce il livello in italiano per il prompt.
+ */
+function translateLevel(level) {
+  const map = {
+    beginner: 'principiante',
+    intermediate: 'intermedio',
+    advanced: 'avanzato',
+  }
+  return map[level] || level
+}
+
+/**
+ * Errore specifico del servizio IA.
+ */
+export class AIServiceError extends Error {
+  constructor(message, status) {
+    super(message)
+    this.name = 'AIServiceError'
+    this.status = status || null
+  }
+}
