@@ -103,6 +103,17 @@ export default function App() {
       }}>
         {fen}
       </p>
+
+      <p style={{
+        marginTop: 'auto',
+        paddingTop: '2rem',
+        color: 'var(--text-label)',
+        fontSize: '0.7rem',
+        fontFamily: 'var(--font-mono)',
+        textAlign: 'center',
+      }}>
+        v3.0.0 — Build: {typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : 'dev'}
+      </p>
     </div>
   )
 }
