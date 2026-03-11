@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import DemoPage from './pages/DemoPage.jsx'
 import ConsolePage from './pages/ConsolePage.jsx'
+
+const DocPage = lazy(() => import('./pages/DocPage.jsx'))
 
 function getRoute() {
   const hash = window.location.hash || '#/'
   if (hash.startsWith('#/console')) return 'console'
+  if (hash.startsWith('#/doc')) return 'doc'
   return 'demo'
 }
 
@@ -74,11 +77,32 @@ export default function App() {
         >
           Console Coach
         </a>
+        <a
+          href="#/doc"
+          style={{
+            textDecoration: 'none',
+            fontSize: '0.875rem',
+            fontWeight: route === 'doc' ? 700 : 500,
+            color: route === 'doc' ? 'var(--color-primary)' : 'var(--text-secondary)',
+            padding: '0.25rem 0.5rem',
+            borderRadius: '6px',
+            background: route === 'doc' ? 'var(--color-primary-bg)' : 'transparent',
+            transition: 'background var(--transition-fast)',
+          }}
+        >
+          Progetto
+        </a>
       </nav>
 
       {/* Page content */}
       <main style={{ flex: 1 }}>
-        {route === 'console' ? <ConsolePage /> : <DemoPage />}
+        {route === 'console' && <ConsolePage />}
+        {route === 'demo' && <DemoPage />}
+        {route === 'doc' && (
+          <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Caricamento...</div>}>
+            <DocPage />
+          </Suspense>
+        )}
       </main>
 
       {/* Footer */}
