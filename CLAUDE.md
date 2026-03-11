@@ -1,26 +1,53 @@
 # CLAUDE.md - Istruzioni per Claude Code
 
+## Progetto
+
+NeuroScacchi 3.0 — Training engine per scacchi con creazione lezioni assistita da IA + Stockfish + coach umano.
+
 ## Workflow
 - Dopo aver completato le modifiche, pusha sul branch claude/*
 - La GitHub Action `auto-merge-claude.yml` crea e mergia la PR automaticamente
 - Non serve fornire token GitHub: è tutto gestito dal workflow
 
-## Regola fondamentale: pagina Metodo come fonte di verità
+## Regola fondamentale: ROADMAP.md come fonte di verità
 
-**OBBLIGATORIO**: la pagina Metodo (`src/v2/pages/MetodoPage.jsx`) è il documento di riferimento centrale del progetto. Ogni modifica al codice, alla roadmap, o a qualsiasi aspetto del progetto DEVE riflettersi in questa pagina.
+**OBBLIGATORIO**: `ROADMAP.md` è il documento di riferimento centrale del progetto. Contiene visione, metodo, design e roadmap.
 
-In particolare, ad ogni sessione di lavoro:
+Ad ogni sessione di lavoro:
 
-1. **Se implementi una feature**: aggiorna la roadmap visuale nella pagina Metodo — spunta l'item corrispondente (`done: true`), aggiorna lo stato della fase se necessario (`next` → `done`), e sposta il badge "Prossimo" alla fase successiva.
+1. **Se implementi una feature**: aggiorna la roadmap — segna l'item come completato, aggiorna lo stato della fase se necessario.
+2. **Se prendi una decisione di design**: documentala nella roadmap o in un file dedicato.
+3. **Se aggiungi nuovi task**: aggiungili nella fase appropriata della roadmap.
 
-2. **Se prendi una decisione di design**: aggiorna la sezione scientifica corrispondente — cambia lo status da `open`/`critical` a `solid` se la questione è risolta, aggiungi nuovi box "Applicazione" o "Evoluzione" se cambia qualcosa.
+## Stack tecnico
 
-3. **Se aggiungi nuovi task alla roadmap**: aggiungili nella sezione roadmap visuale della pagina Metodo, mappandoli al pilastro scientifico di riferimento.
+- React 18 + Vite
+- **Chessground** (`@lichess-org/chessground`) — scacchiera SVG con frecce e cerchi
+- **chessops** — logica scacchistica, parsing FEN/PGN, validazione mosse
+- **Stockfish WASM** — motore di analisi nel browser via Web Worker
+- Firebase Auth + Firestore
+- Anthropic Claude API via Netlify Function (`netlify/functions/ai-chat.js`)
 
-4. **Se cambia lo stato di una criticità**: aggiorna il badge di stato nella sezione corrispondente (da "Critico" a "Da approfondire" a "Validato").
+## Struttura codice
 
-5. **Se modifichi il profilo cognitivo o il layer cognitivo**: verifica che le card dei 4 parametri e le sezioni scientifiche siano ancora accurate.
+```
+src/
+  App.jsx                 # Entry point
+  main.jsx                # React root
+  index.css               # CSS variables, tema chiaro/scuro
+  shared/
+    firebase.js           # Firebase config
+    contexts/
+      AuthContext.jsx      # Auth context
+netlify/
+  functions/
+    ai-chat.js            # Proxy Anthropic API
+public/
+  stockfish/              # Stockfish WASM files
+```
 
-6. **Aggiorna sempre anche `ROADMAP-V2.md`** in parallelo — le due fonti devono restare sincronizzate.
+## Convenzioni
 
-La pagina Metodo deve essere sempre leggibile da sola come documento completo e aggiornato del progetto, sia per il coach che per lo sviluppatore.
+- Un file = un concetto
+- Nomi in inglese per il codice, italiano per i testi UI
+- Licenza: GPL-3.0 (coerente con Chessground e chessops)
