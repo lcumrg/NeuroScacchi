@@ -104,11 +104,34 @@ export default async (req) => {
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
 
-    // Skip expensive COUNT when using LIKE filters (themes/openings) to avoid timeout
     const hasLikeFilter = (Array.isArray(themes) && themes.length > 0) ||
       (Array.isArray(openingTags) && openingTags.length > 0)
 
     let total = -1
+
+    if (random && hasLikeFilter) {
+      // For LIKE filters + random: sample from a random rowid range to avoid full scan
+      const maxRowidResult = await client.execute('SELECT MAX(rowid) as m FROM puzzles')
+      const maxRowid = Number(maxRowidResult.rows[0].m) || 5800000
+      const sampleSize = limit * 20 // oversample to compensate for filtering
+      const randomStart = Math.floor(Math.random() * Math.max(1, maxRowid - sampleSize))
+      const dataResult = await client.execute({
+        sql: `SELECT * FROM puzzles ${where} AND rowid >= ? AND rowid < ? LIMIT ?`,
+        args: [...args, randomStart, randomStart + sampleSize, limit],
+      })
+
+      // If not enough results from this range, try without rowid constraint but with a small LIMIT
+      if (dataResult.rows.length < limit) {
+        const fallback = await client.execute({
+          sql: `SELECT * FROM puzzles ${where} LIMIT ?`,
+          args: [...args, limit],
+        })
+        return jsonResponse({ puzzles: fallback.rows.map(parsePuzzleRow), total })
+      }
+
+      return jsonResponse({ puzzles: dataResult.rows.map(parsePuzzleRow), total })
+    }
+
     if (!hasLikeFilter) {
       const countResult = await client.execute({
         sql: `SELECT COUNT(*) as total FROM puzzles ${where}`,
