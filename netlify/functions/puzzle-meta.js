@@ -48,25 +48,13 @@ export default async (req) => {
     const { type } = body
 
     if (type === 'themes') {
-      const result = await client.execute("SELECT DISTINCT themes FROM puzzles WHERE themes IS NOT NULL AND themes != '' LIMIT 5000")
-      const themeSet = new Set()
-      for (const row of result.rows) {
-        for (const t of row.themes.split(' ')) {
-          if (t) themeSet.add(t)
-        }
-      }
-      return jsonResponse({ values: [...themeSet].sort() })
+      const result = await client.execute('SELECT theme FROM meta_themes ORDER BY theme')
+      return jsonResponse({ values: result.rows.map(r => r.theme) })
     }
 
     if (type === 'openings') {
-      const result = await client.execute("SELECT DISTINCT opening_tags FROM puzzles WHERE opening_tags IS NOT NULL AND opening_tags != '' LIMIT 5000")
-      const tagSet = new Set()
-      for (const row of result.rows) {
-        for (const t of row.opening_tags.split(' ')) {
-          if (t) tagSet.add(t)
-        }
-      }
-      return jsonResponse({ values: [...tagSet].sort() })
+      const result = await client.execute('SELECT opening FROM meta_openings ORDER BY opening')
+      return jsonResponse({ values: result.rows.map(r => r.opening) })
     }
 
     return jsonResponse({ error: 'type deve essere "themes" o "openings"' }, 400)
