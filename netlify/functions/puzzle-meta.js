@@ -48,7 +48,7 @@ export default async (req) => {
     const { type } = body
 
     if (type === 'themes') {
-      const result = await client.execute('SELECT DISTINCT themes FROM puzzles WHERE themes IS NOT NULL AND themes != "" LIMIT 5000')
+      const result = await client.execute("SELECT DISTINCT themes FROM puzzles WHERE themes IS NOT NULL AND themes != '' LIMIT 5000")
       const themeSet = new Set()
       for (const row of result.rows) {
         for (const t of row.themes.split(' ')) {
@@ -59,7 +59,7 @@ export default async (req) => {
     }
 
     if (type === 'openings') {
-      const result = await client.execute('SELECT DISTINCT opening_tags FROM puzzles WHERE opening_tags IS NOT NULL AND opening_tags != "" LIMIT 5000')
+      const result = await client.execute("SELECT DISTINCT opening_tags FROM puzzles WHERE opening_tags IS NOT NULL AND opening_tags != '' LIMIT 5000")
       const tagSet = new Set()
       for (const row of result.rows) {
         for (const t of row.opening_tags.split(' ')) {
