@@ -6,3 +6,6 @@ dist/
 
 # Stockfish WASM binaries (copiati da node_modules via postinstall)
 public/stockfish/
+
+# Puzzle database and downloaded data
+data/
