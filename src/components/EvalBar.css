@@ -1,0 +1,46 @@
+/* EvalBar — horizontal eval bar below the chessboard */
+
+.eval-bar {
+  position: relative;
+  width: 100%;
+  height: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #424242;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
+.eval-bar__fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #f0f0f0;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: width;
+}
+
+.eval-bar__label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  z-index: 1;
+  white-space: nowrap;
+  /* Dynamic color set via JS for contrast */
+}
+
+/* When white side is dominant, label should be dark */
+.eval-bar__label--dark {
+  color: #212121;
+}
+
+/* When black side is dominant, label should be light */
+.eval-bar__label--light {
+  color: #f0f0f0;
+}

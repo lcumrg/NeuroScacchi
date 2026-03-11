@@ -1,119 +1,96 @@
-import { useState, useCallback } from 'react'
-import Chessboard from './components/Chessboard.jsx'
-import { INITIAL_FEN, legalDests, makeMove, turnColor, isCheckmate, isStalemate, isCheck, kingSquareInCheck } from './engine/chessService.js'
+import { useState, useEffect } from 'react'
+import DemoPage from './pages/DemoPage.jsx'
+import ConsolePage from './pages/ConsolePage.jsx'
+
+function getRoute() {
+  const hash = window.location.hash || '#/'
+  if (hash.startsWith('#/console')) return 'console'
+  return 'demo'
+}
 
 export default function App() {
-  const [fen, setFen] = useState(INITIAL_FEN)
-  const [lastMove, setLastMove] = useState(null)
-  const [history, setHistory] = useState([])
+  const [route, setRoute] = useState(getRoute)
 
-  const turn = turnColor(fen)
-  const dests = legalDests(fen)
-  const checkSquare = kingSquareInCheck(fen)
-  const checkmate = isCheckmate(fen)
-  const stalemate = isStalemate(fen)
-
-  const handleMove = useCallback((from, to) => {
-    const result = makeMove(fen, { from, to })
-    if (!result.valid) return
-
-    setFen(result.fen)
-    setLastMove([from, to])
-    setHistory(prev => [...prev, result.san])
-  }, [fen])
-
-  const statusText = checkmate
-    ? `Scacco matto! Vince il ${turn === 'white' ? 'Nero' : 'Bianco'}`
-    : stalemate
-      ? 'Stallo — patta'
-      : isCheck(fen)
-        ? `${turn === 'white' ? 'Bianco' : 'Nero'} in scacco`
-        : `Muove il ${turn === 'white' ? 'Bianco' : 'Nero'}`
-
-  const demoArrows = history.length === 0
-    ? [{ orig: 'e2', dest: 'e4', brush: 'green' }]
-    : []
+  useEffect(() => {
+    const onHashChange = () => setRoute(getRoute())
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [])
 
   return (
     <div style={{
       minHeight: '100vh',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center',
-      padding: '2rem 1rem',
       background: 'var(--bg-main)',
       color: 'var(--text-primary)',
       fontFamily: 'var(--font-main)',
     }}>
-      <h1 style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>
-        NeuroScacchi 3.0 — Fase 0
-      </h1>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-        Scacchiera interattiva
-      </p>
-
-      <div style={{ width: '100%', maxWidth: '480px' }}>
-        <Chessboard
-          fen={fen}
-          orientation="white"
-          turnColor={turn}
-          dests={dests}
-          onMove={handleMove}
-          lastMove={lastMove}
-          check={checkSquare}
-          arrows={demoArrows}
-        />
-      </div>
-
-      <p style={{
-        marginTop: '1rem',
-        fontWeight: 600,
-        fontSize: '1rem',
-        color: checkmate ? 'var(--move-ottima)' : 'var(--text-primary)',
+      {/* Nav bar */}
+      <nav style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '1.5rem',
+        padding: '0.625rem 1.5rem',
+        background: 'var(--bg-card)',
+        borderBottom: '1px solid var(--border-color)',
+        boxShadow: 'var(--shadow-sm)',
       }}>
-        {statusText}
-      </p>
-
-      {history.length > 0 && (
-        <p style={{
-          marginTop: '0.5rem',
-          color: 'var(--text-secondary)',
-          fontSize: '0.85rem',
-          fontFamily: 'var(--font-mono)',
-          maxWidth: '480px',
-          wordBreak: 'break-word',
-          textAlign: 'center',
+        <span style={{
+          fontWeight: 700,
+          fontSize: '1rem',
+          color: 'var(--color-primary)',
+          marginRight: 'auto',
         }}>
-          {history.map((san, i) => (
-            i % 2 === 0
-              ? `${Math.floor(i / 2) + 1}. ${san} `
-              : `${san} `
-          )).join('')}
-        </p>
-      )}
+          NeuroScacchi
+        </span>
+        <a
+          href="#/"
+          style={{
+            textDecoration: 'none',
+            fontSize: '0.875rem',
+            fontWeight: route === 'demo' ? 700 : 500,
+            color: route === 'demo' ? 'var(--color-primary)' : 'var(--text-secondary)',
+            padding: '0.25rem 0.5rem',
+            borderRadius: '6px',
+            background: route === 'demo' ? 'var(--color-primary-bg)' : 'transparent',
+            transition: 'background var(--transition-fast)',
+          }}
+        >
+          Demo
+        </a>
+        <a
+          href="#/console"
+          style={{
+            textDecoration: 'none',
+            fontSize: '0.875rem',
+            fontWeight: route === 'console' ? 700 : 500,
+            color: route === 'console' ? 'var(--color-primary)' : 'var(--text-secondary)',
+            padding: '0.25rem 0.5rem',
+            borderRadius: '6px',
+            background: route === 'console' ? 'var(--color-primary-bg)' : 'transparent',
+            transition: 'background var(--transition-fast)',
+          }}
+        >
+          Console Coach
+        </a>
+      </nav>
 
-      <p style={{
-        marginTop: '1rem',
-        color: 'var(--text-label)',
-        fontSize: '0.75rem',
-        fontFamily: 'var(--font-mono)',
-        maxWidth: '480px',
-        wordBreak: 'break-all',
-        textAlign: 'center',
-      }}>
-        {fen}
-      </p>
+      {/* Page content */}
+      <main style={{ flex: 1 }}>
+        {route === 'console' ? <ConsolePage /> : <DemoPage />}
+      </main>
 
-      <p style={{
-        marginTop: 'auto',
-        paddingTop: '2rem',
+      {/* Footer */}
+      <footer style={{
+        padding: '1rem',
         color: 'var(--text-label)',
         fontSize: '0.7rem',
         fontFamily: 'var(--font-mono)',
         textAlign: 'center',
       }}>
         v3.0.0 — Build: {typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : 'dev'}
-      </p>
+      </footer>
     </div>
   )
 }

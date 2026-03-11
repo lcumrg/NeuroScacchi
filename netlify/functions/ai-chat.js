@@ -11,32 +11,46 @@ export default async (req) => {
   }
 
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: corsHeaders(),
-    })
+    return jsonResponse({ error: 'Method not allowed' }, 405)
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY non configurata. Aggiungi la variabile in Netlify > Site settings > Environment variables.' }), {
-      status: 500,
-      headers: corsHeaders(),
-    })
+    return jsonResponse({
+      error: 'ANTHROPIC_API_KEY non configurata. Aggiungi la variabile in Netlify > Site settings > Environment variables.',
+    }, 500)
   }
 
   try {
     const body = await req.json()
     const { messages, system } = body
 
-    if (!messages || !Array.isArray(messages)) {
-      return new Response(JSON.stringify({ error: 'messages richiesto' }), {
-        status: 400,
-        headers: corsHeaders(),
-      })
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return jsonResponse({ error: 'messages è richiesto e deve essere un array non vuoto' }, 400)
+    }
+
+    // Validazione base dei messaggi
+    for (const msg of messages) {
+      if (!msg.role || !msg.content) {
+        return jsonResponse({ error: 'Ogni messaggio deve avere role e content' }, 400)
+      }
+      if (!['user', 'assistant'].includes(msg.role)) {
+        return jsonResponse({ error: `role non valido: "${msg.role}". Deve essere "user" o "assistant"` }, 400)
+      }
     }
 
     const model = 'claude-sonnet-4-20250514'
+
+    const requestBody = {
+      model,
+      max_tokens: 4096,
+      messages,
+    }
+
+    // System prompt opzionale
+    if (system && typeof system === 'string' && system.trim()) {
+      requestBody.system = system.trim()
+    }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -45,32 +59,41 @@ export default async (req) => {
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
       },
-      body: JSON.stringify({
-        model,
-        max_tokens: 4096,
-        system: system || '',
-        messages,
-      }),
+      body: JSON.stringify(requestBody),
     })
 
     if (!response.ok) {
       const errText = await response.text()
-      return new Response(JSON.stringify({ error: 'Errore API Anthropic', details: errText }), {
+      let details = errText
+      try {
+        const errJson = JSON.parse(errText)
+        details = errJson.error?.message || errText
+      } catch { /* ignore parse error */ }
+
+      return jsonResponse({
+        error: 'Errore API Anthropic',
+        details,
         status: response.status,
-        headers: corsHeaders(),
-      })
+      }, response.status)
     }
 
     const data = await response.json()
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: corsHeaders(),
+
+    // Estrai il testo dalla risposta Anthropic (formato content blocks)
+    const content = data.content
+      ?.filter(block => block.type === 'text')
+      .map(block => block.text)
+      .join('\n') || ''
+
+    return jsonResponse({
+      content,
+      usage: {
+        input_tokens: data.usage?.input_tokens || 0,
+        output_tokens: data.usage?.output_tokens || 0,
+      },
     })
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: corsHeaders(),
-    })
+    return jsonResponse({ error: err.message }, 500)
   }
 }
 
@@ -81,6 +104,10 @@ function corsHeaders() {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   }
+}
+
+function jsonResponse(body, status = 200) {
+  return new Response(JSON.stringify(body), { status, headers: corsHeaders() })
 }
 
 export const config = {
