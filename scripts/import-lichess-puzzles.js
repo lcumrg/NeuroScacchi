@@ -1,14 +1,14 @@
 /**
  * import-lichess-puzzles.js
  *
- * Downloads the Lichess puzzle database (CSV, bz2-compressed) and imports
+ * Downloads the Lichess puzzle database (CSV, zst-compressed) and imports
  * it into a local SQLite database at data/puzzles.db.
  *
  * Usage:
  *   npm run import:puzzles            # download (if needed) + import
  *   npm run import:puzzles -- --force  # re-download even if CSV exists
  *
- * Requires: bunzip2 on PATH, better-sqlite3 as devDependency.
+ * Requires: zstd on PATH (`brew install zstd`), better-sqlite3 as devDependency.
  */
 
 import { createRequire } from 'node:module';
@@ -30,7 +30,7 @@ const PROJECT_ROOT = join(__dirname, '..');
 const DATA_DIR = join(PROJECT_ROOT, 'data');
 const CSV_PATH = join(DATA_DIR, 'lichess_db_puzzle.csv');
 const DB_PATH = join(DATA_DIR, 'puzzles.db');
-const DOWNLOAD_URL = 'https://database.lichess.org/lichess_db_puzzle.csv.bz2';
+const DOWNLOAD_URL = 'https://database.lichess.org/lichess_db_puzzle.csv.zst';
 
 const BATCH_SIZE = 10_000;
 const PROGRESS_EVERY = 100_000;
@@ -108,8 +108,8 @@ async function downloadAndDecompress() {
   let downloadedBytes = 0;
   let lastProgressPct = -1;
 
-  // Pipe: HTTP response -> bunzip2 -> CSV file
-  const bunzip2 = spawn('bunzip2', ['-c'], { stdio: ['pipe', 'pipe', 'pipe'] });
+  // Pipe: HTTP response -> zstd -d -> CSV file
+  const zstd = spawn('zstd', ['-d', '-c'], { stdio: ['pipe', 'pipe', 'pipe'] });
   const outStream = createWriteStream(CSV_PATH);
 
   // Track download progress on the compressed stream
@@ -129,24 +129,24 @@ async function downloadAndDecompress() {
     }
   });
 
-  // Handle bunzip2 stderr
+  // Handle zstd stderr
   let stderrData = '';
-  bunzip2.stderr.on('data', (chunk) => { stderrData += chunk.toString(); });
+  zstd.stderr.on('data', (chunk) => { stderrData += chunk.toString(); });
 
-  // Wire up: response -> bunzip2 stdin, bunzip2 stdout -> file
-  const pipeIn = pipeline(res, bunzip2.stdin);
-  const pipeOut = pipeline(bunzip2.stdout, outStream);
+  // Wire up: response -> zstd stdin, zstd stdout -> file
+  const pipeIn = pipeline(res, zstd.stdin);
+  const pipeOut = pipeline(zstd.stdout, outStream);
 
   await Promise.all([pipeIn, pipeOut]);
 
-  // Check bunzip2 exit code
+  // Check zstd exit code
   const exitCode = await new Promise((resolve) => {
-    if (bunzip2.exitCode !== null) return resolve(bunzip2.exitCode);
-    bunzip2.on('close', resolve);
+    if (zstd.exitCode !== null) return resolve(zstd.exitCode);
+    zstd.on('close', resolve);
   });
 
   if (exitCode !== 0) {
-    throw new Error(`bunzip2 failed with exit code ${exitCode}: ${stderrData}`);
+    throw new Error(`zstd failed with exit code ${exitCode}: ${stderrData}`);
   }
 
   console.log(`\n  Download + decompression complete.`);
