@@ -1,0 +1,215 @@
+/* DocPage — Document viewer */
+
+.doc-page {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.doc-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Sidebar */
+.doc-sidebar {
+  position: sticky;
+  top: 1rem;
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  padding: 1.25rem;
+}
+
+.doc-sidebar h2 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 0.75rem 0;
+}
+
+.doc-toc {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.doc-toc button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font-family: var(--font-main);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  line-height: 1.3;
+}
+
+.doc-toc button:hover {
+  background: var(--color-primary-bg);
+  color: var(--text-primary);
+}
+
+.doc-toc button.active {
+  background: var(--color-primary-bg);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* Main content */
+.doc-content {
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  padding: 2rem 2.5rem;
+  min-height: 600px;
+}
+
+.doc-section-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--color-primary-bg);
+}
+
+/* Prose styling for rendered markdown */
+.doc-prose {
+  line-height: 1.7;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.doc-prose h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  color: var(--color-primary);
+}
+
+.doc-prose h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 2rem 0 0.75rem 0;
+  color: var(--text-primary);
+}
+
+.doc-prose h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 1.75rem 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.doc-prose p {
+  margin: 0 0 1rem 0;
+}
+
+.doc-prose strong {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.doc-prose em {
+  font-style: italic;
+}
+
+.doc-prose ul,
+.doc-prose ol {
+  margin: 0 0 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.doc-prose li {
+  margin-bottom: 0.4rem;
+}
+
+.doc-prose li > ul,
+.doc-prose li > ol {
+  margin-top: 0.4rem;
+  margin-bottom: 0;
+}
+
+.doc-prose blockquote {
+  margin: 1rem 0;
+  padding: 0.75rem 1.25rem;
+  border-left: 4px solid var(--color-primary);
+  background: var(--color-primary-bg);
+  border-radius: 0 8px 8px 0;
+  color: var(--text-secondary);
+}
+
+.doc-prose hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 2rem 0;
+}
+
+.doc-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+
+.doc-prose pre {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.doc-prose pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .doc-layout {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .doc-sidebar {
+    position: static;
+  }
+
+  .doc-toc {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .doc-toc button {
+    font-size: 0.8rem;
+    padding: 0.375rem 0.625rem;
+  }
+
+  .doc-content {
+    padding: 1.25rem 1rem;
+  }
+}
