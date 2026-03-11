@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { Chessground } from '@lichess-org/chessground'
 import './Chessboard.css'
 
@@ -15,21 +15,41 @@ export default function Chessboard({
   check,
   viewOnly = false,
 }) {
-  const containerRef = useRef(null)
+  const wrapperRef = useRef(null)
+  const cgContainerRef = useRef(null)
   const cgRef = useRef(null)
+  const [size, setSize] = useState(0)
 
+  // Measure container width and keep it square
   useEffect(() => {
-    if (!containerRef.current) return
+    if (!wrapperRef.current) return
 
-    const cg = Chessground(containerRef.current, buildConfig())
+    const measure = () => {
+      const w = wrapperRef.current.clientWidth
+      if (w > 0 && w !== size) setSize(w)
+    }
+
+    measure()
+
+    const ro = new ResizeObserver(measure)
+    ro.observe(wrapperRef.current)
+    return () => ro.disconnect()
+  }, [])
+
+  // Init/destroy Chessground
+  useEffect(() => {
+    if (!cgContainerRef.current || size === 0) return
+
+    const cg = Chessground(cgContainerRef.current, buildConfig())
     cgRef.current = cg
 
     return () => {
       cg.destroy()
       cgRef.current = null
     }
-  }, [])
+  }, [size])
 
+  // Update config on prop changes
   useEffect(() => {
     if (!cgRef.current) return
     cgRef.current.set(buildConfig())
@@ -96,5 +116,12 @@ export default function Chessboard({
     }
   }
 
-  return <div ref={containerRef} className="chessboard-wrap" />
+  return (
+    <div ref={wrapperRef} style={{ width: '100%' }}>
+      <div
+        ref={cgContainerRef}
+        style={{ width: size, height: size }}
+      />
+    </div>
+  )
 }

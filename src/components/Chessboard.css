@@ -1,17 +1,6 @@
 @import '@lichess-org/chessground/assets/chessground.base.css';
 @import '@lichess-org/chessground/assets/chessground.cburnett.css';
 
-.chessboard-wrap {
-  width: 100%;
-}
-
-.chessboard-wrap .cg-wrap {
-  width: 100%;
-  height: 0;
-  padding-bottom: 100%;
-  position: relative;
-}
-
 /* Square colors from CSS variables */
 cg-board {
   background-color: var(--square-light, #E8E8E8);
