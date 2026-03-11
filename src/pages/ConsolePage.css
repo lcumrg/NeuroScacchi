@@ -232,6 +232,52 @@
   font-style: italic;
 }
 
+.chat-msg {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.chat-msg--system {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.chat-msg--assistant {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.chat-msg--error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.chat-lesson-details {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.chat-lesson-details summary {
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0.25rem 0;
+}
+
+.chat-lesson-details pre {
+  max-height: 300px;
+  overflow: auto;
+  background: var(--bg-surface);
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  line-height: 1.3;
+}
+
 .chat-input-area {
   display: flex;
   gap: 0.5rem;

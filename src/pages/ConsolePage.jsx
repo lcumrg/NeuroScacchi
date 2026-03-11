@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import Chessboard from '../components/Chessboard.jsx'
 import StockfishPanel from '../components/StockfishPanel.jsx'
 import { INITIAL_FEN, legalDests, makeMove, turnColor, isCheck, kingSquareInCheck, parseFen } from '../engine/chessService.js'
+import { generateLesson } from '../engine/aiService.js'
 import './ConsolePage.css'
 
 export default function ConsolePage() {
@@ -17,9 +18,14 @@ export default function ConsolePage() {
   const [ratingMax, setRatingMax] = useState('')
   const [obiettivo, setObiettivo] = useState('')
 
+  // Lesson generation state
+  const [generating, setGenerating] = useState(false)
+  const [lessonResult, setLessonResult] = useState(null)
+  const [lessonError, setLessonError] = useState(null)
+
   // Chat state
   const [chatInput, setChatInput] = useState('')
-  const [messages] = useState([])
+  const [messages, setMessages] = useState([])
 
   const turn = turnColor(fen)
   const dests = legalDests(fen)
@@ -50,6 +56,43 @@ export default function ConsolePage() {
       }
     }
   }, [fenInput])
+
+  const handleGenerate = useCallback(async () => {
+    if (!tema || !livello) return
+
+    setGenerating(true)
+    setLessonError(null)
+    setLessonResult(null)
+    setMessages(prev => [...prev, {
+      role: 'system',
+      content: `Generazione lezione: ${tema} — livello ${livello}…`,
+    }])
+
+    try {
+      const result = await generateLesson({
+        tema,
+        livello,
+        ratingMin: ratingMin ? Number(ratingMin) : undefined,
+        ratingMax: ratingMax ? Number(ratingMax) : undefined,
+        obiettivo: obiettivo || undefined,
+        fenPartenza: fen !== INITIAL_FEN ? fen : undefined,
+      })
+
+      setLessonResult(result.lesson)
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: `Lezione generata: "${result.lesson.title || result.lesson.titolo || tema}"\n${result.lesson.steps?.length || 0} step — ${result.usage?.input_tokens || '?'} token input, ${result.usage?.output_tokens || '?'} token output`,
+      }])
+    } catch (err) {
+      setLessonError(err.message)
+      setMessages(prev => [...prev, {
+        role: 'error',
+        content: `Errore: ${err.message}`,
+      }])
+    } finally {
+      setGenerating(false)
+    }
+  }, [tema, livello, ratingMin, ratingMax, obiettivo, fen])
 
   return (
     <div className="console-page">
@@ -120,8 +163,12 @@ export default function ConsolePage() {
               />
             </div>
 
-            <button className="btn-generate" disabled>
-              Genera lezione
+            <button
+              className="btn-generate"
+              disabled={generating || !tema || !livello}
+              onClick={handleGenerate}
+            >
+              {generating ? 'Generazione in corso…' : 'Genera lezione'}
             </button>
           </div>
         </div>
@@ -158,10 +205,22 @@ export default function ConsolePage() {
           <h2>Chat IA</h2>
 
           <div className="chat-messages">
-            {messages.length === 0 && (
+            {messages.length === 0 ? (
               <div className="chat-empty">
-                Nessun messaggio. La chat IA sara' disponibile a breve.
+                Seleziona tema e livello, poi premi "Genera lezione".
               </div>
+            ) : (
+              messages.map((msg, i) => (
+                <div key={i} className={`chat-msg chat-msg--${msg.role}`}>
+                  {msg.content}
+                </div>
+              ))
+            )}
+            {lessonResult && (
+              <details className="chat-lesson-details">
+                <summary>Mostra JSON lezione</summary>
+                <pre>{JSON.stringify(lessonResult, null, 2)}</pre>
+              </details>
             )}
           </div>
 
