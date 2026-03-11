@@ -104,11 +104,18 @@ export default async (req) => {
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
 
-    const countResult = await client.execute({
-      sql: `SELECT COUNT(*) as total FROM puzzles ${where}`,
-      args,
-    })
-    const total = Number(countResult.rows[0].total)
+    // Skip expensive COUNT when using LIKE filters (themes/openings) to avoid timeout
+    const hasLikeFilter = (Array.isArray(themes) && themes.length > 0) ||
+      (Array.isArray(openingTags) && openingTags.length > 0)
+
+    let total = -1
+    if (!hasLikeFilter) {
+      const countResult = await client.execute({
+        sql: `SELECT COUNT(*) as total FROM puzzles ${where}`,
+        args,
+      })
+      total = Number(countResult.rows[0].total)
+    }
 
     const orderBy = random ? 'ORDER BY RANDOM()' : 'ORDER BY rating ASC'
     const dataResult = await client.execute({
