@@ -53,6 +53,7 @@ class StockfishService {
     this._timeoutId = null;
     this._analysisResults = new Map();
     this._currentDepth = 0;
+    this._discarding = false;
   }
 
   getState() {
@@ -113,6 +114,15 @@ class StockfishService {
     this._worker.onmessage = (e) => {
       const line = typeof e.data === 'string' ? e.data : String(e.data);
 
+      // When discarding stale output after a 'stop' command,
+      // ignore everything until the stale 'bestmove' arrives.
+      if (this._discarding) {
+        if (line.startsWith('bestmove')) {
+          this._discarding = false;
+        }
+        return;
+      }
+
       if (line.startsWith('info') && line.includes(' pv ')) {
         const info = parseInfoLine(line);
         if (info.depth != null && info.eval != null) {
@@ -167,6 +177,7 @@ class StockfishService {
     return new Promise((resolve, reject) => {
       if (this._pendingResolve) {
         this._worker.postMessage('stop');
+        this._discarding = true;
         const oldReject = this._pendingReject;
         this._cleanup();
         oldReject?.(new Error('Analysis interrupted'));
