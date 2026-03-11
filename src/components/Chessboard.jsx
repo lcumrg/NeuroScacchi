@@ -96,5 +96,5 @@ export default function Chessboard({
     }
   }
 
-  return <div ref={containerRef} className="chessboard-container" />
+  return <div ref={containerRef} className="chessboard-wrap" />
 }
