@@ -43,7 +43,7 @@ export default async (req) => {
 
     const requestBody = {
       model,
-      max_tokens: 4096,
+      max_tokens: 2048,
       messages,
     }
 

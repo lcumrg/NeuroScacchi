@@ -1,6 +1,9 @@
 [functions]
   directory = "netlify/functions"
 
+[functions."ai-chat"]
+  timeout = 26
+
 [build]
   command = "npm install && npm run build"
   publish = "dist"
