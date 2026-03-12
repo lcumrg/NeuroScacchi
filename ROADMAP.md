@@ -257,6 +257,7 @@ Le cose senza cui niente funziona.
 - Motore di analisi: **Stockfish WASM** (`stockfish` npm, GPL-3.0) — build lite ~7MB, single-thread, depth 15-20 sufficiente per l'uso didattico. Gira in un Web Worker, zero costi server.
 - **Database puzzle Lichess** scaricato localmente: 4,7M di puzzle con FEN, soluzione, rating, tag tematici (CC0, dominio pubblico). Indicizzato per tema, rating e apertura — sarà la fonte principale da cui l'IA attinge posizioni per le lezioni.
 - Definizione del **formato lezione JSON v3**: versionamento semantico, unioni discriminate per tipo step, separazione contenuto/configurazione. Non esiste uno standard aperto per lezioni scacchistiche interattive — questo formato è parte del valore del progetto.
+- **IA generativa**: Google Gemini 2.5 Pro via API, chiamata lato server tramite Netlify Function (`ai-chat.js`) per proteggere la chiave. La scelta del provider è intercambiabile — l'interfaccia interna usa un contratto `{ messages, system } → { content, usage }` indipendente dal modello.
 
 ### Fase 1 — La console coach con IA
 

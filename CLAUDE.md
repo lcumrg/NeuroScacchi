@@ -26,7 +26,7 @@ Ad ogni sessione di lavoro:
 - **chessops** — logica scacchistica, parsing FEN/PGN, validazione mosse
 - **Stockfish WASM** — motore di analisi nel browser via Web Worker
 - Firebase Auth + Firestore
-- Anthropic Claude API via Netlify Function (`netlify/functions/ai-chat.js`)
+- Google Gemini API via Netlify Function (`netlify/functions/ai-chat.js`) — modello attuale: `gemini-2.5-pro`
 
 ## Struttura codice
 
@@ -41,7 +41,7 @@ src/
       AuthContext.jsx      # Auth context
 netlify/
   functions/
-    ai-chat.js            # Proxy Anthropic API
+    ai-chat.js            # Proxy Google Gemini API
 public/
   stockfish/              # Stockfish WASM files
 ```
