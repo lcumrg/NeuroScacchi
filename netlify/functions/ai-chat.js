@@ -1,5 +1,8 @@
-// Netlify Function — proxy per Anthropic Claude API
+// Netlify Function — proxy per Google Gemini API
 // Protegge la API key lato server
+
+const GEMINI_MODEL = 'gemini-1.5-pro-latest'
+const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`
 
 export default async (req) => {
   if (req.method === 'OPTIONS') {
@@ -10,10 +13,10 @@ export default async (req) => {
     return jsonResponse({ error: 'Method not allowed' }, 405)
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
+  const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
     return jsonResponse({
-      error: 'ANTHROPIC_API_KEY non configurata. Aggiungi la variabile in Netlify > Site settings > Environment variables.',
+      error: 'GEMINI_API_KEY non configurata. Aggiungi la variabile in Netlify > Site settings > Environment variables.',
     }, 500)
   }
 
@@ -34,23 +37,29 @@ export default async (req) => {
       }
     }
 
+    // Converti dal formato Anthropic (user/assistant) al formato Gemini (user/model)
+    const contents = messages.map(msg => ({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }],
+    }))
+
     const requestBody = {
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 2048,
-      messages,
+      contents,
+      generationConfig: {
+        maxOutputTokens: 2048,
+        temperature: 0.7,
+      },
     }
 
     if (system && typeof system === 'string' && system.trim()) {
-      requestBody.system = system.trim()
+      requestBody.systemInstruction = {
+        parts: [{ text: system.trim() }],
+      }
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestBody),
     })
 
@@ -61,21 +70,27 @@ export default async (req) => {
         const errJson = JSON.parse(errText)
         details = errJson.error?.message || errText
       } catch { /* ignore */ }
-      return jsonResponse({ error: 'Errore API Anthropic', details }, response.status)
+      return jsonResponse({ error: 'Errore API Gemini', details }, response.status)
     }
 
     const data = await response.json()
 
-    const content = data.content
-      ?.filter(block => block.type === 'text')
-      .map(block => block.text)
-      .join('\n') || ''
+    const content = data.candidates?.[0]?.content?.parts
+      ?.map(p => p.text || '')
+      .join('') || ''
+
+    if (!content) {
+      const finishReason = data.candidates?.[0]?.finishReason
+      return jsonResponse({
+        error: `Gemini non ha prodotto output. Motivo: ${finishReason || 'sconosciuto'}`,
+      }, 500)
+    }
 
     return jsonResponse({
       content,
       usage: {
-        input_tokens: data.usage?.input_tokens || 0,
-        output_tokens: data.usage?.output_tokens || 0,
+        input_tokens: data.usageMetadata?.promptTokenCount || 0,
+        output_tokens: data.usageMetadata?.candidatesTokenCount || 0,
       },
     })
   } catch (err) {
