@@ -170,14 +170,25 @@ export async function generateLesson(params) {
 
   const userMessage = parts.join('\n')
 
-  const result = await sendMessage(
-    [{ role: 'user', content: userMessage }],
-    LESSON_SYSTEM_PROMPT,
-    model
-  )
+  const messages = [{ role: 'user', content: userMessage }]
+  let result = await sendMessage(messages, LESSON_SYSTEM_PROMPT, model)
+  let lesson = extractJSON(result.content)
 
-  // Estrai e parsa il JSON dalla risposta
-  const lesson = extractJSON(result.content)
+  // Retry automatico se il JSON è invalido: rimanda l'errore all'IA e chiede correzione
+  if (!lesson) {
+    const retryMessages = [
+      ...messages,
+      { role: 'assistant', content: result.content },
+      {
+        role: 'user',
+        content:
+          'Il JSON che hai generato contiene un errore di sintassi (es. "type": "text": "valore" invece di "type": "text", "content": "valore").\n' +
+          'Restituisci SOLO il JSON corretto e completo, senza blocchi markdown, senza testo aggiuntivo. Inizia con { e finisci con }.',
+      },
+    ]
+    result = await sendMessage(retryMessages, LESSON_SYSTEM_PROMPT, model)
+    lesson = extractJSON(result.content)
+  }
 
   if (!lesson) {
     const preview = result.content.substring(0, 1000)
@@ -258,9 +269,23 @@ export async function refineLesson({ lesson, userMessage, history = [], stockfis
     { role: 'user', content: refinementPrompt.join('\n') },
   ]
 
-  const result = await sendMessage(messages, LESSON_SYSTEM_PROMPT, model)
+  let result = await sendMessage(messages, LESSON_SYSTEM_PROMPT, model)
+  let updatedLesson = extractJSON(result.content)
 
-  const updatedLesson = extractJSON(result.content)
+  if (!updatedLesson) {
+    const retryMessages = [
+      ...messages,
+      { role: 'assistant', content: result.content },
+      {
+        role: 'user',
+        content:
+          'Il JSON contiene un errore di sintassi.\n' +
+          'Restituisci SOLO il JSON corretto e completo, senza blocchi markdown, senza testo aggiuntivo. Inizia con { e finisci con }.',
+      },
+    ]
+    result = await sendMessage(retryMessages, LESSON_SYSTEM_PROMPT, model)
+    updatedLesson = extractJSON(result.content)
+  }
 
   if (!updatedLesson) {
     const preview = result.content.substring(0, 1000)
