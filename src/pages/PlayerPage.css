@@ -1,0 +1,218 @@
+/* ════════════════════════════════════════════════════════════════
+   PlayerPage — layout principale
+   ════════════════════════════════════════════════════════════════ */
+
+.player-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 1rem 1rem 2rem;
+  background: var(--bg-main);
+  gap: 0;
+}
+
+/* ── Loading / Error / Done states ─────────────────────────────── */
+.player-page--loading,
+.player-page--error {
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.player-error__text {
+  font-size: 1rem;
+  color: var(--move-errore);
+  text-align: center;
+}
+
+.player-error__link {
+  display: inline-block;
+  padding: 0.6rem 1.4rem;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: background var(--transition-fast);
+}
+
+.player-error__link:hover {
+  background: var(--color-primary-light);
+}
+
+/* ── Done screen ───────────────────────────────────────────────── */
+.player-page--done {
+  justify-content: center;
+  align-items: center;
+}
+
+.player-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 2.5rem 3rem;
+  box-shadow: var(--shadow-md);
+  animation: slideUp var(--transition-medium);
+}
+
+.player-done__icon {
+  font-size: 3.5rem;
+  color: #F5C518;
+  line-height: 1;
+}
+
+.player-done__title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.player-done__subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.player-done__btn {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.7rem 2rem;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: background var(--transition-fast);
+}
+
+.player-done__btn:hover {
+  background: var(--color-primary-light);
+}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.player-header {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.75rem 0 0.5rem;
+}
+
+.player-header__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.player-header__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70%;
+}
+
+.player-header__step {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-label);
+  white-space: nowrap;
+}
+
+/* ── Progress bar ──────────────────────────────────────────────── */
+.player-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--border-color);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.player-progress-bar__fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+/* ── Board area ────────────────────────────────────────────────── */
+.player-board-area {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0;
+}
+
+.player-board-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* ── Activity panel ────────────────────────────────────────────── */
+.player-activity-panel {
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  min-height: 80px;
+}
+
+/* Transition message */
+.player-transition-msg {
+  padding: 1.25rem 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-align: center;
+  animation: pulse 1s infinite;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (min-width: 768px) {
+  .player-page {
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 2rem 2rem;
+  }
+
+  .player-header {
+    max-width: 520px;
+  }
+
+  .player-board-area {
+    max-width: 480px;
+  }
+
+  .player-activity-panel {
+    max-width: 480px;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* On large screens: board + panel side by side */
+  .player-page {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .player-board-area {
+    max-width: 480px;
+  }
+
+  .player-activity-panel {
+    max-width: 480px;
+  }
+}
