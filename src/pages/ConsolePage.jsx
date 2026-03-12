@@ -30,6 +30,7 @@ export default function ConsolePage() {
   const [saveStatus, setSaveStatus] = useState(null) // 'saved' | 'approved' | null
   const [refining, setRefining] = useState(false)
   const [chatHistory, setChatHistory] = useState([]) // history per refineLesson
+  const [selectedModel, setSelectedModel] = useState('claude-sonnet-4-6')
 
   // Chat state
   const [chatInput, setChatInput] = useState('')
@@ -123,9 +124,12 @@ export default function ConsolePage() {
     setSelectedStepIndex(null)
     setSaveStatus(null)
     setChatHistory([])
+    const slowModels = ['gemini-2.5-pro', 'claude-opus-4-6']
+    const slowWarning = slowModels.includes(selectedModel)
+      ? ' (modello potente — potrebbe richiedere 60-90 secondi)' : ''
     setMessages(prev => [...prev, {
       role: 'system',
-      content: `Generazione lezione: ${tema} — livello ${livello}…`,
+      content: `[${selectedModel}] Generazione lezione: ${tema} — livello ${livello}…${slowWarning}`,
     }])
 
     try {
@@ -136,6 +140,7 @@ export default function ConsolePage() {
         ratingMax: ratingMax ? Number(ratingMax) : undefined,
         obiettivo: obiettivo || undefined,
         fenPartenza: fen !== INITIAL_FEN ? fen : undefined,
+        model: selectedModel,
       })
 
       const { lesson, validation, usage } = result
@@ -179,6 +184,7 @@ export default function ConsolePage() {
         lesson: lessonResult,
         userMessage: userMsg,
         history: chatHistory,
+        model: selectedModel,
       })
       setLessonResult(result.lesson)
       setLessonValidation(result.validation)
@@ -266,6 +272,20 @@ export default function ConsolePage() {
                 onChange={e => setObiettivo(e.target.value)}
                 rows={3}
               />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="model">Modello IA</label>
+              <select id="model" value={selectedModel} onChange={e => setSelectedModel(e.target.value)}>
+                <optgroup label="Claude (Anthropic)">
+                  <option value="claude-sonnet-4-6">Claude Sonnet 4.6 — veloce</option>
+                  <option value="claude-opus-4-6">Claude Opus 4.6 — potente</option>
+                </optgroup>
+                <optgroup label="Gemini (Google)">
+                  <option value="gemini-2.5-flash">Gemini 2.5 Flash — veloce</option>
+                  <option value="gemini-2.5-pro">Gemini 2.5 Pro — potente</option>
+                </optgroup>
+              </select>
             </div>
 
             <button
