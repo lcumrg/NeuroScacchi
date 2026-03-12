@@ -124,15 +124,17 @@ export default function ConsolePage() {
     setSelectedStepIndex(null)
     setSaveStatus(null)
     setChatHistory([])
-    const slowModels = ['gemini-2.5-pro', 'claude-opus-4-6']
-    const slowWarning = slowModels.includes(selectedModel)
-      ? ' (modello potente — potrebbe richiedere 60-90 secondi)' : ''
-    setMessages(prev => [...prev, {
-      role: 'system',
-      content: `[${selectedModel}] Generazione lezione: ${tema} — livello ${livello}…${slowWarning}`,
-    }])
+
+    // Helper to append a progress/system message
+    const addMsg = (role, content) =>
+      setMessages(prev => [...prev, { role, content }])
+
+    addMsg('system', `⟳ Recupero puzzle candidati per tema: ${tema} — livello ${livello}…`)
 
     try {
+      await new Promise(resolve => setTimeout(resolve, 250)) // let UI render
+      addMsg('system', `⟳ Contatto modello IA [${selectedModel}]…`)
+
       const result = await generateLesson({
         tema,
         livello,
@@ -143,24 +145,24 @@ export default function ConsolePage() {
         model: selectedModel,
       })
 
+      addMsg('system', '⟳ Parsing e validazione schema…')
+      await new Promise(resolve => setTimeout(resolve, 150))
+
       const { lesson, validation, usage } = result
       setLessonResult(lesson)
       setLessonValidation(validation)
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: `Lezione generata: "${lesson.title || lesson.titolo || tema}"\n${lesson.steps?.length || 0} step — ${usage?.input_tokens || '?'} token input, ${usage?.output_tokens || '?'} token output`,
-      }])
+      addMsg('system', '✓ Lezione generata')
+      addMsg('assistant',
+        `Lezione generata: "${lesson.title || lesson.titolo || tema}"\n${lesson.steps?.length || 0} step — ${usage?.input_tokens || '?'} token input, ${usage?.output_tokens || '?'} token output`
+      )
       validateMovesWithChessService(lesson)
     } catch (err) {
       setLessonError(err.message)
-      setMessages(prev => [...prev, {
-        role: 'error',
-        content: `Errore: ${err.message}`,
-      }])
+      addMsg('error', `Errore: ${err.message}`)
     } finally {
       setGenerating(false)
     }
-  }, [tema, livello, ratingMin, ratingMax, obiettivo, fen, validateMovesWithChessService])
+  }, [tema, livello, ratingMin, ratingMax, obiettivo, fen, selectedModel, validateMovesWithChessService])
 
   const handleStepSelect = useCallback((index) => {
     setSelectedStepIndex(index)
@@ -278,14 +280,17 @@ export default function ConsolePage() {
               <label htmlFor="model">Modello IA</label>
               <select id="model" value={selectedModel} onChange={e => setSelectedModel(e.target.value)}>
                 <optgroup label="Claude (Anthropic)">
-                  <option value="claude-sonnet-4-6">Claude Sonnet 4.6 — veloce</option>
-                  <option value="claude-opus-4-6">Claude Opus 4.6 — potente</option>
+                  <option value="claude-sonnet-4-6">Claude Sonnet 4.6 — VELOCE</option>
+                  <option value="claude-opus-4-6">Claude Opus 4.6 — POTENTE</option>
                 </optgroup>
                 <optgroup label="Gemini (Google)">
-                  <option value="gemini-2.5-flash">Gemini 2.5 Flash — veloce</option>
-                  <option value="gemini-2.5-pro">Gemini 2.5 Pro — potente</option>
+                  <option value="gemini-2.5-flash">Gemini 2.5 Flash — VELOCE</option>
+                  <option value="gemini-2.5-pro">Gemini 2.5 Pro — POTENTE</option>
                 </optgroup>
               </select>
+              <p className="form-hint">
+                Sonnet e Flash garantiscono risposta entro 30s. Opus e Pro possono richiedere 60–90s.
+              </p>
             </div>
 
             <button

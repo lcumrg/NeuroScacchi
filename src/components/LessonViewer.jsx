@@ -254,6 +254,26 @@ function StepDetail({ step, stepIndex, sfValidation }) {
   )
 }
 
+// Quality dot color for sfValidation results
+function QualityDot({ quality }) {
+  const colors = {
+    best: '#16a34a',
+    good: '#65a30d',
+    inaccuracy: '#d97706',
+    mistake: '#ea580c',
+    blunder: '#dc2626',
+  }
+  const color = colors[quality]
+  if (!color) return null
+  return (
+    <span
+      className="lv-quality-dot"
+      title={quality}
+      style={{ background: color }}
+    />
+  )
+}
+
 export default function LessonViewer({
   lesson,
   validation,
@@ -261,7 +281,17 @@ export default function LessonViewer({
   onStepSelect,
   selectedStepIndex,
 }) {
-  if (!lesson) return null
+  if (!lesson) {
+    return (
+      <div className="lesson-viewer lesson-viewer--empty">
+        <div className="lv-empty-state">
+          <span className="lv-empty-icon">♟</span>
+          <p className="lv-empty-text">Nessuna lezione caricata.</p>
+          <p className="lv-empty-sub">Imposta tema e livello, poi premi <strong>Genera lezione</strong>.</p>
+        </div>
+      </div>
+    )
+  }
 
   const steps = lesson.steps || []
   const errors = validation?.errors || []
@@ -310,8 +340,9 @@ export default function LessonViewer({
           {steps.map((step, index) => {
             const sfEntry = sfValidation?.[index]
             const hasIllegal = sfEntry?.illegalMoves?.length > 0
+            const quality = sfEntry?.quality
             const isSelected = selectedStepIndex === index
-            const preview = truncate(stepPreviewText(step))
+            const preview = truncate(stepPreviewText(step), 60)
 
             return (
               <div
@@ -322,6 +353,7 @@ export default function LessonViewer({
                 <span className="lv-step-index">{index + 1}.</span>
                 <StepTypeBadge type={step.type} />
                 <span className="lv-step-text">{preview || <em>–</em>}</span>
+                {quality && <QualityDot quality={quality} />}
                 {hasIllegal && (
                   <span className="lv-step-illegal">mossa illegale</span>
                 )}
@@ -330,6 +362,18 @@ export default function LessonViewer({
           })}
         </div>
       )}
+
+      {/* SF Analysis placeholder */}
+      <div className="lv-sf-section">
+        <div className="lv-sf-header">
+          <span className="lv-sf-title">Analisi Stockfish</span>
+        </div>
+        <p className="lv-sf-hint">
+          {selectedStepIndex != null
+            ? `Step ${selectedStepIndex + 1} selezionato — analisi non ancora eseguita.`
+            : 'Clicca uno step per analizzare'}
+        </p>
+      </div>
 
       {/* Step detail */}
       {selectedStepIndex != null && steps[selectedStepIndex] && (
