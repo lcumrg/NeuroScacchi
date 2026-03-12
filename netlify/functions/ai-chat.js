@@ -1,13 +1,9 @@
-// Netlify Function — proxy per Anthropic Claude API
+// Netlify Function — proxy per Anthropic Claude API (streaming)
 // Protegge la API key lato server
 
 export default async (req) => {
-  // CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('', {
-      status: 204,
-      headers: corsHeaders(),
-    })
+    return new Response('', { status: 204, headers: corsHeaders() })
   }
 
   if (req.method !== 'POST') {
@@ -29,7 +25,6 @@ export default async (req) => {
       return jsonResponse({ error: 'messages è richiesto e deve essere un array non vuoto' }, 400)
     }
 
-    // Validazione base dei messaggi
     for (const msg of messages) {
       if (!msg.role || !msg.content) {
         return jsonResponse({ error: 'Ogni messaggio deve avere role e content' }, 400)
@@ -39,20 +34,18 @@ export default async (req) => {
       }
     }
 
-    const model = 'claude-sonnet-4-6'
-
     const requestBody = {
-      model,
+      model: 'claude-sonnet-4-6',
       max_tokens: 2048,
+      stream: true,
       messages,
     }
 
-    // System prompt opzionale
     if (system && typeof system === 'string' && system.trim()) {
       requestBody.system = system.trim()
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -62,34 +55,25 @@ export default async (req) => {
       body: JSON.stringify(requestBody),
     })
 
-    if (!response.ok) {
-      const errText = await response.text()
+    if (!anthropicResponse.ok) {
+      const errText = await anthropicResponse.text()
       let details = errText
       try {
         const errJson = JSON.parse(errText)
         details = errJson.error?.message || errText
-      } catch { /* ignore parse error */ }
-
-      return jsonResponse({
-        error: 'Errore API Anthropic',
-        details,
-        status: response.status,
-      }, response.status)
+      } catch { /* ignore */ }
+      return jsonResponse({ error: 'Errore API Anthropic', details }, anthropicResponse.status)
     }
 
-    const data = await response.json()
-
-    // Estrai il testo dalla risposta Anthropic (formato content blocks)
-    const content = data.content
-      ?.filter(block => block.type === 'text')
-      .map(block => block.text)
-      .join('\n') || ''
-
-    return jsonResponse({
-      content,
-      usage: {
-        input_tokens: data.usage?.input_tokens || 0,
-        output_tokens: data.usage?.output_tokens || 0,
+    // Inoltra lo stream SSE direttamente al client
+    return new Response(anthropicResponse.body, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
       },
     })
   } catch (err) {

@@ -67,7 +67,46 @@ export async function sendMessage(messages, systemPrompt) {
     throw new AIServiceError(message, response.status)
   }
 
-  return response.json()
+  // Legge lo stream SSE e accumula il testo
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let content = ''
+  let inputTokens = 0
+  let outputTokens = 0
+  let buffer = ''
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+
+    buffer += decoder.decode(value, { stream: true })
+    const lines = buffer.split('\n')
+    buffer = lines.pop() // l'ultima riga potrebbe essere incompleta
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue
+      const data = line.slice(6).trim()
+      if (data === '[DONE]') continue
+
+      try {
+        const event = JSON.parse(data)
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+          content += event.delta.text || ''
+        }
+        if (event.type === 'message_delta' && event.usage) {
+          outputTokens = event.usage.output_tokens || 0
+        }
+        if (event.type === 'message_start' && event.message?.usage) {
+          inputTokens = event.message.usage.input_tokens || 0
+        }
+      } catch { /* ignora eventi non parsabili */ }
+    }
+  }
+
+  return {
+    content,
+    usage: { input_tokens: inputTokens, output_tokens: outputTokens },
+  }
 }
 
 /**
