@@ -1,7 +1,7 @@
 // Netlify Edge Function — proxy per Google Gemini API
 // Le Edge Functions non hanno timeout fisso per operazioni di rete (I/O asincrono illimitato)
 
-const GEMINI_MODEL = 'gemini-2.5-flash'
+const GEMINI_MODEL = 'gemini-3-pro-preview'
 
 export default async (request) => {
   if (request.method === 'OPTIONS') {
