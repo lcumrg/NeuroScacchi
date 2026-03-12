@@ -7,9 +7,9 @@
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
-  padding: 1rem 1rem 2rem;
+  padding: 0.75rem 1rem 2rem;
   background: var(--bg-main);
-  gap: 0;
+  gap: 0.75rem;
 }
 
 /* ── Loading / Error / Done states ─────────────────────────────── */
@@ -101,8 +101,8 @@
   max-width: 520px;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  padding: 0.75rem 0 0.5rem;
+  gap: 0.5rem;
+  padding: 0.5rem 0 0.25rem;
 }
 
 .player-header__meta {
@@ -145,13 +145,21 @@
   transition: width 0.4s ease;
 }
 
+/* ── Content wrapper (board + activity) ─────────────────────────── */
+.player-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 520px;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
 /* ── Board area ────────────────────────────────────────────────── */
 .player-board-area {
   width: 100%;
-  max-width: 480px;
   display: flex;
   justify-content: center;
-  padding: 0.5rem 0;
 }
 
 .player-board-wrapper {
@@ -162,7 +170,6 @@
 /* ── Activity panel ────────────────────────────────────────────── */
 .player-activity-panel {
   width: 100%;
-  max-width: 480px;
   background: var(--bg-card);
   border-radius: 12px;
   border: 1px solid var(--border-color);
@@ -180,39 +187,37 @@
   animation: pulse 1s infinite;
 }
 
-/* ── Responsive ─────────────────────────────────────────────────── */
-@media (min-width: 768px) {
+/* ── Desktop: side-by-side ─────────────────────────────────────── */
+@media (min-width: 900px) {
   .player-page {
-    flex-direction: column;
+    padding: 1rem 2rem 2rem;
     align-items: center;
-    padding: 1.5rem 2rem 2rem;
   }
 
   .player-header {
-    max-width: 520px;
+    max-width: 900px;
+    width: 100%;
+  }
+
+  .player-content {
+    flex-direction: row;
+    max-width: 900px;
+    align-items: flex-start;
+    gap: 1.5rem;
   }
 
   .player-board-area {
-    max-width: 480px;
+    flex: 0 0 auto;
+    width: min(460px, 50vw);
   }
 
   .player-activity-panel {
-    max-width: 480px;
-  }
-}
-
-@media (min-width: 1024px) {
-  /* On large screens: board + panel side by side */
-  .player-page {
+    flex: 1;
+    min-width: 260px;
+    max-width: 400px;
+    /* Pannello alto quanto la scacchiera su desktop */
+    align-self: stretch;
+    display: flex;
     flex-direction: column;
-    align-items: center;
-  }
-
-  .player-board-area {
-    max-width: 480px;
-  }
-
-  .player-activity-panel {
-    max-width: 480px;
   }
 }

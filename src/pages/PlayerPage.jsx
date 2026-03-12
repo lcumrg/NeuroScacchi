@@ -325,6 +325,9 @@ export default function PlayerPage() {
         </div>
       </header>
 
+      {/* Board + Activity affiancati su desktop */}
+      <div className="player-content">
+
       {/* Board area */}
       <main className="player-board-area">
         <div className="player-board-wrapper">
@@ -408,6 +411,8 @@ export default function PlayerPage() {
           <p className="player-transition-msg">Prossima posizione...</p>
         )}
       </section>
+
+      </div> {/* /player-content */}
     </div>
   )
 }
