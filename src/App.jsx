@@ -1,13 +1,17 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import DemoPage from './pages/DemoPage.jsx'
 import ConsolePage from './pages/ConsolePage.jsx'
+import LessonsPage from './pages/LessonsPage.jsx'
 
 const DocPage = lazy(() => import('./pages/DocPage.jsx'))
+const PlayerPage = lazy(() => import('./pages/PlayerPage.jsx'))
 
 function getRoute() {
   const hash = window.location.hash || '#/'
   if (hash.startsWith('#/console')) return 'console'
   if (hash.startsWith('#/doc')) return 'doc'
+  if (hash.startsWith('#/lessons')) return 'lessons'
+  if (hash.startsWith('#/player')) return 'player'
   return 'demo'
 }
 
@@ -92,15 +96,51 @@ export default function App() {
         >
           Progetto
         </a>
+        <a
+          href="#/lessons"
+          style={{
+            textDecoration: 'none',
+            fontSize: '0.875rem',
+            fontWeight: route === 'lessons' ? 700 : 500,
+            color: route === 'lessons' ? 'var(--color-primary)' : 'var(--text-secondary)',
+            padding: '0.25rem 0.5rem',
+            borderRadius: '6px',
+            background: route === 'lessons' ? 'var(--color-primary-bg)' : 'transparent',
+            transition: 'background var(--transition-fast)',
+          }}
+        >
+          Lezioni
+        </a>
+        <a
+          href="#/player"
+          style={{
+            textDecoration: 'none',
+            fontSize: '0.875rem',
+            fontWeight: route === 'player' ? 700 : 500,
+            color: route === 'player' ? 'var(--color-primary)' : 'var(--text-secondary)',
+            padding: '0.25rem 0.5rem',
+            borderRadius: '6px',
+            background: route === 'player' ? 'var(--color-primary-bg)' : 'transparent',
+            transition: 'background var(--transition-fast)',
+          }}
+        >
+          Player
+        </a>
       </nav>
 
       {/* Page content */}
       <main style={{ flex: 1 }}>
         {route === 'console' && <ConsolePage />}
         {route === 'demo' && <DemoPage />}
+        {route === 'lessons' && <LessonsPage />}
         {route === 'doc' && (
           <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Caricamento...</div>}>
             <DocPage />
+          </Suspense>
+        )}
+        {route === 'player' && (
+          <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Caricamento...</div>}>
+            <PlayerPage />
           </Suspense>
         )}
       </main>
