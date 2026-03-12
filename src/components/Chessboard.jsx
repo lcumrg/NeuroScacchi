@@ -109,7 +109,8 @@ export default function Chessboard({
         showGhost: true,
       },
       selectable: {
-        enabled: interactive && !viewOnly,
+        // Abilitato anche solo per il click (detective mode: onSquareClick presente ma non interactive)
+        enabled: (interactive && !viewOnly) || !!onSquareClick,
       },
       premovable: {
         enabled: false,

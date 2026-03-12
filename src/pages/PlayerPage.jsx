@@ -335,7 +335,7 @@ export default function PlayerPage() {
             dests={boardDests}
             onMove={isBoardInteractive ? handleBoardMove : undefined}
             interactive={isBoardInteractive}
-            viewOnly={!isBoardInteractive}
+            viewOnly={!isBoardInteractive && !isDetectivePhase}
             lastMove={lastMove}
             shapes={shapes.length > 0 ? shapes : undefined}
             onSquareClick={isDetectivePhase ? handleSquareClick : undefined}
