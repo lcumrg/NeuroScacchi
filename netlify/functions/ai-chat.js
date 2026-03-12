@@ -1,4 +1,4 @@
-// Netlify Function — proxy per Anthropic Claude API (streaming)
+// Netlify Function — proxy per Anthropic Claude API
 // Protegge la API key lato server
 
 export default async (req) => {
@@ -35,9 +35,8 @@ export default async (req) => {
     }
 
     const requestBody = {
-      model: 'claude-sonnet-4-6',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 2048,
-      stream: true,
       messages,
     }
 
@@ -45,7 +44,7 @@ export default async (req) => {
       requestBody.system = system.trim()
     }
 
-    const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -55,25 +54,28 @@ export default async (req) => {
       body: JSON.stringify(requestBody),
     })
 
-    if (!anthropicResponse.ok) {
-      const errText = await anthropicResponse.text()
+    if (!response.ok) {
+      const errText = await response.text()
       let details = errText
       try {
         const errJson = JSON.parse(errText)
         details = errJson.error?.message || errText
       } catch { /* ignore */ }
-      return jsonResponse({ error: 'Errore API Anthropic', details }, anthropicResponse.status)
+      return jsonResponse({ error: 'Errore API Anthropic', details }, response.status)
     }
 
-    // Inoltra lo stream SSE direttamente al client
-    return new Response(anthropicResponse.body, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
+    const data = await response.json()
+
+    const content = data.content
+      ?.filter(block => block.type === 'text')
+      .map(block => block.text)
+      .join('\n') || ''
+
+    return jsonResponse({
+      content,
+      usage: {
+        input_tokens: data.usage?.input_tokens || 0,
+        output_tokens: data.usage?.output_tokens || 0,
       },
     })
   } catch (err) {
