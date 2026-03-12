@@ -203,8 +203,9 @@ export async function generateLesson(params) {
     throw new AIServiceError(`L'IA ha segnalato un problema: ${lesson.error}`)
   }
 
-  // Sanitizza le mosse: rimuove simboli algebrici (x, +, #, =) che l'IA produce invece di UCI puro
+  // Sanitizza le mosse e ripulisce dati malformati
   sanitizeLessonMoves(lesson)
+  sanitizeLessonStructure(lesson)
 
   return {
     lesson,
@@ -235,6 +236,29 @@ function sanitizeLessonMoves(lesson) {
     if (step.transition?.moves) step.transition.moves = step.transition.moves.map(cleanMove)
     if (step.moves) step.moves = step.moves.map(cleanMove) // demo steps
   }
+}
+
+/**
+ * Ripulisce strutture malformate generate dall'IA.
+ * - Rimuove transition con moves vuoto (inutile, evita errori di schema)
+ * - Rimuove transition dall'ultimo step se presente
+ */
+function sanitizeLessonStructure(lesson) {
+  if (!lesson?.steps) return
+
+  lesson.steps.forEach((step, i) => {
+    // Transition con moves vuoto o null → rimuovi
+    if (step.transition) {
+      const moves = step.transition.moves
+      if (!Array.isArray(moves) || moves.length === 0) {
+        step.transition = null
+      }
+    }
+    // Ultimo step non deve avere transition
+    if (i === lesson.steps.length - 1 && step.transition) {
+      step.transition = null
+    }
+  })
 }
 
 /**
@@ -298,6 +322,9 @@ export async function refineLesson({ lesson, userMessage, history = [], stockfis
   if (updatedLesson.error) {
     throw new AIServiceError(`L'IA ha segnalato un problema: ${updatedLesson.error}`)
   }
+
+  sanitizeLessonMoves(updatedLesson)
+  sanitizeLessonStructure(updatedLesson)
 
   return {
     lesson: updatedLesson,
