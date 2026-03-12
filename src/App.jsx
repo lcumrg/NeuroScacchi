@@ -111,21 +111,6 @@ export default function App() {
         >
           Lezioni
         </a>
-        <a
-          href="#/player"
-          style={{
-            textDecoration: 'none',
-            fontSize: '0.875rem',
-            fontWeight: route === 'player' ? 700 : 500,
-            color: route === 'player' ? 'var(--color-primary)' : 'var(--text-secondary)',
-            padding: '0.25rem 0.5rem',
-            borderRadius: '6px',
-            background: route === 'player' ? 'var(--color-primary-bg)' : 'transparent',
-            transition: 'background var(--transition-fast)',
-          }}
-        >
-          Player
-        </a>
       </nav>
 
       {/* Page content */}

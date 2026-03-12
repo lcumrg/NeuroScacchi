@@ -122,19 +122,13 @@ export async function analyzeLesson(lesson, { depth = 15, onProgress } = {}) {
 
       if (correctMove) {
         try {
-          // Evaluate position after correct move (flip eval perspective)
-          const afterMoveResult = await sf._sendAnalysis([
-            `position fen ${step.fen} moves ${correctMove}`,
-            `go depth ${depth}`,
-          ])
-          const afterInfo = afterMoveResult.results.get(1)
-          if (afterInfo) {
-            // Negate: after opponent's perspective, negate to get white's POV
-            correctMoveEval = -afterInfo.eval
-            const classification = classifyMove(correctMoveEval, bestEval)
-            cpLoss = classification.cpLoss
-            quality = classification.quality
-          }
+          // Evaluate position after correct move using public analyzeMove API
+          const moveAnalysis = await sf.analyzeMove(step.fen, correctMove, { depth })
+          // moveAnalysis.evalAfter is already from white's POV (negated internally)
+          correctMoveEval = moveAnalysis.evalAfter
+          const classification = classifyMove(correctMoveEval, bestEval)
+          cpLoss = classification.cpLoss
+          quality = classification.quality
         } catch {
           // If we can't evaluate the specific move, skip quality
         }
