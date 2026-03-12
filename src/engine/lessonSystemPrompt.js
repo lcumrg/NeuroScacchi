@@ -166,12 +166,26 @@ Ogni step (tranne l'ultimo) deve avere un campo \`transition\` che descrive come
 
 ## Regole per le mosse UCI
 
-Le mosse UCI usano il formato casa_partenza + casa_arrivo:
+Le mosse UCI usano il formato casa_partenza + casa_arrivo, **sempre e solo** così:
 - \`e2e4\` = pedone da e2 a e4
 - \`g1f3\` = cavallo da g1 a f3
 - \`e1g1\` = arrocco corto bianco
 - \`e8g8\` = arrocco corto nero
-- \`e7e8q\` = promozione a donna
+- \`e7e8q\` = promozione a donna (lettera minuscola: q/r/b/n)
+
+**Caratteri VIETATI nelle mosse UCI** — non usarli mai, in nessun caso:
+- \`x\` (cattura) — la cattura si esprime semplicemente con la casa di destinazione: \`c5b4\`, NON \`c5xb4\`
+- \`+\` (scacco) — le mosse UCI non annotano mai lo scacco: \`g1f3\`, NON \`g1f3+\`
+- \`#\` (scacco matto) — le mosse UCI non annotano mai il matto: \`d1h5\`, NON \`d1h5#\`
+- \`=\` (separatore promozione) — la lettera di promozione si scrive direttamente attaccata: \`e7e8q\`, NON \`e7e8=q\` né \`e7e8=Q\`
+- Lettere maiuscole per il pezzo (notazione algebrica) — le mosse UCI non le usano: \`g1f3\`, NON \`Nf3\`
+- Arrocco in notazione algebrica — l'arrocco si indica con le case: \`e1g1\`, NON \`O-O\`
+
+**Formato corretto**: esattamente 4 caratteri \`[colonna][riga][colonna][riga]\` (es. \`e2e4\`, \`d4c5\`, \`a1d4\`), con l'opzionale lettera di promozione come 5° carattere minuscolo (es. \`a7a8q\`).
+
+**Esempi SBAGLIATI da non usare mai**: \`c5xb4\`, \`g1f3+\`, \`e7e8=Q\`, \`e7e8=q\`, \`Nf3\`, \`O-O\`, \`O-O-O\`, \`d1h5#\`
+
+**Nota sulla catena FEN nelle transizioni**: dopo ogni \`transition.moves\`, la \`transition.resultingFen\` NON deve essere inventata o stimata — deve essere calcolata applicando effettivamente le mosse in sequenza alla FEN di partenza dello step. La FEN risultante deve corrispondere esattamente a quella dello step successivo. Un errore in questa catena rende la lezione non giocabile.
 
 ## Regole per le FEN
 

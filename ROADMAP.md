@@ -250,6 +250,8 @@ Per ora essenziale: lista di lezioni disponibili e percorsi di studio. Un clic a
 
 ### Fase 0 — Fondamenta
 
+**Stato: COMPLETATA** ✓
+
 Le cose senza cui niente funziona.
 
 - Componente scacchiera interattiva: **Chessground** (`@lichess-org/chessground`, GPL-3.0) — scacchiera SVG con frecce, cerchi, drag-and-drop, animazioni, supporto mobile. ~10KB, zero dipendenze.
@@ -260,6 +262,8 @@ Le cose senza cui niente funziona.
 - **IA generativa**: Google Gemini 2.5 Pro via API, chiamata lato server tramite Netlify Function (`ai-chat.js`) per proteggere la chiave. La scelta del provider è intercambiabile — l'interfaccia interna usa un contratto `{ messages, system } → { content, usage }` indipendente dal modello.
 
 ### Fase 1 — La console coach con IA
+
+**Stato: IN CORSO**
 
 Il cuore della 3.0: il sistema di creazione lezioni. L'IA arriva subito perché senza di essa il coach non può produrre contenuti di qualità in tempi ragionevoli. L'integrazione è progressiva:
 
@@ -276,11 +280,15 @@ Il cuore della 3.0: il sistema di creazione lezioni. L'IA arriva subito perché 
 - Il coach rivede il risultato finale e lo approva o chiede modifiche
 
 **Fase 1B — IA anche per le posizioni, con validazione.**
+
+**Stato: DA FARE**
 - Una volta che la pipeline di validazione è collaudata con l'uso reale, l'IA inizia a proporre anche posizioni e sequenze di mosse originali (non solo dal database)
 - Ciclo di validazione a tre round: genera → valida → correggi → ri-valida
 - Stockfish corregge automaticamente prima che il coach veda il risultato
 
 ### Fase 2 — Il player studente (base)
+
+**Stato: DA FARE**
 
 Il player minimo per eseguire le lezioni create in Fase 1.
 
@@ -295,6 +303,8 @@ Il player minimo per eseguire le lezioni create in Fase 1.
 
 ### Fase 3 — Scheda studente e personalizzazione
 
+**Stato: DA FARE**
+
 La didattica personalizzata prende forma.
 
 - Creazione della scheda studente: dialogo coach + IA per la compilazione iniziale (profilo scacchistico, di apprendimento, cognitivo opzionale)
@@ -304,6 +314,8 @@ La didattica personalizzata prende forma.
 
 ### Fase 4 — Raffinamento console coach
 
+**Stato: DA FARE**
+
 Lo studio di registrazione diventa completo.
 
 - Editor raffinato: modifica singoli step, riordina, aggiusta domande e feedback
@@ -311,6 +323,8 @@ Lo studio di registrazione diventa completo.
 - Personalizzazione dei parametri del freeze
 
 ### Fase 5 — Strumenti modulari nel player
+
+**Stato: DA FARE**
 
 Il player supporta tutto ciò che è opzionale.
 
@@ -321,6 +335,8 @@ Il player supporta tutto ciò che è opzionale.
 
 ### Fase 6 — Percorsi e verifiche
 
+**Stato: DA FARE**
+
 La struttura di avanzamento.
 
 - Creazione di percorsi (sequenze di lezioni + puzzle + esami)
@@ -328,6 +344,8 @@ La struttura di avanzamento.
 - Lato coach: strumenti per assemblare percorsi
 
 ### Fase 7 — Multi-utente (futuro)
+
+**Stato: DA FARE**
 
 L'apertura ad altri.
 
