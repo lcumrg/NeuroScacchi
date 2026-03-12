@@ -154,6 +154,19 @@
   color: var(--color-primary);
 }
 
+.badge-draft {
+  background: var(--bg-main, #F8F9FA);
+  color: var(--text-label, #90A4AE);
+  border: 1px solid var(--border-color, #E0E0E0);
+}
+
+/* Improved empty state */
+.lessons-empty-icon {
+  font-size: 3rem;
+  opacity: 0.2;
+  margin-bottom: 0.5rem;
+}
+
 /* Meta */
 
 .lesson-card-meta {

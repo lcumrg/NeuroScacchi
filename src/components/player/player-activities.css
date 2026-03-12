@@ -322,6 +322,12 @@
   padding: 0;
 }
 
+.activity__counter {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
 .candidate__move-item {
   display: flex;
   align-items: center;
@@ -333,6 +339,19 @@
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-primary);
+}
+
+/* Move not in step.candidateMoves — shown with yellow border as a warning */
+.candidate__move-item--unknown {
+  background: #fffbeb;
+  border-color: #d97706;
+  color: #92400e;
+}
+
+[data-theme="dark"] .candidate__move-item--unknown {
+  background: #3a3010;
+  border-color: #d97706;
+  color: #fde68a;
 }
 
 .candidate__move-remove {
