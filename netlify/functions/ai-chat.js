@@ -39,7 +39,7 @@ export default async (req) => {
       }
     }
 
-    const model = 'claude-sonnet-4-6-20251101'
+    const model = 'claude-sonnet-4-6'
 
     const requestBody = {
       model,
