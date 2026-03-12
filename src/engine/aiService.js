@@ -68,16 +68,50 @@ export async function sendMessage(messages, systemPrompt) {
       const errorData = JSON.parse(rawText)
       message = errorData.details || errorData.error || message
     } catch {
-      // risposta non-JSON (HTML di errore Netlify o simile)
       if (rawText.length > 0) {
-        // Mostra i primi 300 chars del testo grezzo per debug
         message = `Errore HTTP ${response.status}: ${rawText.substring(0, 300)}`
       }
     }
     throw new AIServiceError(message, response.status)
   }
 
-  return response.json()
+  // Legge la risposta SSE streaming
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let fullText = ''
+  let usage = { input_tokens: 0, output_tokens: 0 }
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+
+    buffer += decoder.decode(value, { stream: true })
+    const lines = buffer.split('\n')
+    buffer = lines.pop()
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue
+      const data = line.slice(6).trim()
+      if (!data) continue
+
+      try {
+        const event = JSON.parse(data)
+        if (event.error) throw new AIServiceError(event.error)
+        if (event.text) fullText += event.text
+        if (event.done && event.usage) usage = event.usage
+      } catch (err) {
+        if (err instanceof AIServiceError) throw err
+        // ignora chunk malformati
+      }
+    }
+  }
+
+  if (!fullText) {
+    throw new AIServiceError("L'IA non ha prodotto output")
+  }
+
+  return { content: fullText, usage }
 }
 
 /**
