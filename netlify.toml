@@ -4,6 +4,10 @@
 [functions."ai-chat"]
   timeout = 26
 
+[[edge_functions]]
+  path = "/api/ai-chat"
+  function = "ai-chat"
+
 [build]
   command = "npm install && npm run build"
   publish = "dist"
