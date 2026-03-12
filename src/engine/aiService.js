@@ -180,8 +180,10 @@ export async function generateLesson(params) {
   const lesson = extractJSON(result.content)
 
   if (!lesson) {
+    const preview = result.content.substring(0, 1000)
+    const totalLen = result.content.length
     throw new AIServiceError(
-      'L\'IA non ha restituito un JSON valido. Risposta ricevuta:\n' + result.content.substring(0, 500)
+      `L'IA non ha restituito un JSON valido (${totalLen} chars totali). Inizio risposta:\n${preview}`
     )
   }
 
@@ -261,8 +263,10 @@ export async function refineLesson({ lesson, userMessage, history = [], stockfis
   const updatedLesson = extractJSON(result.content)
 
   if (!updatedLesson) {
+    const preview = result.content.substring(0, 1000)
+    const totalLen = result.content.length
     throw new AIServiceError(
-      'L\'IA non ha restituito un JSON valido. Risposta ricevuta:\n' + result.content.substring(0, 500)
+      `L'IA non ha restituito un JSON valido (${totalLen} chars totali). Inizio risposta:\n${preview}`
     )
   }
 
@@ -279,60 +283,52 @@ export async function refineLesson({ lesson, userMessage, history = [], stockfis
 
 /**
  * Estrae un oggetto JSON da una stringa che potrebbe contenere testo aggiuntivo,
- * blocchi di codice markdown, ecc.
+ * blocchi di codice markdown, ecc. Usa più strategie in cascata.
  */
 function extractJSON(text) {
   if (!text || typeof text !== 'string') return null
 
-  // Prova prima il parsing diretto
-  try {
-    return JSON.parse(text.trim())
-  } catch { /* continua */ }
+  const attempts = [text.trim()]
 
-  // Cerca un blocco ```json ... ```
-  const jsonBlockMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/)
-  if (jsonBlockMatch) {
-    try {
-      return JSON.parse(jsonBlockMatch[1].trim())
-    } catch { /* continua */ }
+  // Estrai contenuto da blocco ```json ... ``` (greedy: fino all'ultimo ```)
+  const fenceGreedy = text.match(/```(?:json)?\s*\n?([\s\S]+)\n?\s*```/)
+  if (fenceGreedy) attempts.push(fenceGreedy[1].trim())
+
+  // Estrai contenuto da blocco ```json ... ``` (non-greedy)
+  const fenceNonGreedy = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/)
+  if (fenceNonGreedy) attempts.push(fenceNonGreedy[1].trim())
+
+  // Substring dal primo { all'ultimo }
+  const firstBrace = text.indexOf('{')
+  const lastBrace = text.lastIndexOf('}')
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    attempts.push(text.substring(firstBrace, lastBrace + 1))
   }
 
-  // Cerca il primo { ... } bilanciato
-  const firstBrace = text.indexOf('{')
-  if (firstBrace === -1) return null
+  for (const candidate of attempts) {
+    if (!candidate) continue
+    // Prova parse diretto
+    try { return JSON.parse(candidate) } catch { /* continua */ }
 
-  let depth = 0
-  let inString = false
-  let escape = false
+    // Se fallisce, prova a trovare { ... } bilanciato nel candidate
+    const start = candidate.indexOf('{')
+    if (start === -1) continue
 
-  for (let i = firstBrace; i < text.length; i++) {
-    const ch = text[i]
+    let depth = 0
+    let inString = false
+    let escape = false
 
-    if (escape) {
-      escape = false
-      continue
-    }
-
-    if (ch === '\\' && inString) {
-      escape = true
-      continue
-    }
-
-    if (ch === '"') {
-      inString = !inString
-      continue
-    }
-
-    if (inString) continue
-
-    if (ch === '{') depth++
-    else if (ch === '}') {
-      depth--
-      if (depth === 0) {
-        try {
-          return JSON.parse(text.substring(firstBrace, i + 1))
-        } catch {
-          return null
+    for (let i = start; i < candidate.length; i++) {
+      const ch = candidate[i]
+      if (escape) { escape = false; continue }
+      if (ch === '\\' && inString) { escape = true; continue }
+      if (ch === '"') { inString = !inString; continue }
+      if (inString) continue
+      if (ch === '{') depth++
+      else if (ch === '}') {
+        depth--
+        if (depth === 0) {
+          try { return JSON.parse(candidate.substring(start, i + 1)) } catch { break }
         }
       }
     }
