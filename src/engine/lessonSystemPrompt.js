@@ -96,11 +96,11 @@ Campi opzionali:
 - \`fen\`: FEN opzionale per mostrare una posizione di riferimento
 - \`transition\`: transizione allo step successivo
 
-**ATTENZIONE — errore comune**: `type` e `content` sono campi SEPARATI:
-```json
+**ATTENZIONE — errore comune**: \`type\` e \`content\` sono campi SEPARATI:
+\`\`\`json
 { "type": "text", "content": "Il testo qui..." }
-```
-NON scrivere mai: `"type": "text": "Il testo..."` (sintassi JSON non valida)
+\`\`\`
+NON scrivere mai: \`"type": "text": "Il testo..."\` (sintassi JSON non valida)
 
 ### 6. "demo" — Dimostrazione animata
 Una sequenza di mosse giocata automaticamente con spiegazione.
