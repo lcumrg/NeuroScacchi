@@ -330,3 +330,76 @@
   color: var(--text-label, #90A4AE);
   font-style: italic;
 }
+
+/* Quality dot indicator */
+.lv-quality-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* SF Analysis placeholder */
+.lv-sf-section {
+  border: 1px dashed var(--border-color, #E0E0E0);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.lv-sf-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.3rem;
+}
+
+.lv-sf-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary, #546E7A);
+}
+
+.lv-sf-hint {
+  font-size: 0.75rem;
+  color: var(--text-label, #90A4AE);
+  margin: 0;
+  font-style: italic;
+}
+
+/* Empty state */
+.lesson-viewer--empty {
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem 1rem;
+}
+
+.lv-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  text-align: center;
+  padding: 1rem;
+  border: 1px dashed var(--border-color, #E0E0E0);
+  border-radius: 12px;
+}
+
+.lv-empty-icon {
+  font-size: 2rem;
+  opacity: 0.3;
+}
+
+.lv-empty-text {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary, #546E7A);
+  margin: 0;
+}
+
+.lv-empty-sub {
+  font-size: 0.8rem;
+  color: var(--text-label, #90A4AE);
+  margin: 0;
+}

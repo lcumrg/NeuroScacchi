@@ -16,19 +16,28 @@ function formatDateIT(isoString) {
 
 function loadFullLessons() {
   const drafts = listDraftLessons()
-  return drafts.map((draft) => {
-    const entry = loadDraftLesson(draft.id)
-    const lesson = entry?.lesson ?? {}
-    return {
-      id: draft.id,
-      savedAt: draft.savedAt,
-      title: draft.title || lesson.title || lesson.titolo || 'Senza titolo',
-      difficulty: lesson.difficulty || lesson.difficolta || null,
-      category: lesson.category || lesson.categoria || null,
-      stepsCount: Array.isArray(lesson.steps) ? lesson.steps.length : 0,
-      status: lesson.status || null,
-    }
-  })
+  return drafts
+    .map((draft) => {
+      const entry = loadDraftLesson(draft.id)
+      const lesson = entry?.lesson ?? {}
+      return {
+        id: draft.id,
+        savedAt: draft.savedAt,
+        updatedAt: lesson.updatedAt || draft.savedAt || null,
+        title: draft.title || lesson.title || lesson.titolo || 'Senza titolo',
+        difficulty: lesson.difficulty || lesson.difficolta || null,
+        category: lesson.category || lesson.categoria || null,
+        stepsCount: Array.isArray(lesson.steps) ? lesson.steps.length : 0,
+        estimatedMinutes: lesson.estimatedMinutes || null,
+        status: lesson.status || 'draft',
+      }
+    })
+    // Sort most recently modified first
+    .sort((a, b) => {
+      const ta = new Date(a.updatedAt || a.savedAt || 0).getTime()
+      const tb = new Date(b.updatedAt || b.savedAt || 0).getTime()
+      return tb - ta
+    })
 }
 
 export default function LessonsPage() {
@@ -67,11 +76,13 @@ export default function LessonsPage() {
       <div className="lessons-content">
         {lessons.length === 0 ? (
           <div className="lessons-empty">
+            <div className="lessons-empty-icon" aria-hidden="true">♟</div>
             <p className="lessons-empty-text">Nessuna lezione salvata.</p>
             <p className="lessons-empty-sub">
-              Vai alla{' '}
-              <a href="#/console" className="lessons-link">Console Coach</a>{' '}
-              per crearne una.
+              Per creare la tua prima lezione, vai alla{' '}
+              <a href="#/console" className="lessons-link">Console Coach</a>,
+              imposta tema e livello e premi <strong>Genera lezione</strong>.
+              Poi approva o salva come bozza: comparirà qui.
             </p>
           </div>
         ) : (
@@ -85,8 +96,10 @@ export default function LessonsPage() {
                         {DIFFICULTY_LABELS[lesson.difficulty] ?? lesson.difficulty}
                       </span>
                     )}
-                    {lesson.status === 'published' && (
-                      <span className="badge badge-approved">APPROVATA</span>
+                    {(lesson.status === 'published' || lesson.status === 'approved') ? (
+                      <span className="badge badge-approved">Approvata</span>
+                    ) : (
+                      <span className="badge badge-draft">Bozza</span>
                     )}
                   </div>
                   <h2 className="lesson-card-title">{lesson.title}</h2>
@@ -101,6 +114,12 @@ export default function LessonsPage() {
                       <span className="lesson-meta-item">
                         <span className="lesson-meta-label">Step</span>
                         {lesson.stepsCount}
+                      </span>
+                    )}
+                    {lesson.estimatedMinutes != null && (
+                      <span className="lesson-meta-item">
+                        <span className="lesson-meta-label">Durata</span>
+                        {lesson.estimatedMinutes} min
                       </span>
                     )}
                   </div>

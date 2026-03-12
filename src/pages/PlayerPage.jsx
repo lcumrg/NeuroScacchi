@@ -337,7 +337,7 @@ export default function PlayerPage() {
 
       {/* Board area */}
       <main className="player-board-area">
-        <div className="player-board-wrapper">
+        <div className={`player-board-wrapper${isDetectivePhase ? ' player-board-wrapper--detective' : ''}`}>
           <Chessboard
             fen={activeFen}
             orientation={lesson.orientation ?? 'white'}
@@ -355,6 +355,9 @@ export default function PlayerPage() {
           )}
         </div>
       </main>
+
+      {/* Mobile scroll indicator */}
+      <div className="player-scroll-hint" aria-hidden="true">Scorri per l'attività</div>
 
       {/* Activity / Feedback panel */}
       <section className="player-activity-panel">
