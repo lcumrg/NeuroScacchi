@@ -219,5 +219,43 @@
     align-self: stretch;
     display: flex;
     flex-direction: column;
+    /* Bordo top allineato visivamente alla scacchiera */
+    border-top: 3px solid var(--color-primary);
+  }
+}
+
+/* ── Phase fade-in animation ───────────────────────────────────── */
+@keyframes phaseIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.player-activity-panel > * {
+  animation: phaseIn 0.22s ease;
+}
+
+/* ── Mobile scroll indicator ───────────────────────────────────── */
+@media (max-width: 899px) {
+  .player-scroll-hint {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    color: var(--text-label);
+    padding: 0.25rem 0;
+    animation: pulse 1.5s ease-in-out infinite;
+    opacity: 0.7;
+  }
+
+  .player-scroll-hint::after {
+    content: '↓';
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 900px) {
+  .player-scroll-hint {
+    display: none;
   }
 }

@@ -60,7 +60,7 @@
 }
 
 .feedback-panel__icon {
-  font-size: 2rem;
+  font-size: 2.5rem;
   line-height: 1;
 }
 
@@ -71,6 +71,56 @@
   font-size: 0.95rem;
   color: var(--text-primary);
   line-height: 1.5;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* Markdown content styles shared by TextActivity and FeedbackPanel */
+.activity__content--markdown p,
+.feedback-panel__text--markdown p {
+  margin: 0 0 0.5rem 0;
+  line-height: 1.6;
+}
+
+.activity__content--markdown p:last-child,
+.feedback-panel__text--markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.activity__content--markdown strong,
+.feedback-panel__text--markdown strong {
+  font-weight: 700;
+}
+
+.activity__content--markdown em,
+.feedback-panel__text--markdown em {
+  font-style: italic;
+}
+
+.activity__content--markdown h1,
+.activity__content--markdown h2,
+.activity__content--markdown h3,
+.feedback-panel__text--markdown h1,
+.feedback-panel__text--markdown h2,
+.feedback-panel__text--markdown h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0.5rem 0 0.25rem;
+  color: var(--text-primary);
+}
+
+.activity__content--markdown ul,
+.activity__content--markdown ol,
+.feedback-panel__text--markdown ul,
+.feedback-panel__text--markdown ol {
+  padding-left: 1.25rem;
+  margin: 0.25rem 0;
+}
+
+.activity__content--markdown li,
+.feedback-panel__text--markdown li {
+  margin-bottom: 0.2rem;
 }
 
 .feedback-panel__btn {
@@ -200,14 +250,20 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.65rem 0.9rem;
+  padding: 0.8rem 1.1rem;
   border: 1.5px solid var(--border-color);
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
   color: var(--text-primary);
   background: var(--bg-surface);
-  transition: border-color var(--transition-fast), background var(--transition-fast);
+  transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.activity__option:hover:not(.activity__option--selected):not(.activity__option--correct):not(.activity__option--wrong) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-bg);
+  box-shadow: 0 2px 8px rgba(40, 53, 147, 0.1);
 }
 
 .activity__option input[type="radio"] {
@@ -289,6 +345,22 @@
   line-height: 1;
   padding: 0;
   margin-left: 0.1rem;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   DetectiveActivity — crosshair cursor hint
+   ──────────────────────────────────────────────────────────────── */
+.activity--detective {
+  /* Visual cue: detective mode uses crosshair on the board */
+}
+
+/* Applied via JS class on the board wrapper in PlayerPage */
+.player-board-wrapper--detective {
+  cursor: crosshair;
+}
+
+.player-board-wrapper--detective .cg-wrap {
+  cursor: crosshair;
 }
 
 /* ────────────────────────────────────────────────────────────────
