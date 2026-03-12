@@ -99,7 +99,7 @@ export default function ConsolePage() {
         const from = uci.slice(0, 2)
         const to = uci.slice(2, 4)
         const fromDests = destinations.get(from)
-        if (!fromDests || !fromDests.has(to)) {
+        if (!fromDests || !fromDests.includes(to)) {
           illegal.push(uci)
         }
       }
