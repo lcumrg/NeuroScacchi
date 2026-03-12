@@ -146,10 +146,37 @@ export async function generateLesson(params) {
     throw new AIServiceError(`L'IA ha segnalato un problema: ${lesson.error}`)
   }
 
+  // Sanitizza le mosse: rimuove simboli algebrici (x, +, #, =) che l'IA produce invece di UCI puro
+  sanitizeLessonMoves(lesson)
+
   return {
     lesson,
     validation: validateLesson(lesson),
     usage: result.usage,
+  }
+}
+
+/**
+ * Converte mosse in formato algebrico spurio → UCI puro.
+ * Es: "c5xb4" → "c5b4", "g1f3+" → "g1f3", "e7e8=q" → "e7e8q"
+ * Modifica la lezione in-place.
+ */
+function sanitizeLessonMoves(lesson) {
+  if (!lesson?.steps) return
+
+  const cleanMove = (m) => {
+    if (typeof m !== 'string') return m
+    // Rimuove x (cattura), + (scacco), # (matto), = (promozione separatore)
+    return m.replace(/[x+#=]/g, '').toLowerCase()
+  }
+
+  for (const step of lesson.steps) {
+    if (step.correctMoves) step.correctMoves = step.correctMoves.map(cleanMove)
+    if (step.allowedMoves) step.allowedMoves = step.allowedMoves.map(cleanMove)
+    if (step.candidateMoves) step.candidateMoves = step.candidateMoves.map(cleanMove)
+    if (step.bestMove) step.bestMove = cleanMove(step.bestMove)
+    if (step.transition?.moves) step.transition.moves = step.transition.moves.map(cleanMove)
+    if (step.moves) step.moves = step.moves.map(cleanMove) // demo steps
   }
 }
 
