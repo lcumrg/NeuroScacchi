@@ -46,6 +46,9 @@ export default function PlayerPage() {
   // Candidate activity state
   const [candidateMoves, setCandidateMoves] = useState([])
 
+  // Hover preview shapes (intent activity)
+  const [previewShapes, setPreviewShapes] = useState(null)
+
   // Detective square click state
   const [clickedSquare, setClickedSquare] = useState(null)
 
@@ -108,6 +111,7 @@ export default function PlayerPage() {
     setCandidateMoves([])
     setClickedSquare(null)
     setShapes([])
+    setPreviewShapes(null)
     setLastAttemptCorrect(null)
     demoMoveIndexRef.current = 0
     if (currentStep && currentStep.fen) {
@@ -125,6 +129,9 @@ export default function PlayerPage() {
 
   // Fallback FEN: step corrente → initialFen della lezione — mai null
   const activeFen = fen ?? currentStep?.fen ?? lesson?.initialFen
+
+  // Shapes: visualAids (feedback) ha priorità; durante activity usa preview hover
+  const boardShapes = shapes.length > 0 ? shapes : (previewShapes ?? [])
   const boardDests = isBoardInteractive && activeFen ? legalDests(activeFen) : new Map()
   const boardTurnColor = activeFen ? getTurnColor(activeFen) : 'white'
 
@@ -340,7 +347,7 @@ export default function PlayerPage() {
             interactive={isBoardInteractive}
             viewOnly={!isBoardInteractive && !isDetectivePhase}
             lastMove={lastMove}
-            shapes={shapes.length > 0 ? shapes : undefined}
+            shapes={boardShapes.length > 0 ? boardShapes : undefined}
             onSquareClick={isDetectivePhase ? handleSquareClick : undefined}
           />
           {phase === 'freeze' && (
@@ -381,6 +388,7 @@ export default function PlayerPage() {
             step={currentStep}
             onCorrect={handleCorrect}
             onIncorrect={handleIncorrect}
+            onPreviewShapes={setPreviewShapes}
           />
         )}
 

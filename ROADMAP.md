@@ -363,6 +363,16 @@ Idee da esplorare in futuro senza impegno attuale:
 - Apertura a collaboratori fidati e/o fondazione educativa
 - Possibile commercializzazione sulla base dei risultati reali
 
+#### Hover preview avanzato per le opzioni Intent (estensioni future)
+
+Attualmente implementata l'**Opzione A** (frecce/cerchi statici sul board al passaggio del mouse), già parte del sistema `previewVisualAids` nel JSON della lezione.
+
+Idee per evoluzioni future:
+
+- **Opzione B — FEN anteprima**: ogni opzione porta un `previewFen` opzionale. Hovering → la scacchiera si aggiorna alla posizione risultante da quella scelta. Più potente ma rischia di "spoilerare" — mostra la conseguenza senza far ragionare. Va valutato se contraddice il principio "pensa prima di muovere".
+
+- **Opzione C — Analisi Stockfish live**: hovering su un'opzione → Stockfish analizza la mossa associata in tempo reale e disegna la top line sulla scacchiera. Molto d'impatto per studenti avanzati, permette di vedere immediatamente la qualità di ogni piano. Richiede l'integrazione di Stockfish nel Player (Fase 3+) e una gestione dei thread SF per non bloccare l'interfaccia.
+
 ### Azioni IP immediate (prima di qualsiasi condivisione)
 
 - Invio descrizione datata del metodo via PEC

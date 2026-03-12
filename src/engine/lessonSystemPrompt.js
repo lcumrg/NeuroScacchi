@@ -27,7 +27,10 @@ Campi obbligatori:
 - \`type\`: "intent"
 - \`fen\`: stringa FEN valida della posizione
 - \`question\`: domanda a scelta multipla (in italiano)
-- \`options\`: array di 2-4 opzioni, ciascuna con \`text\` (string) e \`correct\` (boolean, esattamente 1 deve essere true)
+- \`options\`: array di 2-4 opzioni, ciascuna con:
+  - \`text\` (string): testo dell'opzione
+  - \`correct\` (boolean): esattamente 1 deve essere true
+  - \`previewVisualAids\` (opzionale): frecce/cerchi mostrati sulla scacchiera quando si passa il mouse sull'opzione — aiuta lo studente a visualizzare il piano prima di scegliere. Struttura: \`{ arrows: [{from, to}], circles: [{square}] }\`
 - \`allowedMoves\`: array di mosse UCI consentite sulla scacchiera (tutte le opzioni praticabili)
 - \`correctMoves\`: array di mosse UCI corrette (sottoinsieme di allowedMoves)
 - \`feedback\`: oggetto con \`correct\` (string) e \`incorrect\` (string)

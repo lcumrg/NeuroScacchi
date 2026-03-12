@@ -234,6 +234,27 @@
   background: var(--feedback-negative);
 }
 
+.activity__option--has-preview {
+  cursor: pointer;
+}
+
+.activity__option-text {
+  flex: 1;
+}
+
+.activity__option-preview-hint {
+  font-size: 0.8rem;
+  color: var(--text-label);
+  opacity: 0.5;
+  transition: opacity var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.activity__option--has-preview:hover .activity__option-preview-hint {
+  opacity: 1;
+  color: var(--color-primary);
+}
+
 /* ────────────────────────────────────────────────────────────────
    CandidateActivity — move list
    ──────────────────────────────────────────────────────────────── */
