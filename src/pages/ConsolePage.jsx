@@ -1,8 +1,10 @@
 import { useState, useCallback } from 'react'
 import Chessboard from '../components/Chessboard.jsx'
 import StockfishPanel from '../components/StockfishPanel.jsx'
+import LessonViewer from '../components/LessonViewer.jsx'
 import { INITIAL_FEN, legalDests, makeMove, turnColor, isCheck, kingSquareInCheck, parseFen } from '../engine/chessService.js'
-import { generateLesson } from '../engine/aiService.js'
+import { generateLesson, refineLesson } from '../engine/aiService.js'
+import { saveDraftLesson, markAsApproved } from '../engine/lessonStore.js'
 import './ConsolePage.css'
 
 export default function ConsolePage() {
@@ -22,6 +24,12 @@ export default function ConsolePage() {
   const [generating, setGenerating] = useState(false)
   const [lessonResult, setLessonResult] = useState(null)
   const [lessonError, setLessonError] = useState(null)
+  const [lessonValidation, setLessonValidation] = useState(null)
+  const [sfValidation, setSfValidation] = useState(null)
+  const [selectedStepIndex, setSelectedStepIndex] = useState(null)
+  const [saveStatus, setSaveStatus] = useState(null) // 'saved' | 'approved' | null
+  const [refining, setRefining] = useState(false)
+  const [chatHistory, setChatHistory] = useState([]) // history per refineLesson
 
   // Chat state
   const [chatInput, setChatInput] = useState('')
@@ -57,12 +65,64 @@ export default function ConsolePage() {
     }
   }, [fenInput])
 
+  // Validates moves in the lesson using chessService legalDests
+  const validateMovesWithChessService = useCallback((lesson) => {
+    if (!lesson?.steps) return
+    const result = {}
+
+    lesson.steps.forEach((step, index) => {
+      const stepFen = step.fen
+      if (!stepFen) return
+
+      let destinations
+      try {
+        destinations = legalDests(stepFen)
+      } catch {
+        return
+      }
+
+      // Collect all UCI moves that need to be validated for this step
+      const movesToCheck = [
+        ...(step.correctMoves || []),
+        ...(step.allowedMoves || []),
+        ...(step.candidateMoves
+          ? step.candidateMoves.map(m => (typeof m === 'string' ? m : m.move)).filter(Boolean)
+          : []),
+        ...(step.bestMove ? [step.bestMove] : []),
+      ]
+
+      if (movesToCheck.length === 0) return
+
+      const illegal = []
+      for (const uci of movesToCheck) {
+        if (typeof uci !== 'string' || uci.length < 4) continue
+        const from = uci.slice(0, 2)
+        const to = uci.slice(2, 4)
+        const fromDests = destinations.get(from)
+        if (!fromDests || !fromDests.has(to)) {
+          illegal.push(uci)
+        }
+      }
+
+      if (illegal.length > 0) {
+        result[index] = { illegalMoves: illegal }
+      }
+    })
+
+    setSfValidation(result)
+  }, [])
+
   const handleGenerate = useCallback(async () => {
     if (!tema || !livello) return
 
     setGenerating(true)
     setLessonError(null)
     setLessonResult(null)
+    setLessonValidation(null)
+    setSfValidation(null)
+    setSelectedStepIndex(null)
+    setSaveStatus(null)
+    setChatHistory([])
     setMessages(prev => [...prev, {
       role: 'system',
       content: `Generazione lezione: ${tema} — livello ${livello}…`,
@@ -78,11 +138,14 @@ export default function ConsolePage() {
         fenPartenza: fen !== INITIAL_FEN ? fen : undefined,
       })
 
-      setLessonResult(result.lesson)
+      const { lesson, validation, usage } = result
+      setLessonResult(lesson)
+      setLessonValidation(validation)
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: `Lezione generata: "${result.lesson.title || result.lesson.titolo || tema}"\n${result.lesson.steps?.length || 0} step — ${result.usage?.input_tokens || '?'} token input, ${result.usage?.output_tokens || '?'} token output`,
+        content: `Lezione generata: "${lesson.title || lesson.titolo || tema}"\n${lesson.steps?.length || 0} step — ${usage?.input_tokens || '?'} token input, ${usage?.output_tokens || '?'} token output`,
       }])
+      validateMovesWithChessService(lesson)
     } catch (err) {
       setLessonError(err.message)
       setMessages(prev => [...prev, {
@@ -92,7 +155,49 @@ export default function ConsolePage() {
     } finally {
       setGenerating(false)
     }
-  }, [tema, livello, ratingMin, ratingMax, obiettivo, fen])
+  }, [tema, livello, ratingMin, ratingMax, obiettivo, fen, validateMovesWithChessService])
+
+  const handleStepSelect = useCallback((index) => {
+    setSelectedStepIndex(index)
+    const step = lessonResult?.steps?.[index]
+    if (step?.fen) {
+      setFen(step.fen)
+      setFenInput(step.fen)
+      setLastMove(null)
+    }
+  }, [lessonResult])
+
+  const handleChatSend = useCallback(async () => {
+    if (!chatInput.trim() || refining || !lessonResult) return
+    const userMsg = chatInput.trim()
+    setChatInput('')
+    setRefining(true)
+    setMessages(prev => [...prev, { role: 'user', content: userMsg }])
+
+    try {
+      const result = await refineLesson({
+        lesson: lessonResult,
+        userMessage: userMsg,
+        history: chatHistory,
+      })
+      setLessonResult(result.lesson)
+      setLessonValidation(result.validation)
+      setSfValidation(null)
+      setSelectedStepIndex(null)
+      const assistantMsg = `Lezione aggiornata: "${result.lesson.title || result.lesson.titolo}" — ${result.lesson.steps?.length || 0} step`
+      setChatHistory(prev => [
+        ...prev,
+        { role: 'user', content: userMsg },
+        { role: 'assistant', content: assistantMsg },
+      ])
+      setMessages(prev => [...prev, { role: 'assistant', content: assistantMsg }])
+      validateMovesWithChessService(result.lesson)
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'error', content: `Errore raffinamento: ${err.message}` }])
+    } finally {
+      setRefining(false)
+    }
+  }, [chatInput, refining, lessonResult, chatHistory, validateMovesWithChessService])
 
   return (
     <div className="console-page">
@@ -170,6 +275,25 @@ export default function ConsolePage() {
             >
               {generating ? 'Generazione in corso…' : 'Genera lezione'}
             </button>
+
+            {lessonResult && (
+              <div className="lesson-actions">
+                <button
+                  className="btn-save"
+                  onClick={() => { saveDraftLesson(lessonResult); setSaveStatus('saved') }}
+                  disabled={saveStatus === 'approved'}
+                >
+                  {saveStatus === 'saved' ? 'Salvata ✓' : 'Salva bozza'}
+                </button>
+                <button
+                  className="btn-approve"
+                  onClick={() => { markAsApproved(lessonResult); setSaveStatus('approved') }}
+                  disabled={saveStatus === 'approved'}
+                >
+                  {saveStatus === 'approved' ? 'Approvata ✓' : 'Approva e pubblica'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -200,8 +324,18 @@ export default function ConsolePage() {
           <StockfishPanel fen={fen} orientation="white" />
         </div>
 
-        {/* Right panel — Chat */}
+        {/* Right panel — LessonViewer + Chat */}
         <div className="console-panel panel-right chat-panel">
+          {lessonResult && (
+            <LessonViewer
+              lesson={lessonResult}
+              validation={lessonValidation}
+              sfValidation={sfValidation}
+              onStepSelect={handleStepSelect}
+              selectedStepIndex={selectedStepIndex}
+            />
+          )}
+
           <h2>Chat IA</h2>
 
           <div className="chat-messages">
@@ -229,11 +363,21 @@ export default function ConsolePage() {
               placeholder="Scrivi un messaggio..."
               value={chatInput}
               onChange={e => setChatInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleChatSend()
+                }
+              }}
               rows={1}
-              disabled
+              disabled={refining || !lessonResult}
             />
-            <button className="btn-send" disabled>
-              Invia
+            <button
+              className="btn-send"
+              onClick={handleChatSend}
+              disabled={refining || !lessonResult || !chatInput.trim()}
+            >
+              {refining ? '…' : 'Invia'}
             </button>
           </div>
         </div>

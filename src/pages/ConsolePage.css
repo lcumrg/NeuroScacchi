@@ -328,6 +328,39 @@
   cursor: not-allowed;
 }
 
+/* Lesson save/approve actions */
+.lesson-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn-save, .btn-approve {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-main);
+}
+
+.btn-save {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-approve {
+  background: #16a34a;
+  color: white;
+}
+
+.btn-save:disabled, .btn-approve:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 /* Responsive: stack on small screens */
 @media (max-width: 1024px) {
   .console-grid {
