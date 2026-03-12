@@ -1,0 +1,280 @@
+/* ────────────────────────────────────────────────────────────────
+   FreezeOverlay
+   ──────────────────────────────────────────────────────────────── */
+.freeze-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(40, 53, 147, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  z-index: 10;
+  animation: fadeIn var(--transition-fast);
+}
+
+.freeze-overlay__content {
+  text-align: center;
+  color: #fff;
+}
+
+.freeze-overlay__countdown {
+  font-size: 5rem;
+  font-weight: 800;
+  line-height: 1;
+  font-family: var(--font-main);
+  text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  animation: pulse 1s infinite;
+}
+
+.freeze-overlay__label {
+  margin-top: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  opacity: 0.9;
+  letter-spacing: 0.02em;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   FeedbackPanel
+   ──────────────────────────────────────────────────────────────── */
+.feedback-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+  animation: slideUp var(--transition-medium);
+}
+
+.feedback-panel--correct {
+  background: var(--feedback-positive);
+  border: 1.5px solid var(--move-buona);
+}
+
+.feedback-panel--incorrect {
+  background: var(--feedback-negative);
+  border: 1.5px solid var(--move-errore);
+}
+
+.feedback-panel__icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.feedback-panel--correct .feedback-panel__icon { color: var(--move-ottima); }
+.feedback-panel--incorrect .feedback-panel__icon { color: var(--move-errore); }
+
+.feedback-panel__text {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.feedback-panel__btn {
+  margin-top: 0.5rem;
+  padding: 0.6rem 1.8rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-primary);
+  color: #fff;
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.feedback-panel__btn:hover {
+  background: var(--color-primary-light);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   Shared activity base styles
+   ──────────────────────────────────────────────────────────────── */
+.activity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  animation: slideUp var(--transition-medium);
+}
+
+.activity__question {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.activity__instruction {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.activity__hint {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.activity__hint--box {
+  background: var(--feedback-neutral);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  color: var(--text-primary);
+}
+
+.activity__hint--answer {
+  background: var(--color-primary-bg);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.activity__attempts {
+  font-size: 0.8rem;
+  color: var(--text-label);
+}
+
+.activity__paragraph {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.activity__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.activity__btn {
+  align-self: flex-start;
+  padding: 0.6rem 1.6rem;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition-fast), opacity var(--transition-fast);
+}
+
+.activity__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.activity__btn--primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.activity__btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-light);
+}
+
+.activity__btn--secondary {
+  background: var(--bg-surface);
+  color: var(--color-primary);
+  border: 1.5px solid var(--color-primary);
+}
+
+.activity__btn--secondary:hover:not(:disabled) {
+  background: var(--color-primary-bg);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   IntentActivity — radio options
+   ──────────────────────────────────────────────────────────────── */
+.activity__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.activity__option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.9rem;
+  border: 1.5px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.activity__option input[type="radio"] {
+  accent-color: var(--color-primary);
+}
+
+.activity__option:hover:not(.activity__option--selected) {
+  border-color: var(--color-primary-light);
+  background: var(--color-primary-bg);
+}
+
+.activity__option--selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-bg);
+}
+
+.activity__option--correct {
+  border-color: var(--move-ottima);
+  background: var(--feedback-positive);
+}
+
+.activity__option--wrong {
+  border-color: var(--move-errore);
+  background: var(--feedback-negative);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   CandidateActivity — move list
+   ──────────────────────────────────────────────────────────────── */
+.candidate__move-list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0;
+}
+
+.candidate__move-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--color-primary-bg);
+  border: 1px solid var(--color-primary);
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.candidate__move-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--move-errore);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0;
+  margin-left: 0.1rem;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   DemoActivity — controls
+   ──────────────────────────────────────────────────────────────── */
+.demo__controls {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}

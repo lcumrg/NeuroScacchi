@@ -14,11 +14,15 @@ export default function Chessboard({
   lastMove,
   check,
   viewOnly = false,
+  shapes: shapesOverride,
+  onSquareClick,
 }) {
   const wrapperRef = useRef(null)
   const cgContainerRef = useRef(null)
   const cgRef = useRef(null)
   const [size, setSize] = useState(0)
+  const onSquareClickRef = useRef(onSquareClick)
+  useEffect(() => { onSquareClickRef.current = onSquareClick }, [onSquareClick])
 
   // Measure container width and keep it square
   useEffect(() => {
@@ -53,23 +57,25 @@ export default function Chessboard({
   useEffect(() => {
     if (!cgRef.current) return
     cgRef.current.set(buildConfig())
-  }, [fen, orientation, turnColor, dests, interactive, arrows, circles, lastMove, check, viewOnly])
+  }, [fen, orientation, turnColor, dests, interactive, arrows, circles, lastMove, check, viewOnly, shapesOverride])
 
   function buildConfig() {
     const movableColor = viewOnly || !interactive ? undefined : (turnColor || 'white')
 
-    const shapes = [
-      ...arrows.map(a => ({
-        orig: a.orig,
-        dest: a.dest,
-        brush: a.brush || 'green',
-      })),
-      ...circles.map(c => ({
-        orig: c.key,
-        dest: c.key,
-        brush: c.brush || 'green',
-      })),
-    ]
+    const builtShapes = shapesOverride != null
+      ? shapesOverride
+      : [
+          ...arrows.map(a => ({
+            orig: a.orig,
+            dest: a.dest,
+            brush: a.brush || 'green',
+          })),
+          ...circles.map(c => ({
+            orig: c.key,
+            dest: c.key,
+            brush: c.brush || 'green',
+          })),
+        ]
 
     return {
       fen,
@@ -111,7 +117,12 @@ export default function Chessboard({
       drawable: {
         enabled: true,
         visible: true,
-        autoShapes: shapes,
+        autoShapes: builtShapes,
+      },
+      events: {
+        select: (square) => {
+          if (onSquareClickRef.current) onSquareClickRef.current(square)
+        },
       },
     }
   }
