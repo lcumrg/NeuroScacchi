@@ -212,6 +212,7 @@ async function streamClaude({ messages, system, modelId, apiKey }) {
         let buffer = ''
         let inputTokens = 0
         let outputTokens = 0
+        let eventType = null // fuori dal while: persiste tra chunk per eventi spezzati
 
         try {
           while (true) {
@@ -222,7 +223,6 @@ async function streamClaude({ messages, system, modelId, apiKey }) {
             const lines = buffer.split('\n')
             buffer = lines.pop()
 
-            let eventType = null
             for (const line of lines) {
               if (line.startsWith('event: ')) {
                 eventType = line.slice(7).trim()
