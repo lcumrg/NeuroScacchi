@@ -1,8 +1,46 @@
 // Client-side service per le interazioni con l'IA (Anthropic Claude via Netlify Function)
 
 import { LESSON_SYSTEM_PROMPT } from './lessonSystemPrompt.js'
+import { validateLesson } from './lessonSchema.js'
+import puzzleDatabase from './puzzleDatabase.js'
 
 const AI_CHAT_ENDPOINT = '/api/ai-chat'
+
+// Mappa tema italiano → tag Lichess
+const THEME_TO_LICHESS = {
+  tattica: ['fork', 'pin', 'skewer', 'discoveredAttack', 'deflection'],
+  finali: ['endgame', 'rookEndgame', 'pawnEndgame', 'queenEndgame'],
+  strategia: ['strategicPlay', 'advantage', 'zugzwang'],
+  aperture: [], // gestito separatamente con openingTags
+}
+
+/**
+ * Recupera puzzle candidati dal database Lichess in base al tema e al range di rating.
+ *
+ * @param {string} tema - Tema in italiano
+ * @param {number} ratingMin
+ * @param {number} ratingMax
+ * @returns {Promise<Array<{fen: string, moves: string[], themes: string[]}>>}
+ */
+async function fetchCandidatePuzzles(tema, ratingMin, ratingMax) {
+  try {
+    if (tema === 'aperture') {
+      return await puzzleDatabase.getOpeningPuzzles({ ratingMin, ratingMax, count: 5 })
+    }
+
+    const tags = THEME_TO_LICHESS[tema] || []
+    if (tags.length === 0) return []
+
+    return await puzzleDatabase.getRandomPuzzles({
+      theme: tags[0],
+      ratingMin,
+      ratingMax,
+      count: 5,
+    })
+  } catch {
+    return []
+  }
+}
 
 /**
  * Invia un messaggio all'IA e restituisce la risposta.
@@ -42,10 +80,13 @@ export async function sendMessage(messages, systemPrompt) {
  * @param {number} [params.ratingMax] - Rating massimo dello studente target
  * @param {string} [params.obiettivo] - Obiettivo didattico specifico
  * @param {string} [params.fenPartenza] - FEN di partenza opzionale (se il coach ha già una posizione)
- * @returns {Promise<Object>} La lezione parsata come oggetto JSON
+ * @returns {Promise<{lesson: Object, validation: {valid: boolean, errors: string[], warnings: string[]}, usage: Object}>}
  */
 export async function generateLesson(params) {
   const { tema, livello, ratingMin, ratingMax, obiettivo, fenPartenza } = params
+
+  // Recupera puzzle candidati dal database prima di costruire il prompt
+  const candidatePuzzles = await fetchCandidatePuzzles(tema, ratingMin, ratingMax)
 
   // Costruisci il prompt utente con i parametri specifici
   const parts = [`Crea una lezione sul tema: "${tema}".`]
@@ -69,6 +110,15 @@ export async function generateLesson(params) {
     parts.push(
       'Usa una posizione classica e ben nota per questo tema. ' +
       'Se non conosci una posizione appropriata con certezza, segnalalo e suggerisci di cercare nel database puzzle.'
+    )
+  }
+
+  if (candidatePuzzles.length > 0) {
+    parts.push(
+      'Posizioni candidate dal database Lichess (scegli quella più adatta o usane una come ispirazione):\n' +
+      candidatePuzzles
+        .map(p => `- FEN: ${p.fen} | Temi: ${Array.isArray(p.themes) ? p.themes.join(', ') : p.themes} | Prima mossa soluzione: ${p.moves[0]}`)
+        .join('\n')
     )
   }
 
@@ -98,6 +148,60 @@ export async function generateLesson(params) {
 
   return {
     lesson,
+    validation: validateLesson(lesson),
+    usage: result.usage,
+  }
+}
+
+/**
+ * Raffina una lezione esistente tramite dialogo con l'IA.
+ *
+ * @param {Object} params
+ * @param {Object} params.lesson - La lezione corrente da raffinare
+ * @param {string} params.userMessage - La richiesta del coach
+ * @param {Array<{role: string, content: string}>} [params.history] - Cronologia messaggi precedenti
+ * @param {Object} [params.stockfishContext] - Contesto di analisi Stockfish opzionale
+ * @returns {Promise<{lesson: Object, validation: {valid: boolean, errors: string[], warnings: string[]}, usage: Object}>}
+ */
+export async function refineLesson({ lesson, userMessage, history = [], stockfishContext }) {
+  const refinementPrompt = [
+    'Lezione attuale:',
+    JSON.stringify(lesson, null, 2),
+    '',
+    `Richiesta del coach: ${userMessage}`,
+  ]
+
+  if (stockfishContext) {
+    refinementPrompt.push('')
+    refinementPrompt.push('Contesto Stockfish:')
+    refinementPrompt.push(JSON.stringify(stockfishContext, null, 2))
+  }
+
+  refinementPrompt.push('')
+  refinementPrompt.push('Rispondi SOLO con il JSON aggiornato della lezione.')
+
+  const messages = [
+    ...history,
+    { role: 'user', content: refinementPrompt.join('\n') },
+  ]
+
+  const result = await sendMessage(messages, LESSON_SYSTEM_PROMPT)
+
+  const updatedLesson = extractJSON(result.content)
+
+  if (!updatedLesson) {
+    throw new AIServiceError(
+      'L\'IA non ha restituito un JSON valido. Risposta ricevuta:\n' + result.content.substring(0, 500)
+    )
+  }
+
+  if (updatedLesson.error) {
+    throw new AIServiceError(`L'IA ha segnalato un problema: ${updatedLesson.error}`)
+  }
+
+  return {
+    lesson: updatedLesson,
+    validation: validateLesson(updatedLesson),
     usage: result.usage,
   }
 }
