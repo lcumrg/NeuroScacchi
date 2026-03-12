@@ -116,13 +116,17 @@ export default function PlayerPage() {
   }, [stepIndex])
 
   // ── Computed board props ──────────────────────────────────────────────────
+  const currentStepType = currentStep?.type?.toLowerCase()?.trim()
+
   const isBoardInteractive = phase === 'activity' && currentStep &&
-    ['move', 'candidate'].includes(currentStep.type)
+    ['move', 'candidate'].includes(currentStepType)
 
-  const isDetectivePhase = phase === 'activity' && currentStep?.type === 'detective'
+  const isDetectivePhase = phase === 'activity' && currentStepType === 'detective'
 
-  const boardDests = isBoardInteractive && fen ? legalDests(fen) : new Map()
-  const boardTurnColor = fen ? getTurnColor(fen) : 'white'
+  // Fallback FEN: step corrente → initialFen della lezione — mai null
+  const activeFen = fen ?? currentStep?.fen ?? lesson?.initialFen
+  const boardDests = isBoardInteractive && activeFen ? legalDests(activeFen) : new Map()
+  const boardTurnColor = activeFen ? getTurnColor(activeFen) : 'white'
 
   // ── Activity callbacks ────────────────────────────────────────────────────
 
@@ -325,7 +329,7 @@ export default function PlayerPage() {
       <main className="player-board-area">
         <div className="player-board-wrapper">
           <Chessboard
-            fen={fen}
+            fen={activeFen}
             orientation={lesson.orientation ?? 'white'}
             turnColor={boardTurnColor}
             dests={boardDests}

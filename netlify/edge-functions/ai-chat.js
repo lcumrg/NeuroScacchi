@@ -76,7 +76,8 @@ export default async (request) => {
     const data = await response.json()
 
     const content = data.candidates?.[0]?.content?.parts
-      ?.map(p => p.text || '')
+      ?.filter(p => !p.thought)  // escludi parti di ragionamento interno (gemini 2.5 thinking)
+      .map(p => p.text || '')
       .join('') || ''
 
     if (!content) {
