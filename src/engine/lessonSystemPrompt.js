@@ -133,10 +133,65 @@ Ogni step (tranne l'ultimo) deve avere un campo \`transition\` che descrive come
 - \`moves\`: array di mosse UCI giocate in sequenza (mossa dello studente + eventuale risposta avversario)
 - \`resultingFen\`: la FEN DOPO tutte le mosse — deve corrispondere ESATTAMENTE al \`fen\` dello step successivo
 
-**REGOLA FONDAMENTALE**: la catena FEN deve essere coerente:
+**REGOLA FONDAMENTALE — vedi anche la sezione "Regole fondamentali" sopra**: la catena FEN deve essere coerente:
 - \`initialFen\` della lezione = \`fen\` del primo step
 - \`transition.resultingFen\` dello step N = \`fen\` dello step N+1
-- L'ultimo step NON ha transition
+- L'ultimo step NON ha il campo \`transition\` (né come stringa vuota né come null — semplicemente assente)
+
+## Regole fondamentali sulla struttura — LEGGILE PRIMA DI GENERARE
+
+**1. `targetRatingMin`, non `targetRating`**
+Il campo si chiama ESATTAMENTE `targetRatingMin`. Non `targetRating`, non `ratingMin`, non `minRating`.
+Allo stesso modo esiste `targetRatingMax`. Esempio corretto:
+\`\`\`json
+"targetRatingMin": 800,
+"targetRatingMax": 1200
+\`\`\`
+
+**2. L'ultimo step NON deve avere `transition`**
+Il campo `transition` va in TUTTI gli step TRANNE l'ultimo. L'ultimo step termina la lezione — non porta da nessuna parte.
+\`\`\`json
+// step N-1 (penultimo) — HA transition
+{ "type": "move", "fen": "...", "transition": { "moves": ["e2e4"], "resultingFen": "..." } }
+// step N (ultimo) — NON ha transition
+{ "type": "text", "content": "Ottimo lavoro!" }
+\`\`\`
+
+**3. Catena FEN: regola numerata**
+La catena FEN deve essere coerente. Segui questi passaggi:
+1. `initialFen` della lezione = `fen` di `steps[0]`
+2. `steps[0].transition.resultingFen` = `fen` di `steps[1]`
+3. `steps[1].transition.resultingFen` = `fen` di `steps[2]`
+4. ... e così via fino all'ultimo step
+5. L'ultimo step NON ha `transition`
+
+Esempio con 3 step:
+\`\`\`
+initialFen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+steps[0].fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"  // uguale a initialFen
+steps[0].transition.resultingFen = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2"
+steps[1].fen = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2"  // = steps[0].transition.resultingFen
+steps[1].transition.resultingFen = "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2"
+steps[2].fen = "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2"  // = steps[1].transition.resultingFen
+// steps[2] è l'ultimo — NESSUN campo transition
+\`\`\`
+
+**4. `orientation` è un campo stringa separato**
+Il campo `orientation` contiene SOLO il valore stringa. Il campo successivo è `steps`.
+\`\`\`json
+// CORRETTO:
+"orientation": "white",
+"steps": [ ... ]
+
+// SBAGLIATO (sintassi non valida):
+"orientation": "white": [ ... ]
+\`\`\`
+
+**5. Lezione minima: 2-3 step vanno benissimo**
+Non serve generare lezioni lunghe. 2-3 step ben costruiti sono più efficaci di 6 step mediocri.
+Una lezione di 2 step è valida: un'attività (intent/detective/candidate/move) + un feedback testuale.
+
+---
 
 ## Schema completo della lezione
 
@@ -154,7 +209,7 @@ Ogni step (tranne l'ultimo) deve avere un campo \`transition\` che descrive come
   "targetRatingMax": 1200,
   "estimatedMinutes": 5,
   "initialFen": "FEN_POSIZIONE_INIZIALE",
-  "orientation": "white|black",
+  "orientation": "white",
   "steps": [ ... ],
   "config": {
     "freeze": { "enabled": true, "durationMs": 2000 },

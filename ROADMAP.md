@@ -4,6 +4,27 @@
 
 ---
 
+## Lavoro in corso
+
+### Sessione 2026-03-13
+
+**Lavoro completato in questa sessione:**
+
+- `src/engine/sfAnalysisService.js` — nuovo servizio di analisi SF dedicato (non condivide il worker con StockfishPanel). Esporta `analyzePosition`, `analyzeLesson`, `classifyMove` con soglie best/good/inaccuracy/mistake/blunder.
+- `src/engine/lichessCloudEval.js` — client Lichess Cloud Eval API con rate-limiting (110ms/req). Esporta `fetchCloudEval` e `analyzeWithCloudEval` con fallback null per posizioni non in cache.
+- `src/engine/lessonSystemPrompt.js` — miglioramento regole IA: campo `targetRatingMin` (non `targetRating`), ultimo step senza `transition`, catena FEN con esempio numerato, `orientation` come stringa standalone, nota su lezione minima 2-3 step.
+- `src/components/LessonViewer.jsx` — placeholder sezione analisi SF, indicatori qualità colorati negli step, empty state per `lesson === null`.
+- `src/pages/ConsolePage.jsx` — progress messaggi nel flusso di generazione (recupero puzzle, contatto IA, parsing), nota sotto model selector sui tempi.
+- `src/pages/PlayerPage.css` + `player-activities.css` — polish desktop (top border activity panel, fade-in tra fasi, scroll indicator mobile, padding opzioni intent, icone feedback più grandi, cursore detective).
+- `src/components/player/TextActivity.jsx` — renderer markdown inline (bold, italic, heading, liste, paragrafi).
+- `src/components/player/FeedbackPanel.jsx` — markdown nel testo, delay 600ms su "Continua", wrapping testo lungo.
+- `src/components/player/CandidateActivity.jsx` — contatore "Hai trovato X di Y", abilita "Conferma" quando `selectedMoves.length >= requiredCount`, evidenzia in giallo mosse non candidate.
+- `src/pages/LessonsPage.jsx` — empty state migliorato, badge Approvata/Bozza, minuti stimati, ordinamento per data.
+
+**Stack IA aggiornato:** multi-provider — Claude (Anthropic) via Netlify Function + Google Gemini via stessa funzione. Provider selezionabile dalla console.
+
+---
+
 ## 1. IL PROGETTO
 
 ### Il problema
@@ -268,16 +289,22 @@ Le cose senza cui niente funziona.
 Il cuore della 3.0: il sistema di creazione lezioni. L'IA arriva subito perché senza di essa il coach non può produrre contenuti di qualità in tempi ragionevoli. L'integrazione è progressiva:
 
 **Fase 1A — IA per il testo, Stockfish per gli scacchi.**
-- Schermata di impostazione obiettivi (con accesso alla scheda studente quando disponibile)
-- Chat con IA integrata
-- L'IA genera le parti dove è affidabile: struttura della lezione, domande Intent, feedback, spiegazioni strategiche, testo metacognitivo
-- Stockfish genera le parti dove l'IA sbaglia: valutazione posizioni, mosse migliori, mosse candidate, classificazione errori
-- Traduzione semantica della valutazione: l'IA interpreta i dati numerici di Stockfish (delta-eval, classificazione errore) e li trasforma in feedback narrativi strategici contestualizzati alla posizione. Questa è un'area dove l'IA eccelle — il dato numerico è oggettivo e verificabile, il rischio di allucinazione è basso
-- L'IA attinge dal **database puzzle Lichess** per proporre posizioni adeguate al livello e ai temi richiesti, e dall'**Opening Explorer** di Lichess per dati statistici sulle aperture — anziché inventare posizioni da zero
-- Il coach fornisce la posizione di partenza (FEN, apertura, PGN) e il contesto didattico, oppure lascia che l'IA la trovi nel database
-- Validazione automatica (chessops + Stockfish) per la correttezza scacchistica
-- Scacchiera al centro che mostra le posizioni in tempo reale
-- Il coach rivede il risultato finale e lo approva o chiede modifiche
+
+**Completato:**
+- Schermata di impostazione obiettivi con form tema/livello/rating/obiettivo ✓
+- Chat con IA integrata (iterazione raffinamento) ✓
+- Generazione lezione con multi-provider IA (Claude Sonnet/Opus + Gemini Flash/Pro) ✓
+- LessonViewer con visualizzazione step, errori schema, mosse illegali ✓
+- Validazione mosse con chessops (mosse illegali rilevate) ✓
+- Salvataggio bozza e approvazione in localStorage ✓
+- System prompt migliorato con regole anti-errori comuni ✓
+- Progress messages nel flusso generazione ✓
+
+**Ancora mancante in 1A:**
+- Integrazione Stockfish nel flusso di generazione (sfAnalysisService creato ma non collegato alla console)
+- Salvataggio lezioni su Firestore (solo localStorage)
+- L'IA non attinge ancora dal database puzzle Lichess — usa conoscenza propria per le posizioni
+- Opening Explorer non integrato
 
 **Fase 1B — IA anche per le posizioni, con validazione.**
 
@@ -288,16 +315,17 @@ Il cuore della 3.0: il sistema di creazione lezioni. L'IA arriva subito perché 
 
 ### Fase 2 — Il player studente (base)
 
-**Stato: DA FARE**
+**Stato: COMPLETATA** ✓
 
 Il player minimo per eseguire le lezioni create in Fase 1.
 
-- Freeze (attesa temporizzata quando non ci sono attività)
-- I tre tipi di attività: Intent, Detective, Candidate
-- Aiuti visivi (frecce e case evidenziate)
-- Feedback base
-- Lista lezioni, clic per aprire e giocare
-- Fase di test: prima il creatore, poi i figli
+- Freeze (attesa temporizzata quando non ci sono attività) ✓
+- Tutti e 6 i tipi di attività: Intent, Detective, Candidate, Move, Text, Demo ✓
+- Aiuti visivi (frecce e case evidenziate) ✓
+- Feedback base corretto/scorretto ✓
+- Lista lezioni (LessonsPage), clic per aprire e giocare ✓
+- Transizioni animate tra step ✓
+- Schermata completamento lezione ✓
 
 **Nota sull'engagement:** La ricerca indica 10–20 minuti come durata ottimale per sessione di contenuti scacchistici educativi con bambini di 8–12 anni. La soglia critica per verificare l'efficacia è di 25–30 ore totali di istruzione (Sala & Gobet, 2016), che a 3–5 sessioni settimanali da 10–20 minuti richiede 8–16 settimane di uso sostenuto.
 
