@@ -62,8 +62,18 @@ export async function sendMessage(messages, systemPrompt) {
   })
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    const message = errorData.details || errorData.error || `Errore HTTP ${response.status}`
+    const rawText = await response.text().catch(() => '')
+    let message = `Errore HTTP ${response.status}`
+    try {
+      const errorData = JSON.parse(rawText)
+      message = errorData.details || errorData.error || message
+    } catch {
+      // risposta non-JSON (HTML di errore Netlify o simile)
+      if (rawText.length > 0) {
+        // Mostra i primi 300 chars del testo grezzo per debug
+        message = `Errore HTTP ${response.status}: ${rawText.substring(0, 300)}`
+      }
+    }
     throw new AIServiceError(message, response.status)
   }
 
