@@ -49,11 +49,10 @@ async function fetchCandidatePuzzles(tema, ratingMin, ratingMax) {
  * @param {string} [systemPrompt] - System prompt opzionale
  * @returns {Promise<{content: string, usage: {input_tokens: number, output_tokens: number}}>}
  */
-export async function sendMessage(messages, systemPrompt) {
+export async function sendMessage(messages, systemPrompt, model) {
   const body = { messages }
-  if (systemPrompt) {
-    body.system = systemPrompt
-  }
+  if (systemPrompt) body.system = systemPrompt
+  if (model) body.model = model
 
   const response = await fetch(AI_CHAT_ENDPOINT, {
     method: 'POST',
@@ -127,7 +126,7 @@ export async function sendMessage(messages, systemPrompt) {
  * @returns {Promise<{lesson: Object, validation: {valid: boolean, errors: string[], warnings: string[]}, usage: Object}>}
  */
 export async function generateLesson(params) {
-  const { tema, livello, ratingMin, ratingMax, obiettivo, fenPartenza } = params
+  const { tema, livello, ratingMin, ratingMax, obiettivo, fenPartenza, model } = params
 
   // Recupera puzzle candidati dal database prima di costruire il prompt
   const candidatePuzzles = await fetchCandidatePuzzles(tema, ratingMin, ratingMax)
@@ -173,7 +172,8 @@ export async function generateLesson(params) {
 
   const result = await sendMessage(
     [{ role: 'user', content: userMessage }],
-    LESSON_SYSTEM_PROMPT
+    LESSON_SYSTEM_PROMPT,
+    model
   )
 
   // Estrai e parsa il JSON dalla risposta
@@ -234,7 +234,7 @@ function sanitizeLessonMoves(lesson) {
  * @param {Object} [params.stockfishContext] - Contesto di analisi Stockfish opzionale
  * @returns {Promise<{lesson: Object, validation: {valid: boolean, errors: string[], warnings: string[]}, usage: Object}>}
  */
-export async function refineLesson({ lesson, userMessage, history = [], stockfishContext }) {
+export async function refineLesson({ lesson, userMessage, history = [], stockfishContext, model }) {
   const refinementPrompt = [
     'Lezione attuale:',
     JSON.stringify(lesson, null, 2),
@@ -256,7 +256,7 @@ export async function refineLesson({ lesson, userMessage, history = [], stockfis
     { role: 'user', content: refinementPrompt.join('\n') },
   ]
 
-  const result = await sendMessage(messages, LESSON_SYSTEM_PROMPT)
+  const result = await sendMessage(messages, LESSON_SYSTEM_PROMPT, model)
 
   const updatedLesson = extractJSON(result.content)
 
