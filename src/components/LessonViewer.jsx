@@ -77,7 +77,8 @@ function StepDetail({ step, stepIndex, sfValidation }) {
               <span className="lv-detail-label">Opzioni:</span>
               <ul className="lv-options-list">
                 {step.options.map((opt, i) => {
-                  const isCorrect = step.correctOption === opt || step.correctIndex === i
+                  // Schema v3: correctness is opt.correct === true (not a separate field on step)
+                  const isCorrect = opt.correct === true
                   return (
                     <li key={i} className={`lv-option${isCorrect ? ' lv-option--correct' : ''}`}>
                       {isCorrect && <span className="lv-option-check">✓</span>}
