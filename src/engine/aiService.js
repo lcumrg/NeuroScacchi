@@ -1,6 +1,8 @@
 // Client-side service per le interazioni con l'IA (Anthropic Claude via Netlify Function)
 
 import { LESSON_SYSTEM_PROMPT } from './lessonSystemPrompt.js'
+import { LESSON_PLAN_PROMPT, getTagsForTheme } from './lessonPlanPrompt.js'
+import { LESSON_BUILD_PROMPT } from './lessonBuildPrompt.js'
 import { validateLesson } from './lessonSchema.js'
 import puzzleDatabase from './puzzleDatabase.js'
 
@@ -399,6 +401,135 @@ function translateLevel(level) {
     advanced: 'avanzato',
   }
   return map[level] || level
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NUOVA PIPELINE — Passo 1 (planLesson) e Passo 3 (buildLesson)
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Passo 1 della pipeline: l'IA pianifica la struttura pedagogica della lezione.
+ * NON produce FEN, mosse o valutazioni — solo struttura e criteri di ricerca puzzle.
+ *
+ * @param {Object} params
+ * @param {string} params.tema
+ * @param {string} params.livello
+ * @param {number} [params.ratingMin]
+ * @param {number} [params.ratingMax]
+ * @param {string} [params.obiettivo]
+ * @param {string} [params.model]
+ * @returns {Promise<{ plan: Object, usage: Object }>}
+ */
+export async function planLesson(params) {
+  const { tema, livello, ratingMin, ratingMax, obiettivo, model } = params
+
+  const suggestedTags = getTagsForTheme(tema)
+
+  const parts = [
+    `Pianifica una lezione sul tema: "${tema}".`,
+    `Livello studente: ${livello}.`,
+  ]
+
+  if (ratingMin != null || ratingMax != null) {
+    parts.push(`Rating target: ${ratingMin || '?'}–${ratingMax || '?'}.`)
+  }
+
+  if (obiettivo) {
+    parts.push(`Obiettivo didattico specifico: ${obiettivo}.`)
+  }
+
+  parts.push(
+    `Tag Lichess suggeriti per questo tema: ${suggestedTags.join(', ')}.`,
+    'Rispondi SOLO con il JSON del piano, senza testo aggiuntivo.',
+  )
+
+  const userMessage = parts.join('\n')
+  const messages = [{ role: 'user', content: userMessage }]
+
+  let result = await sendMessage(messages, LESSON_PLAN_PROMPT, model)
+  let plan = extractJSON(result.content)
+
+  // Retry se JSON invalido
+  if (!plan) {
+    const retryMessages = [
+      ...messages,
+      { role: 'assistant', content: result.content },
+      { role: 'user', content: 'Il JSON contiene un errore di sintassi. Restituisci SOLO il JSON corretto.' },
+    ]
+    result = await sendMessage(retryMessages, LESSON_PLAN_PROMPT, model)
+    plan = extractJSON(result.content)
+  }
+
+  if (!plan) {
+    throw new AIServiceError("L'IA non ha restituito un piano JSON valido")
+  }
+
+  // Assicura che puzzleQuery abbia valori sensati
+  if (!plan.puzzleQuery) {
+    plan.puzzleQuery = {
+      themes: suggestedTags,
+      ratingMin: plan.targetRatingMin || ratingMin || 800,
+      ratingMax: plan.targetRatingMax || ratingMax || 2000,
+      count: 8,
+    }
+  }
+
+  return { plan, usage: result.usage }
+}
+
+/**
+ * Passo 3 della pipeline: l'IA costruisce la lezione usando materiali certificati.
+ * Riceve il piano + il pacchetto materiali (FEN calcolate, analisi SF) e produce il JSON lezione.
+ *
+ * @param {Object} params
+ * @param {Object} params.plan - Piano dal Passo 1
+ * @param {Object} params.materials - MaterialsPackage dal Passo 2
+ * @param {string} [params.model]
+ * @returns {Promise<{ lesson: Object, usage: Object }>}
+ */
+export async function buildLesson({ plan, materials, model }) {
+  // Costruisce il messaggio utente con piano + materiali
+  const userMessage = [
+    '## PIANO DELLA LEZIONE',
+    JSON.stringify(plan, null, 2),
+    '',
+    '## PACCHETTO MATERIALI (posizioni e analisi certificate)',
+    JSON.stringify(materials, null, 2),
+    '',
+    'Costruisci la lezione completa in JSON v3.0.0 usando ESCLUSIVAMENTE le FEN e mosse dai materiali.',
+    'NON aggiungere il campo transition — verrà calcolato automaticamente.',
+    'Rispondi SOLO con il JSON.',
+  ].join('\n')
+
+  const messages = [{ role: 'user', content: userMessage }]
+
+  let result = await sendMessage(messages, LESSON_BUILD_PROMPT, model)
+  let lesson = extractJSON(result.content)
+
+  // Retry se JSON invalido
+  if (!lesson) {
+    const retryMessages = [
+      ...messages,
+      { role: 'assistant', content: result.content },
+      { role: 'user', content: 'Il JSON contiene un errore di sintassi. Restituisci SOLO il JSON corretto e completo.' },
+    ]
+    result = await sendMessage(retryMessages, LESSON_BUILD_PROMPT, model)
+    lesson = extractJSON(result.content)
+  }
+
+  if (!lesson) {
+    throw new AIServiceError("L'IA non ha restituito un JSON lezione valido")
+  }
+
+  if (lesson.error) {
+    throw new AIServiceError(`L'IA ha segnalato un problema: ${lesson.error}`)
+  }
+
+  // Sanitizza mosse (rimuovi x, +, # etc.) e struttura
+  sanitizeLessonMoves(lesson)
+  sanitizeLessonStructure(lesson)
+
+  return { lesson, usage: result.usage }
 }
 
 /**
