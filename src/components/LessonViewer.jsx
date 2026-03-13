@@ -248,7 +248,19 @@ function StepDetail({ step, stepIndex, sfValidation }) {
       {/* Transition */}
       {step.transition && (
         <div className="lv-transition">
-          Transizione: {step.transition}
+          <strong>Transizione:</strong>{' '}
+          {step.transition.moves && (
+            <span className="lv-moves-list" style={{ display: 'inline-flex', gap: '4px' }}>
+              {step.transition.moves.map((m, i) => (
+                <span key={i} className="lv-move-chip">{typeof m === 'string' ? m : JSON.stringify(m)}</span>
+              ))}
+            </span>
+          )}
+          {step.transition.resultingFen && (
+            <span className="lv-detail-fen" style={{ display: 'block', marginTop: '4px' }}>
+              → {step.transition.resultingFen}
+            </span>
+          )}
         </div>
       )}
     </div>
