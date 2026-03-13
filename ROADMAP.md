@@ -6,31 +6,20 @@
 
 ## Lavoro in corso
 
-### Sessione 2026-03-13 (2)
+### Sessione 2026-03-13
 
 **Lavoro completato:**
 
-- **Migrazione puzzle da Turso a Firestore** — riscrittura `puzzle-search.js` e `puzzle-meta.js` per usare Firebase Admin SDK al posto di `@libsql/client`
-- Rimossa dipendenza `@libsql/client`, aggiunta `firebase-admin` in `package.json`
-- `puzzle-meta.js` semplificato con temi Lichess hardcoded (set fisso, evita aggregazione su milioni di doc)
-- `puzzle-search.js`: query Firestore con `array-contains`/`array-contains-any` per temi, range rating, shuffle per randomizzazione
-- Aggiornata ROADMAP con stato reale integrazione puzzle
+- **Migrazione puzzle da Turso a Firestore** — riscrittura `puzzle-search.js` e `puzzle-meta.js` per Firebase Admin SDK
+- `FIREBASE_SERVICE_ACCOUNT` impostata in Netlify — query puzzle Lichess attive ✓
+- **Analisi Stockfish integrata** nel flusso di generazione — pallini qualità, confronto mossa IA vs SF
+- Fix LessonViewer: renderizzazione `transition` come oggetto (era crash React #31)
+- **Analisi architetturale profonda** della pipeline di generazione — identificati 8 gap critici
+- **Progettazione nuova pipeline** "IA fa pedagogia, il sistema fa scacchi" → documentata in `docs/architettura-pipeline-lezioni.md`
 
-**Prossimo passo:** impostare `FIREBASE_SERVICE_ACCOUNT` in Netlify env vars per attivare le query puzzle.
+**Conclusione chiave:** l'architettura attuale chiede all'IA di calcolare scacchi (FEN, mosse, valutazioni) — cosa che gli LLM non sanno fare. La nuova pipeline separa i ruoli: Lichess fornisce posizioni reali, chessops calcola FEN, Stockfish analizza, l'IA scrive solo la parte pedagogica.
 
-### Sessione 2026-03-13 (1)
-
-**Lavoro completato nella sessione precedente:**
-
-- `src/engine/sfAnalysisService.js` — nuovo servizio di analisi SF dedicato
-- `src/engine/lichessCloudEval.js` — client Lichess Cloud Eval API
-- `src/engine/lessonSystemPrompt.js` — miglioramento regole IA
-- `src/components/LessonViewer.jsx` — placeholder sezione analisi SF, indicatori qualità
-- `src/pages/ConsolePage.jsx` — progress messaggi nel flusso di generazione
-- UI polish vari (PlayerPage, TextActivity, FeedbackPanel, CandidateActivity, LessonsPage)
-- Import puzzle Lichess in Firestore via `scripts/import_puzzles.py`, indici compositi creati e abilitati
-
-**Stack IA aggiornato:** multi-provider — Claude (Anthropic) via Netlify Function + Google Gemini via stessa funzione. Provider selezionabile dalla console.
+**Prossimo passo:** implementazione nuova pipeline (Fase 1A-Pipeline-A/B/C/D). Vedi ROADMAP sezione Fase 1A e `docs/architettura-pipeline-lezioni.md`.
 
 ---
 
@@ -314,58 +303,135 @@ Il cuore della 3.0: il sistema di creazione lezioni. L'IA arriva subito perché 
 
 - **Analisi Stockfish automatica dopo generazione** ✓ — ogni step viene analizzato con SF depth 15, mostra qualità (best/good/inaccuracy/mistake/blunder), mossa migliore SF vs mossa IA, top linee. Ri-analisi anche dopo raffinamento via chat.
 
+**Stato Fase 1A: INFRASTRUTTURA COMPLETA — Pipeline di generazione da rifare (vedi sotto).**
+
+Il database puzzle Lichess è attivo su Firestore (`FIREBASE_SERVICE_ACCOUNT` impostata), l'analisi Stockfish post-generazione funziona, ma la qualità delle lezioni generate non è accettabile. Vedi sezione dedicata.
+
 **Ancora mancante in 1A:**
-- **`FIREBASE_SERVICE_ACCOUNT` da impostare in Netlify** — senza questa env var le query puzzle non funzionano (FATTO se l'utente ha completato il setup manuale)
 - Salvataggio lezioni su Firestore (solo localStorage)
 - Opening Explorer non integrato (bassa priorità)
 
 ---
 
-### Integrazione database puzzle Lichess — Stato
+### Problema critico identificato: l'IA non sa fare scacchi
 
-**Priorità: ALTA — obiettivo principale della qualità lezioni**
+**Data identificazione: 2026-03-13**
 
-**Perché è fondamentale:**
-L'IA genera posizioni dalla propria conoscenza interna, il che è il principale rischio di qualità identificato nel progetto ("l'IA sbaglia sugli scacchi"). Con il database Lichess, ogni posizione proposta nella lezione è:
-- Una partita reale, verificata, con rating calibrato
-- Etichettata con temi (fork, pin, endgame, ecc.)
-- Già validata da milioni di giocatori umani
+L'architettura attuale della generazione lezioni ha un difetto fondamentale: **chiede all'IA di calcolare scacchi** — generare FEN, determinare mosse migliori, calcolare posizioni risultanti. Gli LLM non sono in grado di farlo in modo affidabile. Risultato: lezioni con errori scacchistici gravi (posizioni impossibili, mosse illegali, valutazioni false come "Df1 è matto" quando c'è una torre che può catturare).
 
-**Stato: QUASI COMPLETO**
+**8 gap identificati nell'architettura attuale:**
 
-Tutto è pronto — manca solo una variabile d'ambiente su Netlify.
+| # | Gap | Gravità |
+|---|-----|---------|
+| 1 | Solo il primo tag Lichess usato per la ricerca (sempre "fork" per tattica) | Media |
+| 2 | Temi non mappati → zero puzzle → IA inventa posizioni | Alta |
+| 3 | IA può usare puzzle "come ispirazione" o ignorarli del tutto | **Critica** |
+| 4 | FEN validata solo per formato regex, non per legalità posizione | Alta |
+| 5 | Mosse mai validate per legalità nella posizione data | **Critica** |
+| 6 | Catena FEN tra step non calcolata, solo string-match | **Critica** |
+| 7 | Nessun Stockfish nel loop di generazione | **Critica** |
+| 8 | initialFen vs steps[0].fen non verificato | Bassa |
 
-**Completato:**
-- Puzzle Lichess importati in Firestore (collection `puzzles`) con script Python (`scripts/import_puzzles.py`) ✓
-- Filtri qualità applicati: popularity ≥ 50, nbPlays ≥ 500 ✓
-- Indici compositi Firestore abilitati: `themes (Arrays) + rating (Ascending)` ✓
-- Netlify Function `puzzle-search.js` riscritta per Firebase Admin SDK ✓
-- Netlify Function `puzzle-meta.js` con temi/aperture Lichess ✓
-- Client `puzzleDatabase.js` invariato (già funzionante) ✓
-- Integrazione in `aiService.js` con `fetchCandidatePuzzles()` ✓
+Il principio delle "3 intelligenze" (IA bozza, SF valida, umano approva) è corretto ma l'implementazione attuale lo viola: l'IA fa tutto da sola e SF interviene solo dopo, come audit — troppo tardi per essere utile.
 
-**Unica azione mancante:**
-Impostare `FIREBASE_SERVICE_ACCOUNT` come variabile d'ambiente in Netlify:
-1. Vai su `Netlify → Site settings → Environment variables`
-2. Crea `FIREBASE_SERVICE_ACCOUNT`
-3. Valore: il contenuto JSON del file service account Firebase Admin (una riga)
+---
 
-Il file service account si scarica da: Firebase Console → Impostazioni progetto → Account di servizio → Genera nuova chiave privata.
+### Nuova pipeline di generazione: "IA fa pedagogia, il sistema fa scacchi"
 
-**Verifica:** Dopo l'attivazione, il messaggio "⟳ Recupero puzzle candidati..." nella console corrisponderà a una query Firestore reale. L'IA riceverà 5 posizioni reali da Lichess come contesto per generare gli step della lezione.
+**Documento di riferimento:** `docs/architettura-pipeline-lezioni.md`
 
-**Evoluzione futura:**
-- Passare da 5 a 10-15 puzzle candidati per aumentare la varietà
-- Usare più tag Lichess per tema (attualmente si usa solo il primo tag)
-- Integrare `popularity` come filtro per scegliere puzzle ben testati
-- Opening Explorer Lichess API per il tema aperture (in aggiunta al DB)
+Il cambio architetturale separerà nettamente i ruoli. L'IA interviene due volte (pianifica e costruisce) ma **non tocca mai FEN, mosse o valutazioni** — quelli arrivano da Lichess, Stockfish e chessops.
 
-**Fase 1B — IA anche per le posizioni, con validazione.**
+#### Pipeline a 4 passi
 
-**Stato: DA FARE**
-- Una volta che la pipeline di validazione è collaudata con l'uso reale, l'IA inizia a proporre anche posizioni e sequenze di mosse originali (non solo dal database)
-- Ciclo di validazione a tre round: genera → valida → correggi → ri-valida
-- Stockfish corregge automaticamente prima che il coach veda il risultato
+```
+Passo 0: UMANO → descrive il bisogno
+Passo 1: IA PIANIFICA → struttura pedagogica, criteri ricerca puzzle
+Passo 2: SISTEMA CERCA E VALIDA → Lichess + SF + chessops → materiali certificati
+Passo 3: IA COSTRUISCE → con materiali validati scrive domande, feedback, spiegazioni
+Passo 4: UMANO → rivede e approva
+```
+
+**Passo 1 — IA Pianifica**: produce un piano strutturato (JSON) con titolo, tipi di attività, sequenza pedagogica, criteri di ricerca puzzle (tag Lichess, range rating, quantità). Non genera nessuna FEN né mossa.
+
+**Passo 2 — Sistema Cerca e Valida** (zero IA):
+- Query puzzle da Firestore con i criteri del piano
+- Per ogni puzzle, `chessops.makeMove()` calcola deterministicamente ogni FEN intermedia lungo la sequenza di mosse
+- Stockfish analizza le posizioni chiave: eval, mosse migliori, minacce
+- Output: "pacchetto materiali" con posizioni reali, mosse verificate, analisi SF
+
+**Passo 3 — IA Costruisce**: riceve piano + materiali certificati. Scrive domande, opzioni, feedback, spiegazioni. Usa **solo** le FEN e le mosse dal pacchetto materiali. Post-processing automatico verifica che nessuna FEN sia stata inventata e calcola le transizioni deterministicamente.
+
+**Passo 4 — Umano Valida**: invariato — il coach rivede e approva nella Console Coach.
+
+#### Come il puzzle Lichess diventa lezione
+
+Un puzzle Lichess ha: FEN iniziale + sequenza di mosse (la prima è dell'avversario = setup, la seconda è la soluzione del giocatore, ecc.). Il sistema calcola tutte le posizioni intermedie con chessops:
+
+```
+positions[0] = FEN iniziale
+positions[1] = dopo mossa avversario (= la posizione del puzzle)
+positions[2] = dopo soluzione giocatore
+positions[3] = dopo risposta avversario
+...
+```
+
+Ogni posizione è analizzata da SF. L'IA poi mappa queste posizioni su step della lezione:
+
+| Step | Posizione | Dati scacchi | IA fa |
+|------|-----------|-------------|-------|
+| intent | positions[1] | correctMoves da puzzle, allowedMoves da SF top 3-4 | Scrive domanda e opzioni |
+| detective | positions[1] | correctSquare da target mossa migliore | Scrive domanda |
+| candidate | positions[1] | candidateMoves da SF, bestMove da SF | Scrive istruzioni |
+| move | positions[1] | correctMoves da puzzle | Scrive feedback |
+| text | opzionale | nessuno | Scrive contenuto |
+| demo | positions[0] | moves da sequenza puzzle | Scrive spiegazione |
+
+#### File da creare
+
+| File | Ruolo |
+|------|-------|
+| `src/engine/lessonPipeline.js` | Orchestratore dei 4 passi |
+| `src/engine/puzzleEnricher.js` | Passo 2: calcolo posizioni, analisi SF, validazione |
+| `src/engine/lessonPlanPrompt.js` | System prompt per Passo 1 (pianificazione) |
+| `src/engine/lessonBuildPrompt.js` | System prompt per Passo 3 (costruzione) |
+
+#### File da modificare
+
+| File | Modifiche |
+|------|-----------|
+| `src/engine/aiService.js` | Aggiungere `planLesson()` e `buildLesson()`. Mantenere vecchio flusso come fallback. |
+| `src/engine/chessService.js` | Aggiungere helper `makeMoveFromUci()` e `getSan()` |
+| `src/pages/ConsolePage.jsx` | Wiring nuova pipeline con toggle vecchia/nuova |
+
+#### Fasi di implementazione
+
+| Fase | Scope | Prerequisiti |
+|------|-------|-------------|
+| **1A-Pipeline-A** | Foundation: `puzzleEnricher.js`, helper `chessService.js`, skeleton pipeline | Nessuno |
+| **1A-Pipeline-B** | Passo 1+2: prompt pianificazione, `planLesson()`, `buildMaterialsPackage()` con SF | A |
+| **1A-Pipeline-C** | Passo 3+integrazione: prompt costruzione, `buildLesson()`, validazione, ConsolePage | B |
+| **1A-Pipeline-D** | Polish: cloud eval, fallback, rimozione toggle | C |
+
+#### Budget performance
+
+| Fase | Tempo |
+|------|-------|
+| Passo 1 (IA pianifica) | 5-15s |
+| Passo 2 (fetch + compute + SF) | 16-27s |
+| Passo 3 (IA costruisce) | 10-20s |
+| Post-processing | <200ms |
+| **Totale** | **31-62s** (25-45s con cloud eval) |
+
+---
+
+**Fase 1B — Raffinamenti pipeline.**
+
+**Stato: DA FARE (dopo completamento pipeline)**
+- Cloud eval Lichess come prima fonte, SF locale come fallback
+- Gestione fallback quando non ci sono abbastanza puzzle per i criteri
+- Supporto per FEN fornita dal coach (bypass puzzle database)
+- Raffinamento iterativo: il coach chiede modifiche via chat, la pipeline ri-valida
 
 ### Fase 2 — Il player studente (base)
 
