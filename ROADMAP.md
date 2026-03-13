@@ -299,12 +299,96 @@ Il cuore della 3.0: il sistema di creazione lezioni. L'IA arriva subito perché 
 - Salvataggio bozza e approvazione in localStorage ✓
 - System prompt migliorato con regole anti-errori comuni ✓
 - Progress messages nel flusso generazione ✓
+- Infrastruttura database puzzle completa: `puzzle-search.js` (Netlify Function → Turso), `puzzleDatabase.js` (client), `puzzle-meta.js` (metadati temi/aperture) ✓ — **manca solo il DB popolato**
 
 **Ancora mancante in 1A:**
 - Integrazione Stockfish nel flusso di generazione (sfAnalysisService creato ma non collegato alla console)
 - Salvataggio lezioni su Firestore (solo localStorage)
-- L'IA non attinge ancora dal database puzzle Lichess — usa conoscenza propria per le posizioni
-- Opening Explorer non integrato
+- **DATABASE LICHESS: attivazione Turso** (vedi sezione dedicata sotto)
+- Opening Explorer non integrato (bassa priorità dopo attivazione Turso)
+
+---
+
+### Integrazione database puzzle Lichess — Piano dettagliato
+
+**Priorità: ALTA — obiettivo principale della qualità lezioni**
+
+**Perché è fondamentale:**
+L'IA genera posizioni dalla propria conoscenza interna, il che è il principale rischio di qualità identificato nel progetto ("l'IA sbaglia sugli scacchi"). Con il database Lichess, ogni posizione proposta nella lezione è:
+- Una partita reale, verificata, con rating calibrato
+- Etichettata con temi (fork, pin, endgame, ecc.)
+- Già validata da milioni di giocatori umani
+
+**Stato attuale:**
+L'intera infrastruttura è già scritta e deployata. Mancano solo due cose:
+1. Un database Turso creato e popolato con i puzzle Lichess
+2. Le variabili `TURSO_DATABASE_URL` e `TURSO_AUTH_TOKEN` impostate in Netlify
+
+**Come attivarlo (passi operativi):**
+
+**Step 1 — Crea il database Turso**
+```bash
+# Installa CLI Turso
+brew install tursodatabase/tap/turso
+
+# Login
+turso auth login
+
+# Crea il database
+turso db create neuroscacchi-puzzles
+
+# Ottieni URL e token
+turso db show neuroscacchi-puzzles   # → TURSO_DATABASE_URL
+turso db tokens create neuroscacchi-puzzles  # → TURSO_AUTH_TOKEN
+```
+
+**Step 2 — Scarica i puzzle Lichess**
+Il dataset completo (4.7M puzzle, ~300MB CSV) è disponibile su:
+`https://database.lichess.org/#puzzles` → file `lichess_db_puzzle.csv.zst`
+
+Colonne usate: `PuzzleId, FEN, Moves, Rating, RatingDeviation, Popularity, NbPlays, Themes, OpeningTags`
+
+**Step 3 — Importa in SQLite poi su Turso**
+```bash
+# Crea SQLite locale con schema corretto
+sqlite3 puzzles.db "
+CREATE TABLE puzzles (
+  id TEXT PRIMARY KEY,
+  fen TEXT NOT NULL,
+  moves TEXT NOT NULL,
+  rating INTEGER,
+  rating_deviation INTEGER,
+  popularity INTEGER,
+  nb_plays INTEGER,
+  themes TEXT,
+  opening_tags TEXT
+);
+"
+
+# Importa CSV (dopo decompressione)
+# Usa script Python o csv-to-sqlite per i 4.7M record
+
+# Upload su Turso
+turso db shell neuroscacchi-puzzles < puzzles.sql
+# oppure con replica locale
+```
+
+**Nota storage:** Turso free tier = 500MB. Il dataset completo (4.7M puzzle) con solo le colonne necessarie pesa ~350-400MB come SQLite — fattibile sul tier gratuito. Se supera il limite, si può filtrare tenendo solo i puzzle con `popularity > 50` (~2M puzzle, ~200MB).
+
+**Step 4 — Imposta env vars in Netlify**
+`Netlify → Site settings → Environment variables`:
+- `TURSO_DATABASE_URL` = `libsql://neuroscacchi-puzzles-[user].turso.io`
+- `TURSO_AUTH_TOKEN` = il token generato
+
+**Step 5 — Nessun cambio al codice** — tutto è già scritto e funzionante.
+
+**Verifica:** Dopo l'attivazione, il messaggio "⟳ Recupero puzzle candidati..." nella console corrisponderà a una query SQL reale su Turso. L'IA riceverà 5 posizioni reali da Lichess come contesto per generare gli step della lezione.
+
+**Evoluzione futura post-attivazione:**
+- Passare da 5 a 10-15 puzzle candidati per aumentare la varietà
+- Usare più tag Lichess per tema (attualmente si usa solo il primo tag)
+- Integrare `popularity` come filtro per scegliere puzzle ben testati
+- Opening Explorer Lichess API per il tema aperture (in aggiunta al DB locale)
 
 **Fase 1B — IA anche per le posizioni, con validazione.**
 
