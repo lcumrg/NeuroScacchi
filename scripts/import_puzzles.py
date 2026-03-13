@@ -81,6 +81,25 @@ def download_csv():
         sys.exit(1)
 
 
+PROGRESS_FILE = os.path.expanduser("~/Downloads/import_progress.txt")
+
+
+def load_last_id():
+    """Legge l'ultimo ID importato per riprendere da dove si era fermato."""
+    if os.path.exists(PROGRESS_FILE):
+        with open(PROGRESS_FILE) as f:
+            last_id = f.read().strip()
+            if last_id:
+                print(f"Ripresa da ultimo ID: {last_id}")
+                return last_id
+    return None
+
+
+def save_last_id(puzzle_id):
+    with open(PROGRESS_FILE, "w") as f:
+        f.write(puzzle_id)
+
+
 def import_puzzles(db):
     collection = db.collection("puzzles")
     batch = db.batch()
@@ -88,6 +107,11 @@ def import_puzzles(db):
     total_imported = 0
     total_skipped = 0
     start_time = time.time()
+
+    # Riprende dall'ultimo ID salvato
+    last_id = load_last_id()
+    resuming = last_id is not None
+    last_saved_id = None
 
     print(f"\nInizio importazione da: {CSV_PATH}")
     print(f"Filtri: popularity >= {MIN_POPULARITY}, nb_plays >= {MIN_NB_PLAYS}")
@@ -99,6 +123,14 @@ def import_puzzles(db):
         reader = csv.DictReader(f)
 
         for row in reader:
+            puzzle_id = row["PuzzleId"]
+
+            # Salta fino all'ultimo ID importato
+            if resuming:
+                if puzzle_id == last_id:
+                    resuming = False
+                continue
+
             # Applica filtri qualità
             try:
                 popularity = int(row["Popularity"]) if row["Popularity"] else 0
@@ -112,9 +144,8 @@ def import_puzzles(db):
                 continue
 
             # Costruisci il documento
-            puzzle_id = row["PuzzleId"]
-            themes     = row["Themes"].split()       if row["Themes"]      else []
-            opening    = row["OpeningTags"].split()  if row["OpeningTags"] else []
+            themes  = row["Themes"].split()      if row["Themes"]      else []
+            opening = row["OpeningTags"].split() if row["OpeningTags"] else []
 
             doc = {
                 "fen":         row["FEN"],
@@ -128,15 +159,16 @@ def import_puzzles(db):
                 "gameUrl":     row.get("GameUrl", ""),
             }
 
-            # Aggiungi al batch
             doc_ref = collection.document(puzzle_id)
             batch.set(doc_ref, doc)
             batch_count += 1
             total_imported += 1
+            last_saved_id = puzzle_id
 
             # Commit ogni BATCH_SIZE documenti
             if batch_count >= BATCH_SIZE:
                 batch.commit()
+                save_last_id(last_saved_id)
                 batch = db.batch()
                 batch_count = 0
                 elapsed = time.time() - start_time
@@ -149,12 +181,19 @@ def import_puzzles(db):
     # Commit eventuale batch finale
     if batch_count > 0:
         batch.commit()
+        if last_saved_id:
+            save_last_id(last_saved_id)
 
     elapsed = time.time() - start_time
     print(f"\n✅ Importazione completata!")
     print(f"   Puzzle importati: {total_imported:,}")
     print(f"   Puzzle saltati:   {total_skipped:,}")
     print(f"   Tempo totale:     {elapsed/60:.1f} minuti")
+
+    # Rimuovi file di progresso se completato senza errori
+    if os.path.exists(PROGRESS_FILE) and not MAX_PUZZLES:
+        os.remove(PROGRESS_FILE)
+        print("   File di progresso rimosso.")
 
 
 def create_indexes_reminder():
