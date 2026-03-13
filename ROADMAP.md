@@ -312,9 +312,10 @@ Il cuore della 3.0: il sistema di creazione lezioni. L'IA arriva subito perché 
 - **Database puzzle Lichess importato in Firestore** ✓ — ~4.7M puzzle filtrati per qualità (popularity ≥ 50, nbPlays ≥ 500), indici compositi (themes + rating) abilitati
 - Netlify Function `puzzle-search.js` riscritta per Firestore (Firebase Admin SDK) ✓
 
+- **Analisi Stockfish automatica dopo generazione** ✓ — ogni step viene analizzato con SF depth 15, mostra qualità (best/good/inaccuracy/mistake/blunder), mossa migliore SF vs mossa IA, top linee. Ri-analisi anche dopo raffinamento via chat.
+
 **Ancora mancante in 1A:**
-- **`FIREBASE_SERVICE_ACCOUNT` da impostare in Netlify** — senza questa env var le query puzzle non funzionano
-- Integrazione Stockfish nel flusso di generazione (sfAnalysisService creato ma non collegato alla console)
+- **`FIREBASE_SERVICE_ACCOUNT` da impostare in Netlify** — senza questa env var le query puzzle non funzionano (FATTO se l'utente ha completato il setup manuale)
 - Salvataggio lezioni su Firestore (solo localStorage)
 - Opening Explorer non integrato (bassa priorità)
 
