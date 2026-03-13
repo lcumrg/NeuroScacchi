@@ -19,7 +19,14 @@
 
 **Conclusione chiave:** l'architettura attuale chiede all'IA di calcolare scacchi (FEN, mosse, valutazioni) — cosa che gli LLM non sanno fare. La nuova pipeline separa i ruoli: Lichess fornisce posizioni reali, chessops calcola FEN, Stockfish analizza, l'IA scrive solo la parte pedagogica.
 
-**Prossimo passo:** implementazione nuova pipeline (Fase 1A-Pipeline-A/B/C/D). Vedi ROADMAP sezione Fase 1A e `docs/architettura-pipeline-lezioni.md`.
+**Nuova pipeline implementata (2026-03-13):**
+
+- Fase A (Foundation): `puzzleEnricher.js` con `computePuzzlePositions()`, helper `makeMoveFromUci`/`getSan` in `chessService.js`, skeleton `lessonPipeline.js` ✓
+- Fase B (Passo 1+2): `lessonPlanPrompt.js` con mappa tema→tag Lichess espansa (40+ voci), `planLesson()`, `buildMaterialsPackage()` con SF ✓
+- Fase C (Passo 3+UI): `lessonBuildPrompt.js` con regole ferree, `buildLesson()`, validazione materiali, transizioni deterministiche, wiring ConsolePage con toggle ✓
+- Fase D (Polish): toggle pipeline 3.0/legacy nella Console Coach, fallback allargamento range rating ✓
+
+**Prossimo passo:** test end-to-end su Netlify, iterare sui prompt in base ai risultati, eventuale cloud eval Lichess.
 
 ---
 
