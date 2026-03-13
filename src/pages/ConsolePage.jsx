@@ -4,6 +4,7 @@ import StockfishPanel from '../components/StockfishPanel.jsx'
 import LessonViewer from '../components/LessonViewer.jsx'
 import { INITIAL_FEN, legalDests, makeMove, turnColor, isCheck, kingSquareInCheck, parseFen } from '../engine/chessService.js'
 import { generateLesson, refineLesson } from '../engine/aiService.js'
+import { analyzeLesson } from '../engine/sfAnalysisService.js'
 import { saveDraftLesson, markAsApproved } from '../engine/lessonStore.js'
 import './ConsolePage.css'
 
@@ -156,6 +157,53 @@ export default function ConsolePage() {
         `Lezione generata: "${lesson.title || lesson.titolo || tema}"\n${lesson.steps?.length || 0} step — ${usage?.input_tokens || '?'} token input, ${usage?.output_tokens || '?'} token output`
       )
       validateMovesWithChessService(lesson)
+
+      // Analisi Stockfish asincrona — non blocca la UI
+      addMsg('system', '⟳ Analisi Stockfish in corso…')
+      try {
+        const sfResults = await analyzeLesson(lesson, {
+          depth: 15,
+          onProgress: ({ stepIndex, total, status }) => {
+            if (status === 'analyzing') {
+              setMessages(prev => {
+                const updated = [...prev]
+                const sfIdx = updated.findLastIndex(m => m.role === 'system' && m.content.startsWith('⟳ Analisi Stockfish'))
+                if (sfIdx >= 0) {
+                  updated[sfIdx] = { role: 'system', content: `⟳ Analisi Stockfish: step ${stepIndex + 1}/${total}…` }
+                }
+                return updated
+              })
+            }
+          },
+        })
+
+        // Merge SF results con validazione mosse illegali esistente
+        setSfValidation(prev => {
+          const merged = { ...(prev || {}) }
+          for (const r of sfResults) {
+            merged[r.stepIndex] = {
+              ...merged[r.stepIndex],
+              quality: r.quality,
+              cpLoss: r.cpLoss,
+              bestMove: r.bestMove,
+              eval: r.eval,
+              mate: r.mate,
+              lines: r.lines,
+            }
+          }
+          return merged
+        })
+
+        // Riepilogo qualità
+        const issues = sfResults.filter(r => r.quality === 'mistake' || r.quality === 'blunder')
+        if (issues.length > 0) {
+          addMsg('system', `⚠ Stockfish: ${issues.length} step con problemi — ${issues.map(r => `step ${r.stepIndex + 1}: ${r.quality}`).join(', ')}`)
+        } else {
+          addMsg('system', '✓ Analisi Stockfish completata — nessun problema rilevato')
+        }
+      } catch (sfErr) {
+        addMsg('system', `⚠ Analisi Stockfish fallita: ${sfErr.message}`)
+      }
     } catch (err) {
       setLessonError(err.message)
       addMsg('error', `Errore: ${err.message}`)
@@ -200,6 +248,31 @@ export default function ConsolePage() {
       ])
       setMessages(prev => [...prev, { role: 'assistant', content: assistantMsg }])
       validateMovesWithChessService(result.lesson)
+
+      // Ri-analizza con SF dopo raffinamento
+      try {
+        setMessages(prev => [...prev, { role: 'system', content: '⟳ Ri-analisi Stockfish…' }])
+        const sfResults = await analyzeLesson(result.lesson, { depth: 15 })
+        setSfValidation(prev => {
+          const merged = { ...(prev || {}) }
+          for (const r of sfResults) {
+            merged[r.stepIndex] = {
+              ...merged[r.stepIndex],
+              quality: r.quality, cpLoss: r.cpLoss,
+              bestMove: r.bestMove, eval: r.eval, mate: r.mate, lines: r.lines,
+            }
+          }
+          return merged
+        })
+        const issues = sfResults.filter(r => r.quality === 'mistake' || r.quality === 'blunder')
+        if (issues.length > 0) {
+          setMessages(prev => [...prev, { role: 'system', content: `⚠ SF: ${issues.length} step con problemi` }])
+        } else {
+          setMessages(prev => [...prev, { role: 'system', content: '✓ Analisi SF ok' }])
+        }
+      } catch {
+        // SF analysis failure non blocca il raffinamento
+      }
     } catch (err) {
       setMessages(prev => [...prev, { role: 'error', content: `Errore raffinamento: ${err.message}` }])
     } finally {
