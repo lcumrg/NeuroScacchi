@@ -121,6 +121,20 @@
   line-height: 1.4;
 }
 
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.toggle-label input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-primary);
+}
+
 .btn-generate {
   font-family: var(--font-main);
   font-size: 0.875rem;

@@ -74,6 +74,52 @@ export function isCheck(fen) {
   return pos.isCheck()
 }
 
+/**
+ * Applica una mossa UCI a una FEN e restituisce la nuova FEN + SAN.
+ * Deterministic — usato dalla pipeline per calcolare posizioni dai puzzle Lichess.
+ *
+ * @param {string} fen - FEN di partenza
+ * @param {string} uci - Mossa in formato UCI (es. "e2e4", "e7e8q")
+ * @returns {{ valid: boolean, fen?: string, san?: string, isCheck?: boolean, isCheckmate?: boolean, isStalemate?: boolean }}
+ */
+export function makeMoveFromUci(fen, uci) {
+  try {
+    const pos = setupToChess(fen)
+    const parsed = parseChessopsUci(uci)
+    if (!parsed) return { valid: false }
+    if (!pos.isLegal(parsed)) return { valid: false }
+    const san = makeSanAndPlay(pos, parsed)
+    return {
+      valid: true,
+      fen: makeFen(pos.toSetup()),
+      san,
+      isCheck: pos.isCheck(),
+      isCheckmate: pos.isCheckmate(),
+      isStalemate: pos.isStalemate(),
+    }
+  } catch {
+    return { valid: false }
+  }
+}
+
+/**
+ * Restituisce la notazione SAN di una mossa UCI in una data posizione.
+ *
+ * @param {string} fen
+ * @param {string} uci
+ * @returns {string|null}
+ */
+export function getSan(fen, uci) {
+  try {
+    const pos = setupToChess(fen)
+    const parsed = parseChessopsUci(uci)
+    if (!parsed || !pos.isLegal(parsed)) return null
+    return makeSan(pos, parsed)
+  } catch {
+    return null
+  }
+}
+
 export function kingSquareInCheck(fen) {
   const pos = setupToChess(fen)
   if (!pos.isCheck()) return null

@@ -4,6 +4,7 @@ import StockfishPanel from '../components/StockfishPanel.jsx'
 import LessonViewer from '../components/LessonViewer.jsx'
 import { INITIAL_FEN, legalDests, makeMove, turnColor, isCheck, kingSquareInCheck, parseFen } from '../engine/chessService.js'
 import { generateLesson, refineLesson } from '../engine/aiService.js'
+import { generateLessonPipeline } from '../engine/lessonPipeline.js'
 import { analyzeLesson } from '../engine/sfAnalysisService.js'
 import { saveDraftLesson, markAsApproved } from '../engine/lessonStore.js'
 import './ConsolePage.css'
@@ -32,6 +33,8 @@ export default function ConsolePage() {
   const [refining, setRefining] = useState(false)
   const [chatHistory, setChatHistory] = useState([]) // history per refineLesson
   const [selectedModel, setSelectedModel] = useState('claude-sonnet-4-6')
+  const [usePipeline, setUsePipeline] = useState(true) // nuova pipeline attiva di default
+  const [pipelineMaterials, setPipelineMaterials] = useState(null) // per debug/visualizzazione
 
   // Chat state
   const [chatInput, setChatInput] = useState('')
@@ -114,7 +117,8 @@ export default function ConsolePage() {
     setSfValidation(result)
   }, [])
 
-  const handleGenerate = useCallback(async () => {
+  // ─── Generazione con NUOVA pipeline (4 passi) ───
+  const handleGeneratePipeline = useCallback(async () => {
     if (!tema || !livello) return
 
     setGenerating(true)
@@ -125,17 +129,89 @@ export default function ConsolePage() {
     setSelectedStepIndex(null)
     setSaveStatus(null)
     setChatHistory([])
+    setPipelineMaterials(null)
 
-    // Helper to append a progress/system message
     const addMsg = (role, content) =>
       setMessages(prev => [...prev, { role, content }])
 
-    addMsg('system', `⟳ Recupero puzzle candidati per tema: ${tema} — livello ${livello}…`)
+    try {
+      const result = await generateLessonPipeline({
+        tema,
+        livello,
+        ratingMin: ratingMin ? Number(ratingMin) : undefined,
+        ratingMax: ratingMax ? Number(ratingMax) : undefined,
+        obiettivo: obiettivo || undefined,
+        model: selectedModel,
+        onProgress: ({ step, phase, message }) => {
+          // Aggiorna l'ultimo messaggio di sistema con lo stato corrente
+          setMessages(prev => {
+            const updated = [...prev]
+            const lastSysIdx = updated.findLastIndex(m => m.role === 'system' && m.content.startsWith('⟳'))
+            if (lastSysIdx >= 0 && phase !== 'done' && !phase.endsWith('-done')) {
+              updated[lastSysIdx] = { role: 'system', content: `⟳ ${message}` }
+            } else {
+              updated.push({ role: 'system', content: phase.endsWith('-done') || phase === 'done' ? `✓ ${message}` : `⟳ ${message}` })
+            }
+            return updated
+          })
+        },
+      })
+
+      const { lesson, validation, materialsValidation, sfValidation: moveLegality, materials, usage } = result
+
+      setLessonResult(lesson)
+      setLessonValidation(validation)
+      setSfValidation(moveLegality)
+      setPipelineMaterials(materials)
+
+      // Avvisi materiali
+      if (materialsValidation.errors.length > 0) {
+        addMsg('system', `⚠ ${materialsValidation.errors.length} FEN inventate dall'IA (non dai materiali)`)
+      }
+
+      // Avvisi mosse illegali
+      const illegalCount = Object.values(moveLegality).reduce((n, v) => n + (v.illegalMoves?.length || 0), 0)
+      if (illegalCount > 0) {
+        addMsg('system', `⚠ ${illegalCount} mosse illegali rilevate`)
+      }
+
+      addMsg('assistant',
+        `Lezione generata: "${lesson.title}"\n` +
+        `${lesson.steps?.length || 0} step — ${materials.puzzles.length} puzzle Lichess — ` +
+        `${usage?.input_tokens || '?'} + ${usage?.output_tokens || '?'} token`
+      )
+
+      if (lesson.sourcePuzzleIds?.length > 0) {
+        addMsg('system', `Puzzle usati: ${lesson.sourcePuzzleIds.join(', ')}`)
+      }
+    } catch (err) {
+      setLessonError(err.message)
+      addMsg('error', `Errore: ${err.message}`)
+    } finally {
+      setGenerating(false)
+    }
+  }, [tema, livello, ratingMin, ratingMax, obiettivo, selectedModel])
+
+  // ─── Generazione con VECCHIA pipeline (legacy) ───
+  const handleGenerateLegacy = useCallback(async () => {
+    if (!tema || !livello) return
+
+    setGenerating(true)
+    setLessonError(null)
+    setLessonResult(null)
+    setLessonValidation(null)
+    setSfValidation(null)
+    setSelectedStepIndex(null)
+    setSaveStatus(null)
+    setChatHistory([])
+    setPipelineMaterials(null)
+
+    const addMsg = (role, content) =>
+      setMessages(prev => [...prev, { role, content }])
+
+    addMsg('system', `⟳ [Legacy] Contatto modello IA [${selectedModel}]…`)
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 250)) // let UI render
-      addMsg('system', `⟳ Contatto modello IA [${selectedModel}]…`)
-
       const result = await generateLesson({
         tema,
         livello,
@@ -146,19 +222,16 @@ export default function ConsolePage() {
         model: selectedModel,
       })
 
-      addMsg('system', '⟳ Parsing e validazione schema…')
-      await new Promise(resolve => setTimeout(resolve, 150))
-
       const { lesson, validation, usage } = result
       setLessonResult(lesson)
       setLessonValidation(validation)
-      addMsg('system', '✓ Lezione generata')
+      addMsg('system', '✓ Lezione generata (legacy)')
       addMsg('assistant',
-        `Lezione generata: "${lesson.title || lesson.titolo || tema}"\n${lesson.steps?.length || 0} step — ${usage?.input_tokens || '?'} token input, ${usage?.output_tokens || '?'} token output`
+        `Lezione generata: "${lesson.title || tema}"\n${lesson.steps?.length || 0} step — ${usage?.input_tokens || '?'} + ${usage?.output_tokens || '?'} token`
       )
       validateMovesWithChessService(lesson)
 
-      // Analisi Stockfish asincrona — non blocca la UI
+      // Analisi Stockfish post-generazione
       addMsg('system', '⟳ Analisi Stockfish in corso…')
       try {
         const sfResults = await analyzeLesson(lesson, {
@@ -176,33 +249,25 @@ export default function ConsolePage() {
             }
           },
         })
-
-        // Merge SF results con validazione mosse illegali esistente
         setSfValidation(prev => {
           const merged = { ...(prev || {}) }
           for (const r of sfResults) {
             merged[r.stepIndex] = {
               ...merged[r.stepIndex],
-              quality: r.quality,
-              cpLoss: r.cpLoss,
-              bestMove: r.bestMove,
-              eval: r.eval,
-              mate: r.mate,
-              lines: r.lines,
+              quality: r.quality, cpLoss: r.cpLoss,
+              bestMove: r.bestMove, eval: r.eval, mate: r.mate, lines: r.lines,
             }
           }
           return merged
         })
-
-        // Riepilogo qualità
         const issues = sfResults.filter(r => r.quality === 'mistake' || r.quality === 'blunder')
         if (issues.length > 0) {
-          addMsg('system', `⚠ Stockfish: ${issues.length} step con problemi — ${issues.map(r => `step ${r.stepIndex + 1}: ${r.quality}`).join(', ')}`)
+          addMsg('system', `⚠ SF: ${issues.length} step con problemi`)
         } else {
-          addMsg('system', '✓ Analisi Stockfish completata — nessun problema rilevato')
+          addMsg('system', '✓ Analisi SF ok')
         }
       } catch (sfErr) {
-        addMsg('system', `⚠ Analisi Stockfish fallita: ${sfErr.message}`)
+        addMsg('system', `⚠ Analisi SF fallita: ${sfErr.message}`)
       }
     } catch (err) {
       setLessonError(err.message)
@@ -211,6 +276,8 @@ export default function ConsolePage() {
       setGenerating(false)
     }
   }, [tema, livello, ratingMin, ratingMax, obiettivo, fen, selectedModel, validateMovesWithChessService])
+
+  const handleGenerate = usePipeline ? handleGeneratePipeline : handleGenerateLegacy
 
   const handleStepSelect = useCallback((index) => {
     setSelectedStepIndex(index)
@@ -363,6 +430,22 @@ export default function ConsolePage() {
               </select>
               <p className="form-hint">
                 Sonnet e Flash garantiscono risposta entro 30s. Opus e Pro possono richiedere 60–90s.
+              </p>
+            </div>
+
+            <div className="form-group">
+              <label className="toggle-label">
+                <input
+                  type="checkbox"
+                  checked={usePipeline}
+                  onChange={e => setUsePipeline(e.target.checked)}
+                />
+                <span>Pipeline 3.0 (puzzle Lichess + SF + chessops)</span>
+              </label>
+              <p className="form-hint">
+                {usePipeline
+                  ? 'Nuova pipeline: posizioni validate, mosse calcolate, zero allucinazioni. ~40-60s.'
+                  : 'Pipeline legacy: l\'IA genera tutto (posizioni, mosse, FEN). Veloce ma errori frequenti.'}
               </p>
             </div>
 
