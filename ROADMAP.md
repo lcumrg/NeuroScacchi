@@ -6,20 +6,29 @@
 
 ## Lavoro in corso
 
-### Sessione 2026-03-13
+### Sessione 2026-03-13 (2)
 
-**Lavoro completato in questa sessione:**
+**Lavoro completato:**
 
-- `src/engine/sfAnalysisService.js` — nuovo servizio di analisi SF dedicato (non condivide il worker con StockfishPanel). Esporta `analyzePosition`, `analyzeLesson`, `classifyMove` con soglie best/good/inaccuracy/mistake/blunder.
-- `src/engine/lichessCloudEval.js` — client Lichess Cloud Eval API con rate-limiting (110ms/req). Esporta `fetchCloudEval` e `analyzeWithCloudEval` con fallback null per posizioni non in cache.
-- `src/engine/lessonSystemPrompt.js` — miglioramento regole IA: campo `targetRatingMin` (non `targetRating`), ultimo step senza `transition`, catena FEN con esempio numerato, `orientation` come stringa standalone, nota su lezione minima 2-3 step.
-- `src/components/LessonViewer.jsx` — placeholder sezione analisi SF, indicatori qualità colorati negli step, empty state per `lesson === null`.
-- `src/pages/ConsolePage.jsx` — progress messaggi nel flusso di generazione (recupero puzzle, contatto IA, parsing), nota sotto model selector sui tempi.
-- `src/pages/PlayerPage.css` + `player-activities.css` — polish desktop (top border activity panel, fade-in tra fasi, scroll indicator mobile, padding opzioni intent, icone feedback più grandi, cursore detective).
-- `src/components/player/TextActivity.jsx` — renderer markdown inline (bold, italic, heading, liste, paragrafi).
-- `src/components/player/FeedbackPanel.jsx` — markdown nel testo, delay 600ms su "Continua", wrapping testo lungo.
-- `src/components/player/CandidateActivity.jsx` — contatore "Hai trovato X di Y", abilita "Conferma" quando `selectedMoves.length >= requiredCount`, evidenzia in giallo mosse non candidate.
-- `src/pages/LessonsPage.jsx` — empty state migliorato, badge Approvata/Bozza, minuti stimati, ordinamento per data.
+- **Migrazione puzzle da Turso a Firestore** — riscrittura `puzzle-search.js` e `puzzle-meta.js` per usare Firebase Admin SDK al posto di `@libsql/client`
+- Rimossa dipendenza `@libsql/client`, aggiunta `firebase-admin` in `package.json`
+- `puzzle-meta.js` semplificato con temi Lichess hardcoded (set fisso, evita aggregazione su milioni di doc)
+- `puzzle-search.js`: query Firestore con `array-contains`/`array-contains-any` per temi, range rating, shuffle per randomizzazione
+- Aggiornata ROADMAP con stato reale integrazione puzzle
+
+**Prossimo passo:** impostare `FIREBASE_SERVICE_ACCOUNT` in Netlify env vars per attivare le query puzzle.
+
+### Sessione 2026-03-13 (1)
+
+**Lavoro completato nella sessione precedente:**
+
+- `src/engine/sfAnalysisService.js` — nuovo servizio di analisi SF dedicato
+- `src/engine/lichessCloudEval.js` — client Lichess Cloud Eval API
+- `src/engine/lessonSystemPrompt.js` — miglioramento regole IA
+- `src/components/LessonViewer.jsx` — placeholder sezione analisi SF, indicatori qualità
+- `src/pages/ConsolePage.jsx` — progress messaggi nel flusso di generazione
+- UI polish vari (PlayerPage, TextActivity, FeedbackPanel, CandidateActivity, LessonsPage)
+- Import puzzle Lichess in Firestore via `scripts/import_puzzles.py`, indici compositi creati e abilitati
 
 **Stack IA aggiornato:** multi-provider — Claude (Anthropic) via Netlify Function + Google Gemini via stessa funzione. Provider selezionabile dalla console.
 
@@ -278,7 +287,7 @@ Le cose senza cui niente funziona.
 - Componente scacchiera interattiva: **Chessground** (`@lichess-org/chessground`, GPL-3.0) — scacchiera SVG con frecce, cerchi, drag-and-drop, animazioni, supporto mobile. ~10KB, zero dipendenze.
 - Logica scacchistica: **chessops** (`chessops`, GPL-3.0) — validazione mosse, parsing FEN, parsing PGN con annotazioni Lichess (frecce, cerchi, eval), generazione mosse legali nel formato Chessground. Sostituisce chess.js con funzionalità più ricche.
 - Motore di analisi: **Stockfish WASM** (`stockfish` npm, GPL-3.0) — build lite ~7MB, single-thread, depth 15-20 sufficiente per l'uso didattico. Gira in un Web Worker, zero costi server.
-- **Database puzzle Lichess** scaricato localmente: 4,7M di puzzle con FEN, soluzione, rating, tag tematici (CC0, dominio pubblico). Indicizzato per tema, rating e apertura — sarà la fonte principale da cui l'IA attinge posizioni per le lezioni.
+- **Database puzzle Lichess** importato in Firestore: 4,7M di puzzle con FEN, soluzione, rating, tag tematici (CC0, dominio pubblico). Indicizzato per tema + rating con indici compositi Firestore. Fonte principale da cui l'IA attinge posizioni per le lezioni.
 - Definizione del **formato lezione JSON v3**: versionamento semantico, unioni discriminate per tipo step, separazione contenuto/configurazione. Non esiste uno standard aperto per lezioni scacchistiche interattive — questo formato è parte del valore del progetto.
 - **IA generativa**: Google Gemini 2.5 Pro via API, chiamata lato server tramite Netlify Function (`ai-chat.js`) per proteggere la chiave. La scelta del provider è intercambiabile — l'interfaccia interna usa un contratto `{ messages, system } → { content, usage }` indipendente dal modello.
 
@@ -299,17 +308,19 @@ Il cuore della 3.0: il sistema di creazione lezioni. L'IA arriva subito perché 
 - Salvataggio bozza e approvazione in localStorage ✓
 - System prompt migliorato con regole anti-errori comuni ✓
 - Progress messages nel flusso generazione ✓
-- Infrastruttura database puzzle completa: `puzzle-search.js` (Netlify Function → Turso), `puzzleDatabase.js` (client), `puzzle-meta.js` (metadati temi/aperture) ✓ — **manca solo il DB popolato**
+- Infrastruttura database puzzle completa: `puzzle-search.js` (Netlify Function → Firestore), `puzzleDatabase.js` (client), `puzzle-meta.js` (metadati temi/aperture) ✓
+- **Database puzzle Lichess importato in Firestore** ✓ — ~4.7M puzzle filtrati per qualità (popularity ≥ 50, nbPlays ≥ 500), indici compositi (themes + rating) abilitati
+- Netlify Function `puzzle-search.js` riscritta per Firestore (Firebase Admin SDK) ✓
 
 **Ancora mancante in 1A:**
+- **`FIREBASE_SERVICE_ACCOUNT` da impostare in Netlify** — senza questa env var le query puzzle non funzionano
 - Integrazione Stockfish nel flusso di generazione (sfAnalysisService creato ma non collegato alla console)
 - Salvataggio lezioni su Firestore (solo localStorage)
-- **DATABASE LICHESS: attivazione Turso** (vedi sezione dedicata sotto)
-- Opening Explorer non integrato (bassa priorità dopo attivazione Turso)
+- Opening Explorer non integrato (bassa priorità)
 
 ---
 
-### Integrazione database puzzle Lichess — Piano dettagliato
+### Integrazione database puzzle Lichess — Stato
 
 **Priorità: ALTA — obiettivo principale della qualità lezioni**
 
@@ -319,76 +330,34 @@ L'IA genera posizioni dalla propria conoscenza interna, il che è il principale 
 - Etichettata con temi (fork, pin, endgame, ecc.)
 - Già validata da milioni di giocatori umani
 
-**Stato attuale:**
-L'intera infrastruttura è già scritta e deployata. Mancano solo due cose:
-1. Un database Turso creato e popolato con i puzzle Lichess
-2. Le variabili `TURSO_DATABASE_URL` e `TURSO_AUTH_TOKEN` impostate in Netlify
+**Stato: QUASI COMPLETO**
 
-**Come attivarlo (passi operativi):**
+Tutto è pronto — manca solo una variabile d'ambiente su Netlify.
 
-**Step 1 — Crea il database Turso**
-```bash
-# Installa CLI Turso
-brew install tursodatabase/tap/turso
+**Completato:**
+- Puzzle Lichess importati in Firestore (collection `puzzles`) con script Python (`scripts/import_puzzles.py`) ✓
+- Filtri qualità applicati: popularity ≥ 50, nbPlays ≥ 500 ✓
+- Indici compositi Firestore abilitati: `themes (Arrays) + rating (Ascending)` ✓
+- Netlify Function `puzzle-search.js` riscritta per Firebase Admin SDK ✓
+- Netlify Function `puzzle-meta.js` con temi/aperture Lichess ✓
+- Client `puzzleDatabase.js` invariato (già funzionante) ✓
+- Integrazione in `aiService.js` con `fetchCandidatePuzzles()` ✓
 
-# Login
-turso auth login
+**Unica azione mancante:**
+Impostare `FIREBASE_SERVICE_ACCOUNT` come variabile d'ambiente in Netlify:
+1. Vai su `Netlify → Site settings → Environment variables`
+2. Crea `FIREBASE_SERVICE_ACCOUNT`
+3. Valore: il contenuto JSON del file service account Firebase Admin (una riga)
 
-# Crea il database
-turso db create neuroscacchi-puzzles
+Il file service account si scarica da: Firebase Console → Impostazioni progetto → Account di servizio → Genera nuova chiave privata.
 
-# Ottieni URL e token
-turso db show neuroscacchi-puzzles   # → TURSO_DATABASE_URL
-turso db tokens create neuroscacchi-puzzles  # → TURSO_AUTH_TOKEN
-```
+**Verifica:** Dopo l'attivazione, il messaggio "⟳ Recupero puzzle candidati..." nella console corrisponderà a una query Firestore reale. L'IA riceverà 5 posizioni reali da Lichess come contesto per generare gli step della lezione.
 
-**Step 2 — Scarica i puzzle Lichess**
-Il dataset completo (4.7M puzzle, ~300MB CSV) è disponibile su:
-`https://database.lichess.org/#puzzles` → file `lichess_db_puzzle.csv.zst`
-
-Colonne usate: `PuzzleId, FEN, Moves, Rating, RatingDeviation, Popularity, NbPlays, Themes, OpeningTags`
-
-**Step 3 — Importa in SQLite poi su Turso**
-```bash
-# Crea SQLite locale con schema corretto
-sqlite3 puzzles.db "
-CREATE TABLE puzzles (
-  id TEXT PRIMARY KEY,
-  fen TEXT NOT NULL,
-  moves TEXT NOT NULL,
-  rating INTEGER,
-  rating_deviation INTEGER,
-  popularity INTEGER,
-  nb_plays INTEGER,
-  themes TEXT,
-  opening_tags TEXT
-);
-"
-
-# Importa CSV (dopo decompressione)
-# Usa script Python o csv-to-sqlite per i 4.7M record
-
-# Upload su Turso
-turso db shell neuroscacchi-puzzles < puzzles.sql
-# oppure con replica locale
-```
-
-**Nota storage:** Turso free tier = 500MB. Il dataset completo (4.7M puzzle) con solo le colonne necessarie pesa ~350-400MB come SQLite — fattibile sul tier gratuito. Se supera il limite, si può filtrare tenendo solo i puzzle con `popularity > 50` (~2M puzzle, ~200MB).
-
-**Step 4 — Imposta env vars in Netlify**
-`Netlify → Site settings → Environment variables`:
-- `TURSO_DATABASE_URL` = `libsql://neuroscacchi-puzzles-[user].turso.io`
-- `TURSO_AUTH_TOKEN` = il token generato
-
-**Step 5 — Nessun cambio al codice** — tutto è già scritto e funzionante.
-
-**Verifica:** Dopo l'attivazione, il messaggio "⟳ Recupero puzzle candidati..." nella console corrisponderà a una query SQL reale su Turso. L'IA riceverà 5 posizioni reali da Lichess come contesto per generare gli step della lezione.
-
-**Evoluzione futura post-attivazione:**
+**Evoluzione futura:**
 - Passare da 5 a 10-15 puzzle candidati per aumentare la varietà
 - Usare più tag Lichess per tema (attualmente si usa solo il primo tag)
 - Integrare `popularity` come filtro per scegliere puzzle ben testati
-- Opening Explorer Lichess API per il tema aperture (in aggiunta al DB locale)
+- Opening Explorer Lichess API per il tema aperture (in aggiunta al DB)
 
 **Fase 1B — IA anche per le posizioni, con validazione.**
 
