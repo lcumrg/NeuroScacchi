@@ -287,6 +287,63 @@ function QualityDot({ quality }) {
   )
 }
 
+function formatEval(cp, mate) {
+  if (mate != null) return `M${mate}`
+  if (cp == null) return '?'
+  return cp >= 0 ? `+${(cp / 100).toFixed(1)}` : (cp / 100).toFixed(1)
+}
+
+function SfAnalysisDetail({ entry, step }) {
+  if (!entry) return null
+
+  const correctMove = step?.correctMoves?.[0] || step?.bestMove || null
+  const sfBest = entry.bestMove
+  const mismatch = correctMove && sfBest && correctMove !== sfBest
+
+  return (
+    <div className="lv-sf-detail">
+      <div className="lv-detail-row">
+        <span className="lv-detail-label">Eval SF:</span>
+        <span className="lv-detail-value">{formatEval(entry.eval, entry.mate)}</span>
+      </div>
+      <div className="lv-detail-row">
+        <span className="lv-detail-label">Mossa migliore SF:</span>
+        <span className="lv-move-chip lv-move-chip--best">{sfBest}</span>
+      </div>
+      {correctMove && (
+        <div className="lv-detail-row">
+          <span className="lv-detail-label">Mossa IA:</span>
+          <span className={`lv-move-chip${mismatch ? '' : ' lv-move-chip--best'}`}>{correctMove}</span>
+          {mismatch && (
+            <span style={{ color: '#dc2626', fontWeight: 600, marginLeft: 8 }}>
+              ≠ SF dice {sfBest}
+            </span>
+          )}
+        </div>
+      )}
+      {entry.quality && entry.quality !== 'unknown' && (
+        <div className="lv-detail-row">
+          <span className="lv-detail-label">Qualità:</span>
+          <QualityDot quality={entry.quality} />
+          <span className="lv-detail-value" style={{ marginLeft: 4 }}>
+            {entry.quality}{entry.cpLoss != null ? ` (${entry.cpLoss} cp)` : ''}
+          </span>
+        </div>
+      )}
+      {entry.lines && entry.lines.length > 0 && (
+        <div className="lv-detail-row" style={{ flexDirection: 'column', gap: 2 }}>
+          <span className="lv-detail-label">Top linee:</span>
+          {entry.lines.map((line, i) => (
+            <div key={i} style={{ fontSize: '0.8em', color: '#666', fontFamily: 'monospace' }}>
+              {line.rank}. {line.move} ({formatEval(line.eval, null)}) {line.pv}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function LessonViewer({
   lesson,
   validation,
@@ -376,16 +433,20 @@ export default function LessonViewer({
         </div>
       )}
 
-      {/* SF Analysis placeholder */}
+      {/* SF Analysis */}
       <div className="lv-sf-section">
         <div className="lv-sf-header">
           <span className="lv-sf-title">Analisi Stockfish</span>
         </div>
-        <p className="lv-sf-hint">
-          {selectedStepIndex != null
-            ? `Step ${selectedStepIndex + 1} selezionato — analisi non ancora eseguita.`
-            : 'Clicca uno step per analizzare'}
-        </p>
+        {selectedStepIndex != null && sfValidation?.[selectedStepIndex]?.bestMove ? (
+          <SfAnalysisDetail entry={sfValidation[selectedStepIndex]} step={steps[selectedStepIndex]} />
+        ) : (
+          <p className="lv-sf-hint">
+            {selectedStepIndex != null
+              ? 'Analisi non ancora disponibile per questo step.'
+              : 'Clicca uno step per vedere l\'analisi'}
+          </p>
+        )}
       </div>
 
       {/* Step detail */}
