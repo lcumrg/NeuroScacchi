@@ -11,7 +11,7 @@
     "import:puzzles": "node scripts/import-lichess-puzzles.js"
   },
   "dependencies": {
-    "@libsql/client": "^0.17.0",
+    "firebase-admin": "^13.0.0",
     "@lichess-org/chessground": "^10.1.0",
     "chessops": "^0.15.0",
     "firebase": "^12.9.0",

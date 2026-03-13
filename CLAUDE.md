@@ -25,8 +25,8 @@ Ad ogni sessione di lavoro:
 - **Chessground** (`@lichess-org/chessground`) — scacchiera SVG con frecce e cerchi
 - **chessops** — logica scacchistica, parsing FEN/PGN, validazione mosse
 - **Stockfish WASM** — motore di analisi nel browser via Web Worker
-- Firebase Auth + Firestore
-- Google Gemini API via Netlify Function (`netlify/functions/ai-chat.js`) — modello attuale: `gemini-2.5-pro`
+- Firebase Auth + Firestore (anche per il database 4.7M puzzle Lichess)
+- Multi-provider IA: Claude (Anthropic) + Google Gemini via Netlify Function (`netlify/functions/ai-chat.js`)
 
 ## Struttura codice
 
@@ -41,7 +41,9 @@ src/
       AuthContext.jsx      # Auth context
 netlify/
   functions/
-    ai-chat.js            # Proxy Google Gemini API
+    ai-chat.js            # Proxy multi-provider IA (Claude + Gemini)
+    puzzle-search.js      # Query puzzle Lichess su Firestore
+    puzzle-meta.js        # Metadati temi/aperture Lichess
 public/
   stockfish/              # Stockfish WASM files
 ```

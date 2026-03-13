@@ -1,18 +1,23 @@
-import { createClient } from '@libsql/client/web'
+// Netlify Function — ricerca puzzle Lichess in Firestore
+// Collection: puzzles (importati con import_puzzles.py)
+// Indici compositi: themes (Arrays) + rating (Ascending)
+
+import { initializeApp, cert, getApps } from 'firebase-admin/app'
+import { getFirestore } from 'firebase-admin/firestore'
 
 let db = null
 
 function getDb() {
   if (db) return db
 
-  const url = process.env.TURSO_DATABASE_URL
-  if (!url) return null
+  const json = process.env.FIREBASE_SERVICE_ACCOUNT
+  if (!json) return null
 
-  const config = { url }
-  const token = process.env.TURSO_AUTH_TOKEN
-  if (token) config.authToken = token
+  if (getApps().length === 0) {
+    initializeApp({ credential: cert(JSON.parse(json)) })
+  }
 
-  db = createClient(config)
+  db = getFirestore()
   return db
 }
 
@@ -29,17 +34,26 @@ function jsonResponse(body, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders() })
 }
 
-function parsePuzzleRow(row) {
+function docToPuzzle(doc) {
+  const d = doc.data()
   return {
-    id: row.id,
-    fen: row.fen,
-    moves: row.moves,
-    rating: row.rating,
-    themes: row.themes ? row.themes.split(' ').filter(Boolean) : [],
-    openingTags: row.opening_tags ? row.opening_tags.split(' ').filter(Boolean) : [],
-    popularity: row.popularity,
-    nbPlays: row.nb_plays,
+    id: doc.id,
+    fen: d.fen,
+    moves: typeof d.moves === 'string' ? d.moves.split(' ').filter(Boolean) : (d.moves || []),
+    rating: d.rating,
+    themes: d.themes || [],
+    openingTags: d.openingTags || [],
+    popularity: d.popularity,
+    nbPlays: d.nbPlays,
   }
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]]
+  }
+  return arr
 }
 
 export default async (req) => {
@@ -51,10 +65,10 @@ export default async (req) => {
     return jsonResponse({ error: 'Method not allowed' }, 405)
   }
 
-  const client = getDb()
-  if (!client) {
+  const firestore = getDb()
+  if (!firestore) {
     return jsonResponse({
-      error: 'TURSO_DATABASE_URL non configurata. Aggiungi la variabile in Netlify > Site settings > Environment variables (oppure nel file .env locale).',
+      error: 'FIREBASE_SERVICE_ACCOUNT non configurata. Aggiungi la variabile in Netlify > Site settings > Environment variables.',
     }, 500)
   }
 
@@ -63,92 +77,62 @@ export default async (req) => {
     const { themes, ratingMin, ratingMax, popularityMin, openingTags, excludeIds, random } = body
     const limit = Math.min(Math.max(body.limit || 20, 1), 100)
 
-    const conditions = []
-    const args = []
+    let query = firestore.collection('puzzles')
 
+    // Firestore supporta max 1 array-contains o array-contains-any per query.
+    // Priorita: themes > openingTags
     if (Array.isArray(themes) && themes.length > 0) {
-      for (const theme of themes) {
-        conditions.push(`themes LIKE ?`)
-        args.push(`%${theme}%`)
+      if (themes.length === 1) {
+        query = query.where('themes', 'array-contains', themes[0])
+      } else {
+        query = query.where('themes', 'array-contains-any', themes.slice(0, 10))
+      }
+    } else if (Array.isArray(openingTags) && openingTags.length > 0) {
+      if (openingTags.length === 1) {
+        query = query.where('openingTags', 'array-contains', openingTags[0])
+      } else {
+        query = query.where('openingTags', 'array-contains-any', openingTags.slice(0, 10))
       }
     }
 
-    if (typeof ratingMin === 'number') {
-      conditions.push(`rating >= ?`)
-      args.push(ratingMin)
+    // Per query random: partiamo da un punto casuale nel range di rating
+    // cosi ogni chiamata restituisce puzzle diversi
+    if (random && typeof ratingMin === 'number' && typeof ratingMax === 'number') {
+      const pivot = Math.floor(ratingMin + Math.random() * (ratingMax - ratingMin))
+      query = query.where('rating', '>=', pivot).where('rating', '<=', ratingMax)
+    } else {
+      if (typeof ratingMin === 'number') {
+        query = query.where('rating', '>=', ratingMin)
+      }
+      if (typeof ratingMax === 'number') {
+        query = query.where('rating', '<=', ratingMax)
+      }
     }
 
-    if (typeof ratingMax === 'number') {
-      conditions.push(`rating <= ?`)
-      args.push(ratingMax)
-    }
+    // Oversample per compensare filtri client-side e shuffle
+    const fetchLimit = random ? Math.min(limit * 5, 100) : limit
+    query = query.orderBy('rating').limit(fetchLimit)
 
+    const snapshot = await query.get()
+    let puzzles = snapshot.docs.map(docToPuzzle)
+
+    // Filtri client-side (evitano indici compositi aggiuntivi)
     if (typeof popularityMin === 'number') {
-      conditions.push(`popularity >= ?`)
-      args.push(popularityMin)
-    }
-
-    if (Array.isArray(openingTags) && openingTags.length > 0) {
-      const orClauses = openingTags.map(() => `opening_tags LIKE ?`)
-      conditions.push(`(${orClauses.join(' OR ')})`)
-      for (const tag of openingTags) {
-        args.push(`%${tag}%`)
-      }
+      puzzles = puzzles.filter(p => p.popularity >= popularityMin)
     }
 
     if (Array.isArray(excludeIds) && excludeIds.length > 0) {
-      const placeholders = excludeIds.map(() => '?').join(', ')
-      conditions.push(`id NOT IN (${placeholders})`)
-      args.push(...excludeIds)
+      const excludeSet = new Set(excludeIds)
+      puzzles = puzzles.filter(p => !excludeSet.has(p.id))
     }
 
-    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
-
-    const hasLikeFilter = (Array.isArray(themes) && themes.length > 0) ||
-      (Array.isArray(openingTags) && openingTags.length > 0)
-
-    let total = -1
-
-    if (random && hasLikeFilter) {
-      // For LIKE filters + random: sample from a random rowid range to avoid full scan
-      const maxRowidResult = await client.execute('SELECT MAX(rowid) as m FROM puzzles')
-      const maxRowid = Number(maxRowidResult.rows[0].m) || 5800000
-      const sampleSize = limit * 20 // oversample to compensate for filtering
-      const randomStart = Math.floor(Math.random() * Math.max(1, maxRowid - sampleSize))
-      const dataResult = await client.execute({
-        sql: `SELECT * FROM puzzles ${where} AND rowid >= ? AND rowid < ? LIMIT ?`,
-        args: [...args, randomStart, randomStart + sampleSize, limit],
-      })
-
-      // If not enough results from this range, try without rowid constraint but with a small LIMIT
-      if (dataResult.rows.length < limit) {
-        const fallback = await client.execute({
-          sql: `SELECT * FROM puzzles ${where} LIMIT ?`,
-          args: [...args, limit],
-        })
-        return jsonResponse({ puzzles: fallback.rows.map(parsePuzzleRow), total })
-      }
-
-      return jsonResponse({ puzzles: dataResult.rows.map(parsePuzzleRow), total })
+    if (random) {
+      puzzles = shuffle(puzzles)
     }
-
-    if (!hasLikeFilter) {
-      const countResult = await client.execute({
-        sql: `SELECT COUNT(*) as total FROM puzzles ${where}`,
-        args,
-      })
-      total = Number(countResult.rows[0].total)
-    }
-
-    const orderBy = random ? 'ORDER BY RANDOM()' : 'ORDER BY rating ASC'
-    const dataResult = await client.execute({
-      sql: `SELECT * FROM puzzles ${where} ${orderBy} LIMIT ?`,
-      args: [...args, limit],
-    })
 
     return jsonResponse({
-      puzzles: dataResult.rows.map(parsePuzzleRow),
-      total,
+      puzzles: puzzles.slice(0, limit),
+      total: -1,
     })
   } catch (err) {
     return jsonResponse({ error: err.message }, 500)
