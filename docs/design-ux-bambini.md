@@ -8,64 +8,106 @@
 
 I test con i bambini (8–12 anni) confermano che l'aspetto grafico è un fattore decisivo di engagement, motivazione e percezione della qualità. Un buon contenuto presentato male appare come un cattivo contenuto. L'interfaccia attuale ha una base tecnica solida ma un aspetto corporate e freddo — progettato inconsciamente per adulti.
 
-Questo documento raccoglie l'analisi completa dello stato attuale e le linee guida di intervento per la Fase 2bis.
-
 ---
 
-## 1. Stato attuale — fotografia
+## Stato attuale — fotografia
 
-### Stack CSS
-- CSS custom properties puro, zero Tailwind
-- Font: **Nunito** (400–800) + Atkinson Hyperlegible (fallback accessibilità) + JetBrains Mono (codice)
-- Tema chiaro e scuro già supportati via `[data-theme]`
-- Responsive mobile-first con breakpoint a 600, 768, 900, 960, 1024px
-- Animazioni: fadeIn, shake, pulse, slideUp, progress — tutte via keyframe CSS
+**Stack CSS:** CSS custom properties puro, zero Tailwind. Font Nunito + Atkinson Hyperlegible. Tema chiaro e scuro già supportati. Responsive mobile-first. Animazioni via keyframe CSS.
 
 ### Palette attuale
 
-| Ruolo | Valore | Problema |
-|---|---|---|
-| Primario | `#283593` (blu indigo) | Freddo, corporate, poco invitante |
-| Sfondo | `#F8F9FA` | Neutro, ok |
-| Case chiare scacchiera | `#E8E8E8` | Grigio anonimo, non richiama gli scacchi fisici |
-| Case scure scacchiera | `#B8B8B8` | Grigio anonimo |
-| Freeze overlay | `rgba(40,53,147,0.82)` | Scuro e oppressivo |
-| Feedback positivo | `#E8F5E9` | Verde pallido, poco celebrativo |
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin:16px 0">
+  <div style="text-align:center">
+    <div style="width:80px;height:80px;background:#283593;border-radius:8px;border:1px solid #ccc"></div>
+    <div style="font-size:0.75rem;margin-top:6px;font-weight:600">Primario<br/>#283593</div>
+    <div style="font-size:0.7rem;color:#888">Blu indigo</div>
+  </div>
+  <div style="text-align:center">
+    <div style="width:80px;height:80px;background:#F8F9FA;border-radius:8px;border:1px solid #ccc"></div>
+    <div style="font-size:0.75rem;margin-top:6px;font-weight:600">Sfondo<br/>#F8F9FA</div>
+    <div style="font-size:0.7rem;color:#888">Grigio freddo</div>
+  </div>
+  <div style="text-align:center">
+    <div style="width:80px;height:80px;background:#E8E8E8;border-radius:8px;border:1px solid #ccc"></div>
+    <div style="font-size:0.75rem;margin-top:6px;font-weight:600">Casa chiara<br/>#E8E8E8</div>
+    <div style="font-size:0.7rem;color:#888">Grigio anonimo</div>
+  </div>
+  <div style="text-align:center">
+    <div style="width:80px;height:80px;background:#B8B8B8;border-radius:8px;border:1px solid #ccc"></div>
+    <div style="font-size:0.75rem;margin-top:6px;font-weight:600">Casa scura<br/>#B8B8B8</div>
+    <div style="font-size:0.7rem;color:#888">Grigio anonimo</div>
+  </div>
+  <div style="text-align:center">
+    <div style="width:80px;height:80px;background:rgba(40,53,147,0.82);border-radius:8px;border:1px solid #ccc"></div>
+    <div style="font-size:0.75rem;margin-top:6px;font-weight:600">Freeze<br/>rgba(40,53,147,.82)</div>
+    <div style="font-size:0.7rem;color:#888">Opprimente</div>
+  </div>
+</div>
 
-### Problemi identificati (in ordine di impatto)
-1. Nessuna gamification visiva — nessuna risposta emotiva al successo
-2. Palette corporate, fredda, monocromatica
-3. Scacchiera grigia — non richiama gli scacchi fisici
-4. Attività visivamente indistinguibili tra loro
-5. FreezeOverlay oppressivo invece che preparatorio
-6. Nessuna differenziazione visiva per tipo di attività
-7. Label troppo piccole (0.65–0.7rem) per bambini
-8. Bottoni piatti, senza respiro
+**Problemi principali:**
+- Blu indigo: freddo, corporate, tipico dei software gestionali
+- Scacchiera grigia: non richiama gli scacchi fisici
+- Palette monocromatica: tutte le attività hanno lo stesso aspetto
+- Nessuna gamification visiva, nessuna risposta emotiva al successo
 
 ---
 
-## 2. Il problema della visualizzazione mentale della scacchiera
+## Il problema della visualizzazione mentale della scacchiera
 
-### Il problema
+Quando un testo dice *"il Cavallo su c3 controlla d5"*, il bambino deve compiere quattro operazioni cognitive:
 
-Quando un testo dice *"il Cavallo su c3 controlla d5"*, il bambino deve compiere tre operazioni cognitive in sequenza:
 1. Decodificare "c3" come coordinata
-2. Localizzare c3 sulla scacchiera (mapping visivo)
+2. Localizzare c3 sulla scacchiera *(mapping visivo)*
 3. Trovare il Cavallo lì
 4. Capire l'influenza su d5
 
-Solo il punto 4 è l'obiettivo didattico. I punti 1–3 sono **carico cognitivo parassitico** — consumano risorse mentali senza produrre comprensione scacchistica.
+Solo il punto 4 è l'obiettivo didattico. I punti 1–3 sono **carico cognitivo parassitico** — consumano risorse mentali senza produrre comprensione scacchistica. Questo è l'**effetto di attenzione divisa** (Sweller, 1988): quando informazione verbale e visiva sono in posizioni diverse, il cervello deve integrarle manualmente.
 
-Questo è l'**effetto di attenzione divisa** (Sweller, Cognitive Load Theory): quando informazione verbale e visiva sono in posizioni diverse, il cervello deve integrarle mentalmente — operazione costosa che sottrae risorse alla comprensione del contenuto.
+**La soluzione è il principio di contiguità:** la parola "c3" nel testo deve essere accompagnata da un cerchio sulla casa c3. Il bambino vede già il mapping — il carico cognitivo si concentra sul *perché*, non sul *dove*.
 
-### Il principio di contiguità
+### Colori frecce Chessground — uso consigliato
 
-La soluzione è il **principio di contiguità spaziale**: la parola "c3" nel testo deve essere accompagnata da un evidenziamento visivo della casa c3 sulla scacchiera. Così il bambino non deve fare il mapping — lo vede già fatto. Il carico cognitivo si concentra dove deve: capire *perché* il Cavallo in c3 controlla d5, non *dove* è c3.
+<div style="display:flex;flex-wrap:wrap;gap:10px;margin:16px 0">
+  <div style="display:flex;align-items:center;gap:8px;background:#f5f5f5;padding:8px 12px;border-radius:8px">
+    <div style="width:28px;height:28px;background:#15781B;border-radius:50%"></div>
+    <div><div style="font-size:0.8rem;font-weight:700">green</div><div style="font-size:0.72rem;color:#666">Mossa corretta / best move SF</div></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;background:#f5f5f5;padding:8px 12px;border-radius:8px">
+    <div style="width:28px;height:28px;background:#882020;border-radius:50%"></div>
+    <div><div style="font-size:0.8rem;font-weight:700">red</div><div style="font-size:0.72rem;color:#666">Mossa da evitare / errore</div></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;background:#f5f5f5;padding:8px 12px;border-radius:8px">
+    <div style="width:28px;height:28px;background:#003088;border-radius:50%"></div>
+    <div><div style="font-size:0.8rem;font-weight:700">blue</div><div style="font-size:0.72rem;color:#666">Casa/pezzo da osservare (neutro)</div></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;background:#f5f5f5;padding:8px 12px;border-radius:8px">
+    <div style="width:28px;height:28px;background:#e6a817;border-radius:50%"></div>
+    <div><div style="font-size:0.8rem;font-weight:700">yellow</div><div style="font-size:0.72rem;color:#666">Target detective, casa chiave</div></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;background:#f5f5f5;padding:8px 12px;border-radius:8px">
+    <div style="width:28px;height:28px;background:#7dc0f0;border-radius:50%"></div>
+    <div><div style="font-size:0.8rem;font-weight:700">paleBlue</div><div style="font-size:0.72rem;color:#666">Variante secondaria, alternativa</div></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;background:#f5f5f5;padding:8px 12px;border-radius:8px">
+    <div style="width:28px;height:28px;background:#aaa;border-radius:50%"></div>
+    <div><div style="font-size:0.8rem;font-weight:700">paleGrey</div><div style="font-size:0.72rem;color:#666">Contesto, mossa avversario</div></div>
+  </div>
+</div>
 
-### Livelli di implementazione possibili
+### Uso per tipo di attività
 
-**Livello 1 — Frecce e cerchi espliciti nel JSON della lezione (già implementato)**
-Il sistema `visualAids` nel formato lezione permette già di definire frecce e cerchi per ogni step. Il problema è che l'IA deve generarli correttamente e il coach deve validarli.
+| Attività | Prima della risposta | Dopo la risposta |
+|---|---|---|
+| **Intent** | Cerchi blue su case delle opzioni | Freccia green sull'opzione corretta |
+| **Detective** | Nessuna (spoilererebbe) | Cerchio yellow sulla casa corretta |
+| **Candidate** | Frecce paleBlue per le candidate | Freccia green per best move |
+| **Move** | Freccia green suggerisce direzione | Sparisce dopo esecuzione |
+| **Demo** | Frecce che seguono la sequenza | — |
+| **Text** | Cerchi blue su tutte le case citate | — |
+
+### Livelli di implementazione
+
+**Livello 1 — visualAids espliciti nel JSON** (già implementato, da usare sistematicamente nei prompt IA)
 
 ```json
 "visualAids": [
@@ -74,239 +116,406 @@ Il sistema `visualAids` nel formato lezione permette già di definire frecce e c
 ]
 ```
 
-Questo funziona ma è **statico**: le frecce sono sempre visibili per tutta la durata dello step, indipendentemente da cosa sta leggendo il bambino.
+**Livello 2 — parsing automatico del testo** (da aggiungere): il player rileva pattern `[a-h][1-8]` nel testo e li evidenzia automaticamente sulla scacchiera. Nessuna configurazione manuale.
 
-**Livello 2 — Highlight contestuale via parsing del testo (nuovo)**
-Il sistema rileva automaticamente riferimenti a case (pattern `[a-h][1-8]`) e nomi di pezzi nel testo dello step, e li evidenzia sulla scacchiera mentre il bambino legge. Nessuna configurazione manuale.
+**Livello 3 — highlight sincrono con lettura** (futuro): le case evidenziate cambiano mentre il testo scorre.
 
-Esempio: il testo *"gioca Cf6, difendendo la casa e4"* fa comparire automaticamente:
-- Cerchio giallo su f6 (dove va il Cavallo)
-- Cerchio arancio su e4 (casa da difendere)
+---
 
-**Livello 3 — Highlight sincrono con lettura (futuro avanzato)**
-L'highlight segue il punto di attenzione dell'utente — quando il testo scorra o venga letto, le case evidenziate cambiano. Richiede un sistema di annotazione del testo più ricco.
+## Scacchiera — prima e dopo
 
-### Raccomandazione
+Il cambio più semplice e più impattante. Due righe di CSS.
 
-Implementare il **Livello 1 sistematicamente nei prompt IA**: aggiornare `openingBuildPrompt.js` per richiedere esplicitamente `visualAids` su ogni step con riferimenti a case specifiche. Il Livello 2 è fattibile come feature del player (parsing automatico) e andrebbe aggiunto alla Fase 2bis.
+<div style="display:flex;gap:24px;flex-wrap:wrap;margin:16px 0;align-items:flex-start">
+  <div>
+    <div style="font-size:0.8rem;font-weight:700;margin-bottom:8px;color:#666">ATTUALE — grigio anonimo</div>
+    <div style="display:grid;grid-template-columns:repeat(4,40px);border:2px solid #ccc;width:fit-content">
+      <div style="width:40px;height:40px;background:#E8E8E8"></div>
+      <div style="width:40px;height:40px;background:#B8B8B8"></div>
+      <div style="width:40px;height:40px;background:#E8E8E8"></div>
+      <div style="width:40px;height:40px;background:#B8B8B8"></div>
+      <div style="width:40px;height:40px;background:#B8B8B8"></div>
+      <div style="width:40px;height:40px;background:#E8E8E8"></div>
+      <div style="width:40px;height:40px;background:#B8B8B8"></div>
+      <div style="width:40px;height:40px;background:#E8E8E8"></div>
+      <div style="width:40px;height:40px;background:#E8E8E8"></div>
+      <div style="width:40px;height:40px;background:#B8B8B8"></div>
+      <div style="width:40px;height:40px;background:#E8E8E8"></div>
+      <div style="width:40px;height:40px;background:#B8B8B8"></div>
+      <div style="width:40px;height:40px;background:#B8B8B8"></div>
+      <div style="width:40px;height:40px;background:#E8E8E8"></div>
+      <div style="width:40px;height:40px;background:#B8B8B8"></div>
+      <div style="width:40px;height:40px;background:#E8E8E8"></div>
+    </div>
+    <div style="font-size:0.72rem;color:#999;margin-top:4px">#E8E8E8 / #B8B8B8</div>
+  </div>
+  <div>
+    <div style="font-size:0.8rem;font-weight:700;margin-bottom:8px;color:#2E7D32">PROPOSTO — marrone tradizionale (Lichess)</div>
+    <div style="display:grid;grid-template-columns:repeat(4,40px);border:2px solid #b58863;width:fit-content">
+      <div style="width:40px;height:40px;background:#f0d9b5"></div>
+      <div style="width:40px;height:40px;background:#b58863"></div>
+      <div style="width:40px;height:40px;background:#f0d9b5"></div>
+      <div style="width:40px;height:40px;background:#b58863"></div>
+      <div style="width:40px;height:40px;background:#b58863"></div>
+      <div style="width:40px;height:40px;background:#f0d9b5"></div>
+      <div style="width:40px;height:40px;background:#b58863"></div>
+      <div style="width:40px;height:40px;background:#f0d9b5"></div>
+      <div style="width:40px;height:40px;background:#f0d9b5"></div>
+      <div style="width:40px;height:40px;background:#b58863"></div>
+      <div style="width:40px;height:40px;background:#f0d9b5"></div>
+      <div style="width:40px;height:40px;background:#b58863"></div>
+      <div style="width:40px;height:40px;background:#b58863"></div>
+      <div style="width:40px;height:40px;background:#f0d9b5"></div>
+      <div style="width:40px;height:40px;background:#b58863"></div>
+      <div style="width:40px;height:40px;background:#f0d9b5"></div>
+    </div>
+    <div style="font-size:0.72rem;color:#999;margin-top:4px">#f0d9b5 / #b58863</div>
+  </div>
+  <div>
+    <div style="font-size:0.8rem;font-weight:700;margin-bottom:8px;color:#1565C0">ALTERNATIVA — blu/crema (Chess.com)</div>
+    <div style="display:grid;grid-template-columns:repeat(4,40px);border:2px solid #7fa650;width:fit-content">
+      <div style="width:40px;height:40px;background:#eeeed2"></div>
+      <div style="width:40px;height:40px;background:#769656"></div>
+      <div style="width:40px;height:40px;background:#eeeed2"></div>
+      <div style="width:40px;height:40px;background:#769656"></div>
+      <div style="width:40px;height:40px;background:#769656"></div>
+      <div style="width:40px;height:40px;background:#eeeed2"></div>
+      <div style="width:40px;height:40px;background:#769656"></div>
+      <div style="width:40px;height:40px;background:#eeeed2"></div>
+      <div style="width:40px;height:40px;background:#eeeed2"></div>
+      <div style="width:40px;height:40px;background:#769656"></div>
+      <div style="width:40px;height:40px;background:#eeeed2"></div>
+      <div style="width:40px;height:40px;background:#769656"></div>
+      <div style="width:40px;height:40px;background:#769656"></div>
+      <div style="width:40px;height:40px;background:#eeeed2"></div>
+      <div style="width:40px;height:40px;background:#769656"></div>
+      <div style="width:40px;height:40px;background:#eeeed2"></div>
+    </div>
+    <div style="font-size:0.72rem;color:#999;margin-top:4px">#eeeed2 / #769656</div>
+  </div>
+</div>
 
-### Colori frecce Chessground
+Il marrone tradizionale (Lichess) è la raccomandazione: i bambini lo riconoscono dagli scacchi fisici, da Lichess, dalle app di scacchi. Crea familiarità immediata.
 
-Chessground supporta questi brush natively:
-| Brush | Uso suggerito |
+---
+
+## Il FreezeOverlay — varianti
+
+Il freeze è il momento più importante del metodo. Visivamente deve dire *"fermati, è il momento di pensare"* — non *"sei bloccato"*.
+
+### Attuale vs varianti proposte
+
+<div style="display:flex;gap:16px;flex-wrap:wrap;margin:16px 0;align-items:flex-start">
+
+  <div style="text-align:center">
+    <div style="font-size:0.78rem;font-weight:700;margin-bottom:8px;color:#666">ATTUALE — oppressivo</div>
+    <div style="width:140px;height:140px;background:#b58863;border-radius:8px;position:relative;overflow:hidden;border:1px solid #ccc">
+      <div style="position:absolute;inset:0;background:rgba(40,53,147,0.82);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px">
+        <span style="font-size:2.5rem;font-weight:800;color:#fff;line-height:1">3</span>
+        <span style="font-size:0.65rem;color:rgba(255,255,255,0.9);margin-top:4px">Pensa prima di muovere</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center">
+    <div style="font-size:0.78rem;font-weight:700;margin-bottom:8px;color:#1565C0">A — Vignette soft</div>
+    <div style="width:140px;height:140px;background:#b58863;border-radius:8px;position:relative;overflow:hidden;border:1px solid #ccc">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center, rgba(0,0,0,0) 35%, rgba(20,20,60,0.78) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px">
+        <span style="font-size:2rem;font-weight:800;color:#fff;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,0.5)">3</span>
+        <span style="font-size:0.6rem;color:rgba(255,255,255,0.95);margin-top:5px;font-weight:600">Cosa sta pensando?</span>
+      </div>
+    </div>
+    <div style="font-size:0.7rem;color:#888;margin-top:4px">I pezzi restano visibili</div>
+  </div>
+
+  <div style="text-align:center">
+    <div style="font-size:0.78rem;font-weight:700;margin-bottom:8px;color:#E64A19">B — Colore per attività (Detective)</div>
+    <div style="width:140px;height:140px;background:#b58863;border-radius:8px;position:relative;overflow:hidden;border:1px solid #ccc">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center, rgba(0,0,0,0) 30%, rgba(180,60,10,0.82) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px">
+        <span style="font-size:2rem;font-weight:800;color:#fff;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,0.4)">3</span>
+        <span style="font-size:0.6rem;color:rgba(255,255,255,0.95);margin-top:5px;font-weight:600">Trova il punto chiave…</span>
+      </div>
+    </div>
+    <div style="font-size:0.7rem;color:#888;margin-top:4px">Arancio = detective</div>
+  </div>
+
+  <div style="text-align:center">
+    <div style="font-size:0.78rem;font-weight:700;margin-bottom:8px;color:#2E7D32">B — Colore per attività (Candidate)</div>
+    <div style="width:140px;height:140px;background:#b58863;border-radius:8px;position:relative;overflow:hidden;border:1px solid #ccc">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center, rgba(0,0,0,0) 30%, rgba(15,100,40,0.82) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px">
+        <span style="font-size:2rem;font-weight:800;color:#fff;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,0.4)">3</span>
+        <span style="font-size:0.6rem;color:rgba(255,255,255,0.95);margin-top:5px;font-weight:600">Quali mosse hai?</span>
+      </div>
+    </div>
+    <div style="font-size:0.7rem;color:#888;margin-top:4px">Verde = candidate</div>
+  </div>
+
+</div>
+
+**Raccomandazione:** combinare A + B — vignette radiale con colore per tipo attività, testo motivazionale specifico, numero countdown piccolo. Il bambino impara ad associare il colore all'attività ancora prima di leggere la domanda.
+
+### Testi motivazionali per tipo
+
+| Attività | Testo freeze |
 |---|---|
-| `green` | Mossa corretta / best move SF |
-| `red` | Mossa da evitare / errore |
-| `blue` | Casa/pezzo da osservare (referimento neutro) |
-| `yellow` | Target detective, casa chiave da trovare |
-| `paleBlue` | Variante secondaria, alternativa |
-| `paleGreen` | Mossa buona ma non ottima |
-| `paleRed` | Mossa rischiosa ma giocabile |
-| `paleGrey` | Contesto, mossa dell'avversario |
-
-Brush custom si possono definire via CSS su `.cg-custom-svgs`. Utile per aggiungere uno stile "hint" con tratto tratteggiato o animato.
-
-### Applicazione per tipo di attività
-
-| Attività | Frecce/cerchi consigliati |
-|---|---|
-| **Intent** | Cerchi blu sulle case delle opzioni; frecce verdi sull'opzione corretta dopo la risposta |
-| **Detective** | Nessuna freccia prima della risposta (spoilererebbe); cerchio giallo pulsante sulla casa corretta dopo |
-| **Candidate** | Frecce paleBlue per ciascuna candidata; freccia green per la best move dopo conferma |
-| **Move** | Freccia verde sottile che suggerisce la direzione; sparisce dopo che la mossa è stata eseguita |
-| **Demo** | Frecce animate che seguono la sequenza mossa per mossa |
-| **Text** | Cerchi blu su tutte le case citate nel testo (parsing automatico) |
+| Intent | *"Cosa sta pensando?"* |
+| Detective | *"Trova il punto chiave…"* |
+| Candidate | *"Quali mosse hai?"* |
+| Move | *"Ora esegui…"* |
+| Demo | *"Guarda bene…"* |
 
 ---
 
-## 3. Il FreezeOverlay — varianti
+## Tipografia e bottoni
 
-### Problema attuale
-`rgba(40,53,147,0.82)` è un overlay opaco e scuro che "spegne" la scacchiera. Trasmette blocco e interdizione. Per un bambino è un segnale di "aspetta, non puoi fare niente" invece di "prepara il tuo pensiero".
+### Font — Nunito è la scelta giusta
 
-### Cosa deve comunicare il freeze
-Il freeze è il momento più importante del metodo: è quando il bambino ragiona prima di muovere. Visivamente deve dire: *"fermati un secondo, è il momento di pensare"* — non *"sei bloccato"*. La differenza è sottile ma psicologicamente rilevante.
+<div style="background:#f9f9f9;border-radius:10px;padding:20px;margin:16px 0">
+  <div style="font-family:'Nunito',sans-serif;margin-bottom:12px">
+    <span style="font-size:0.7rem;color:#999;display:block;margin-bottom:2px">Nunito 800 — titoli lezione</span>
+    <span style="font-size:1.6rem;font-weight:800;color:#212121">Ruy Lopez — Variante Berlino</span>
+  </div>
+  <div style="font-family:'Nunito',sans-serif;margin-bottom:12px">
+    <span style="font-size:0.7rem;color:#999;display:block;margin-bottom:2px">Nunito 700 — domanda attività (attuale 1rem → proposto 1.1rem)</span>
+    <span style="font-size:1.1rem;font-weight:700;color:#212121">Perché il Nero gioca ...c5 invece di ...e5?</span>
+  </div>
+  <div style="font-family:'Nunito',sans-serif;margin-bottom:12px">
+    <span style="font-size:0.7rem;color:#999;display:block;margin-bottom:2px">Nunito 400 — testo corpo step</span>
+    <span style="font-size:0.95rem;font-weight:400;color:#546E7A">Il Cavallo su c3 controlla la casa d5 e limita le opzioni del Nero nel centro.</span>
+  </div>
+  <div style="font-family:'Nunito',sans-serif">
+    <span style="font-size:0.7rem;color:#999;display:block;margin-bottom:2px">Nunito 600 — label (minimo 0.75rem — attuale alcune a 0.65rem ⚠️)</span>
+    <span style="font-size:0.75rem;font-weight:600;color:#90A4AE;text-transform:uppercase;letter-spacing:0.04em">Step 3 di 8 · Intermedio</span>
+  </div>
+</div>
 
-### Varianti da valutare
+Nunito è ottimo per bambini: tondo, amichevole, alta leggibilità. **Non cambiare font.** L'unica correzione necessaria è portare le label piccole da 0.65rem a minimo 0.75rem.
 
-**A. Vignette soft (consigliata)**
-Invece di coprire tutta la scacchiera, scurire leggermente i bordi (vignette) mantenendo i pezzi visibili. Il countdown appare al centro trasparente, come sovrimpresso alla posizione.
-```css
-background: radial-gradient(
-  ellipse at center,
-  rgba(0,0,0,0) 40%,
-  rgba(20,20,60,0.75) 100%
-);
-```
-Vantaggio: il bambino vede ancora la posizione durante il freeze, può già iniziare a "guardare" mentre conta.
+### Bottoni — prima e dopo
 
-**B. Overlay caldo con tema attività**
-Il colore dell'overlay cambia in base al tipo di attività che sta per iniziare. Intent → azzurro, Detective → arancio, Candidate → verde. Il bambino impara ad associare il colore all'attività ancor prima di leggere la domanda.
-```css
-/* intent */   rgba(25, 100, 180, 0.78)
-/* detective */ rgba(200, 80, 20, 0.78)
-/* candidate */ rgba(20, 130, 60, 0.78)
-/* move */     rgba(90, 30, 160, 0.78)
-```
+<div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;margin:16px 0">
+  <div>
+    <div style="font-size:0.78rem;font-weight:700;margin-bottom:10px;color:#666">ATTUALE</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button style="padding:0.6rem 1.8rem;border:none;border-radius:8px;background:#283593;color:#fff;font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:700;cursor:default">Continua</button>
+      <button style="padding:0.6rem 1.6rem;border:1.5px solid #283593;border-radius:8px;background:#fff;color:#283593;font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:700;cursor:default">Mostra risposta</button>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;font-size:1.5rem;color:#ccc;padding-top:20px">→</div>
+  <div>
+    <div style="font-size:0.78rem;font-weight:700;margin-bottom:10px;color:#2E7D32">PROPOSTO</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button style="padding:0.65rem 1.8rem;border:none;border-radius:12px;background:#283593;color:#fff;font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:700;cursor:default;box-shadow:0 4px 12px rgba(40,53,147,0.35)">Continua</button>
+      <button style="padding:0.65rem 1.6rem;border:2px solid #283593;border-radius:12px;background:#fff;color:#283593;font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:700;cursor:default">Mostra risposta</button>
+    </div>
+    <div style="font-size:0.7rem;color:#888;margin-top:8px">+ scale(1.04) su hover/active</div>
+  </div>
+</div>
 
-**C. Breathe — overlay con pulsazione lenta**
-Overlay leggero (0.5 opacity max) con animazione di "respiro" — si espande e contrae lentamente. Suona quasi come un invito alla calma e alla concentrazione. Il countdown è secondario, il ritmo visivo è la comunicazione principale.
-```css
-@keyframes breathe {
-  0%, 100% { opacity: 0.45; }
-  50%       { opacity: 0.65; }
-}
-```
+Le modifiche: border-radius da 8 → 12px, box-shadow sul primario, border più marcato sul secondario, transform scale su hover. La differenza è sottile ma il primario "ha peso" — si capisce che è l'azione principale.
 
-**D. Countdown circolare**
-Sostituire il numero nudo con un cerchio SVG che si svuota progressivamente (come i timer circolari degli quiz online). Più leggibile per bambini, più "gaming". Il numero rimane al centro del cerchio.
+### Opzioni Intent — prima e dopo
 
-**E. Testo motivazionale invece del numero**
-Invece di "3… 2… 1…", mostrare testo breve che prepara al tipo di sfida:
-- Intent: *"Cosa sta pensando?"*
-- Detective: *"Trova il punto chiave…"*
-- Candidate: *"Quali mosse hai?"*
-- Move: *"Ora esegui…"*
-
-Il countdown rimane visibile ma piccolo, non è più il protagonista.
-
-### Raccomandazione
-Combinare **A + B + E**: vignette soft con colore tematico, testo motivazionale per tipo, countdown piccolo in basso. Massimo impatto con minima complessità implementativa.
-
----
-
-## 4. Tipografia e bottoni
-
-### Problemi attuali
-
-| Elemento | Attuale | Problema |
-|---|---|---|
-| Label / badge | 0.65–0.7rem | Illeggibili per bambini, troppo piccoli |
-| Domanda attività | 1rem bold | Potrebbe essere più grande e più presente |
-| Istruzione secondaria | 0.875rem | Ok |
-| Bottone primario | 0.95rem, radius 8px | Funzionale ma piatto |
-| Bottone secondario | outlined, stesso size | Non si distingue abbastanza |
-
-### Linee guida per bambini 8–12 anni
-
-**Dimensioni minime:**
-- Testo leggibile: mai sotto 0.8rem (meglio 0.875rem)
-- Label piccole: mai sotto 0.75rem
-- Testo interattivo (opzioni, bottoni): minimo 0.9rem
-
-**Domanda dell'attività:**
-È l'elemento più importante della schermata — la sfida che il bambino deve affrontare. Attualmente pesa 1rem/700. Proposta: 1.1–1.15rem/800, con un colore più caldo del text-primary generico. Deve "parlare" al bambino, non mimetizzarsi col contesto.
-
-**Bottoni:**
-I bottoni attuali sono funzionali ma anonimi. Per bambini servono:
-- Border-radius più alto: da 8px a 10–12px (aspetto più "pill-ish", più moderno e amichevole)
-- Transform scale su hover/active: `transform: scale(1.04)` — dà l'impressione che il bottone "risponda" al tocco
-- Transizione che include transform: `transition: background 0.2s, transform 0.15s`
-- Bottone primario: ombra leggera (box-shadow 0 4px 12px rgba(primario, 0.3)) — lo stacca dalla superficie
-
-**Opzioni Intent:**
-Sono il cuore dell'interazione più frequente. Attualmente sono rettangoli con bordo sottile. Proposta:
-- Border-radius da 8px a 12px
-- Padding leggermente aumentato (0.9rem 1.2rem)
-- Hover: non solo cambio bordo ma anche `transform: translateX(4px)` — dà l'impressione che l'opzione "si avanzi" verso di te quando la tocchi
-- Selected: ombra interna leggera per dare senso di "pressione"
-
-**Font — Nunito è una buona scelta per i bambini** (tondo, amichevole, leggibile). Non cambiare. Eventuale aggiunta: **Fredoka One** o **Baloo 2** solo per i titoli di sezione (più carattere, più "gioco"), ma è opzionale e da valutare dopo il resto.
+<div style="display:flex;gap:24px;flex-wrap:wrap;margin:16px 0">
+  <div style="flex:1;min-width:220px">
+    <div style="font-size:0.78rem;font-weight:700;margin-bottom:10px;color:#666">ATTUALE</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px;padding:0.8rem 1.1rem;border:1.5px solid #E0E0E0;border-radius:8px;background:#fff;font-size:0.9rem;font-family:'Nunito',sans-serif">
+        <input type="radio" style="accent-color:#283593" readonly/> Controllare il centro con d5
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:0.8rem 1.1rem;border:1.5px solid #283593;border-radius:8px;background:#E8EAF6;font-size:0.9rem;font-family:'Nunito',sans-serif">
+        <input type="radio" style="accent-color:#283593" checked readonly/> Aprire la colonna c
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:0.8rem 1.1rem;border:1.5px solid #E0E0E0;border-radius:8px;background:#fff;font-size:0.9rem;font-family:'Nunito',sans-serif">
+        <input type="radio" style="accent-color:#283593" readonly/> Attaccare il cavallo e4
+      </div>
+    </div>
+  </div>
+  <div style="flex:1;min-width:220px">
+    <div style="font-size:0.78rem;font-weight:700;margin-bottom:10px;color:#2E7D32">PROPOSTO</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px;padding:0.9rem 1.2rem;border:1.5px solid #E0E0E0;border-radius:12px;background:#fff;font-size:0.9rem;font-family:'Nunito',sans-serif;transition:all 0.2s">
+        <input type="radio" style="accent-color:#1565C0" readonly/> Controllare il centro con d5
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:0.9rem 1.2rem;border:2px solid #1565C0;border-radius:12px;background:#E3F2FD;font-size:0.9rem;font-family:'Nunito',sans-serif;box-shadow:inset 0 1px 4px rgba(21,101,192,0.15)">
+        <input type="radio" style="accent-color:#1565C0" checked readonly/> Aprire la colonna c
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:0.9rem 1.2rem;border:1.5px solid #E0E0E0;border-radius:12px;background:#fff;font-size:0.9rem;font-family:'Nunito',sans-serif">
+        <input type="radio" style="accent-color:#1565C0" readonly/> Attaccare il cavallo e4
+      </div>
+    </div>
+    <div style="font-size:0.7rem;color:#888;margin-top:8px">+ translateX(4px) su hover</div>
+  </div>
+</div>
 
 ---
 
-## 5. Palette e color coding attività
+## Palette e color coding attività
 
-### Direzione suggerita
+### Colore primario — proposta
 
-Abbandonare il monocromatismo blu indigo. La nuova palette mantiene la professionalità ma aggiunge calore e identità visiva.
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin:16px 0">
+  <div style="text-align:center">
+    <div style="width:80px;height:80px;background:#283593;border-radius:8px"></div>
+    <div style="font-size:0.75rem;margin-top:6px;font-weight:600">Attuale<br/>#283593</div>
+    <div style="font-size:0.7rem;color:#888">Freddo</div>
+  </div>
+  <div style="display:flex;align-items:center;font-size:1.2rem;color:#ccc">→</div>
+  <div style="text-align:center">
+    <div style="width:80px;height:80px;background:#1a3a5c;border-radius:8px"></div>
+    <div style="font-size:0.75rem;margin-top:6px;font-weight:600">Proposto<br/>#1a3a5c</div>
+    <div style="font-size:0.7rem;color:#888">Notte scacchiera</div>
+  </div>
+</div>
 
-**Colore primario:** invece di un unico primario, il sistema usa il colore del tipo di attività come colore dominante per tutta la schermata di quell'attività.
+Alternativa: mantenere il primario globale neutro (solo per navigazione e UI shell) e usare il colore dell'attività come dominante nel pannello player.
 
-| Attività | Colore | Hex suggerito | Logica |
-|---|---|---|---|
-| **Intent** | Azzurro strategico | `#1565C0` | Il pensiero strategico è calmo, profondo |
-| **Detective** | Arancio scoperta | `#E64A19` | La scoperta è calda, urgente, investigativa |
-| **Candidate** | Verde generazione | `#2E7D32` | La generazione di idee è viva, fertile |
-| **Move** | Viola esecuzione | `#6A1B9A` | L'azione è decisa, concreta |
-| **Text** | Neutro caldo | `#4E342E` (marrone) | La lettura è tranquilla, contestuale |
-| **Demo** | Oro / ambra | `#F57F17` | Il GM che mostra è prezioso, autorevole |
+### Color coding per tipo di attività
 
-**Sfondo globale:** da `#F8F9FA` (freddo) a qualcosa di leggermente più caldo, es. `#F9F7F4` — quasi impercettibile ma cambia il tono generale.
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin:16px 0">
+  <div style="border-radius:10px;overflow:hidden;border:1px solid #eee">
+    <div style="background:#1565C0;padding:14px 16px">
+      <div style="font-size:0.85rem;font-weight:800;color:#fff">INTENT</div>
+      <div style="font-size:0.7rem;color:rgba(255,255,255,0.8);margin-top:2px">pensiero strategico</div>
+    </div>
+    <div style="padding:10px 12px;background:#fff">
+      <div style="font-size:0.72rem;color:#666">#1565C0</div>
+      <div style="font-size:0.72rem;color:#666">bg: #E3F2FD</div>
+    </div>
+  </div>
+  <div style="border-radius:10px;overflow:hidden;border:1px solid #eee">
+    <div style="background:#E64A19;padding:14px 16px">
+      <div style="font-size:0.85rem;font-weight:800;color:#fff">DETECTIVE</div>
+      <div style="font-size:0.7rem;color:rgba(255,255,255,0.8);margin-top:2px">scoperta</div>
+    </div>
+    <div style="padding:10px 12px;background:#fff">
+      <div style="font-size:0.72rem;color:#666">#E64A19</div>
+      <div style="font-size:0.72rem;color:#666">bg: #FBE9E7</div>
+    </div>
+  </div>
+  <div style="border-radius:10px;overflow:hidden;border:1px solid #eee">
+    <div style="background:#2E7D32;padding:14px 16px">
+      <div style="font-size:0.85rem;font-weight:800;color:#fff">CANDIDATE</div>
+      <div style="font-size:0.7rem;color:rgba(255,255,255,0.8);margin-top:2px">generazione idee</div>
+    </div>
+    <div style="padding:10px 12px;background:#fff">
+      <div style="font-size:0.72rem;color:#666">#2E7D32</div>
+      <div style="font-size:0.72rem;color:#666">bg: #E8F5E9</div>
+    </div>
+  </div>
+  <div style="border-radius:10px;overflow:hidden;border:1px solid #eee">
+    <div style="background:#6A1B9A;padding:14px 16px">
+      <div style="font-size:0.85rem;font-weight:800;color:#fff">MOVE</div>
+      <div style="font-size:0.7rem;color:rgba(255,255,255,0.8);margin-top:2px">esecuzione</div>
+    </div>
+    <div style="padding:10px 12px;background:#fff">
+      <div style="font-size:0.72rem;color:#666">#6A1B9A</div>
+      <div style="font-size:0.72rem;color:#666">bg: #F3E5F5</div>
+    </div>
+  </div>
+  <div style="border-radius:10px;overflow:hidden;border:1px solid #eee">
+    <div style="background:#4E342E;padding:14px 16px">
+      <div style="font-size:0.85rem;font-weight:800;color:#fff">TEXT</div>
+      <div style="font-size:0.7rem;color:rgba(255,255,255,0.8);margin-top:2px">lettura, contesto</div>
+    </div>
+    <div style="padding:10px 12px;background:#fff">
+      <div style="font-size:0.72rem;color:#666">#4E342E</div>
+      <div style="font-size:0.72rem;color:#666">bg: #EFEBE9</div>
+    </div>
+  </div>
+  <div style="border-radius:10px;overflow:hidden;border:1px solid #eee">
+    <div style="background:#F57F17;padding:14px 16px">
+      <div style="font-size:0.85rem;font-weight:800;color:#fff">DEMO</div>
+      <div style="font-size:0.7rem;color:rgba(255,255,255,0.8);margin-top:2px">il GM mostra</div>
+    </div>
+    <div style="padding:10px 12px;background:#fff">
+      <div style="font-size:0.72rem;color:#666">#F57F17</div>
+      <div style="font-size:0.72rem;color:#666">bg: #FFF8E1</div>
+    </div>
+  </div>
+</div>
 
-**Scacchiera:**
-Il cambio più semplice e con il maggiore impatto immediato. Il tema `chessground.brown.css` è già importato ma sovrascritto dall'SVG pattern grigio. Basta rimuovere il pattern e lasciare il brown theme di Chessground:
-- Case chiare: `#f0d9b5` (beige caldo)
-- Case scure: `#b58863` (marrone tradizionale)
-Sono i colori usati da Lichess, Chess.com e ogni scacchiera fisica standard. I bambini li riconoscono.
+L'implementazione minima che differenzia senza toccare la struttura: **bordo superiore colorato** di 4px sul pannello attività (CSS: `border-top: 4px solid var(--activity-color)`). Il bambino riconosce il tipo di sfida a colpo d'occhio prima ancora di leggere.
 
 ---
 
-## 6. Celebrazioni e feedback emotivo
+## Celebrazioni e feedback emotivo
 
-### Stato attuale
-- Risposta corretta: pannello verde pallido con ✓ verde e testo. Nulla di speciale.
-- Risposta errata: pannello rosso pallido con ✗ rosso.
-- Lezione completata: card bianca con ★ gialla e testo "Ottimo lavoro!". Statico.
+### Risposta corretta — prima e dopo
 
-### Cosa manca
+<div style="display:flex;gap:20px;flex-wrap:wrap;margin:16px 0">
+  <div style="flex:1;min-width:200px">
+    <div style="font-size:0.78rem;font-weight:700;margin-bottom:10px;color:#666">ATTUALE — statico</div>
+    <div style="background:#E8F5E9;border:1.5px solid #558B2F;border-radius:12px;padding:20px;text-align:center">
+      <div style="font-size:2.5rem;line-height:1;color:#2E7D32">✓</div>
+      <div style="font-size:0.95rem;color:#212121;margin-top:8px">Esatto! Il Nero gioca ...c5 per creare tensione nel centro.</div>
+      <button style="margin-top:12px;padding:0.6rem 1.8rem;border:none;border-radius:8px;background:#283593;color:#fff;font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:700;cursor:default">Continua →</button>
+    </div>
+  </div>
+  <div style="flex:1;min-width:200px">
+    <div style="font-size:0.78rem;font-weight:700;margin-bottom:10px;color:#2E7D32">PROPOSTO — con risposta emotiva</div>
+    <div style="background:#E8F5E9;border:2px solid #2E7D32;border-radius:12px;padding:20px;text-align:center;box-shadow:0 0 0 3px rgba(46,125,50,0.15), 0 4px 16px rgba(46,125,50,0.2)">
+      <div style="font-size:2.8rem;line-height:1;color:#2E7D32">✓</div>
+      <div style="font-size:0.95rem;color:#212121;margin-top:8px">Esatto! Il Nero gioca ...c5 per creare tensione nel centro.</div>
+      <button style="margin-top:12px;padding:0.65rem 1.8rem;border:none;border-radius:12px;background:#2E7D32;color:#fff;font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:700;cursor:default;box-shadow:0 4px 10px rgba(46,125,50,0.35)">Continua →</button>
+    </div>
+    <div style="font-size:0.7rem;color:#888;margin-top:6px">+ animazione pop (scale 0.95→1.05→1.0) all'apparizione</div>
+  </div>
+</div>
 
-**Risposta corretta — micro-celebrazione:**
-Un bambino di 10 anni che risponde bene ha bisogno di una risposta emotiva immediata. Non serve un fuoco d'artificio, ma serve qualcosa. Proposta:
-- Pannello feedback corretto: breve animazione `pop` (scale da 0.95 a 1.05 a 1.0 in 0.3s)
-- Bordo con glow leggero: `box-shadow: 0 0 0 3px var(--move-ottima), 0 4px 16px rgba(verde, 0.3)`
-- Icona: non il simbolo ✓ ma qualcosa di più espressivo — ♟ animato, oppure la lettera "✓" che "salta in su" con keyframe
+### Schermata completamento lezione — proposta
 
-**Lezione completata — schermata celebrativa:**
-Questa è la schermata che rimane impressa. Deve dare soddisfazione. Proposte:
-- Stelle animate che compaiono in sequenza (staggered, 0.2s di delay tra l'una e l'altra)
-- Sfondo con pattern CSS di coriandoli (keyframe che muovono elementi decorativi) — realizzabile in puro CSS senza librerie
-- Titolo con font-size maggiore (2rem+) e weight 800
-- Durata visualizzazione: testo che scala da piccolo a grande (`@keyframes popIn`)
-
-**Risposta errata — feedback senza scoraggiare:**
-Lo shake attuale (`@keyframes shake`) è già presente ma va verificato che venga usato. L'overlay rosso non deve essere accusatorio. Il tono visivo è: *"quasi! riprova"* — caldo, non freddo.
+<div style="max-width:380px;margin:16px 0">
+  <div style="background:linear-gradient(135deg,#1a3a5c 0%,#2E7D32 100%);border-radius:16px;padding:32px 24px;text-align:center;color:#fff">
+    <div style="font-size:3rem;margin-bottom:8px">
+      <span style="display:inline-block;transform:rotate(-15deg)">★</span>
+      <span style="display:inline-block;font-size:3.5rem">★</span>
+      <span style="display:inline-block;transform:rotate(15deg)">★</span>
+    </div>
+    <div style="font-size:1.7rem;font-weight:800;font-family:'Nunito',sans-serif;margin-bottom:8px">Lezione completata!</div>
+    <div style="font-size:0.95rem;opacity:0.85;margin-bottom:24px">Ruy Lopez — Variante Berlino</div>
+    <button style="padding:0.75rem 2rem;border:none;border-radius:12px;background:#fff;color:#1a3a5c;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:800;cursor:default;box-shadow:0 4px 16px rgba(0,0,0,0.2)">Valuta la lezione →</button>
+  </div>
+  <div style="font-size:0.7rem;color:#888;margin-top:6px">stelle animate in sequenza (staggered 0.2s); sfondo gradiente fisso nel CSS</div>
+</div>
 
 ---
 
-## 7. Checklist di implementazione — Fase 2bis
+## Checklist implementazione — Fase 2bis
 
-In ordine di priorità e impatto:
-
-### Immediato (basso sforzo, alto impatto)
-- [ ] Scacchiera: rimuovere SVG pattern grigio, usare marrone Chessground standard
-- [ ] Coordinate scacchiera: font-size da 0.7rem a 0.8rem, colore più caldo
-- [ ] Label: nessuna label sotto 0.75rem
+### Immediato (basso sforzo, alto impatto visivo)
+- [ ] Scacchiera: sostituire SVG pattern grigio con marrone Lichess (#f0d9b5 / #b58863)
+- [ ] Coordinate scacchiera: font-size 0.7 → 0.8rem, colore più caldo
+- [ ] Label: portare tutte le label sotto 0.75rem a minimo 0.75rem
 
 ### Breve termine (medio sforzo, alto impatto)
-- [ ] FreezeOverlay: vignette radiale + colore per tipo attività + testo motivazionale
-- [ ] Color coding attività: bordo superiore colorato per tipo (4px, colore attività) — implementazione minima che differenzia senza cambiare la struttura
-- [ ] Bottoni: border-radius 12px, transform scale su hover/active, ombra sul primario
-- [ ] Opzioni Intent: border-radius 12px, hover con translateX(4px)
-- [ ] Pannello "Corretto!": animazione pop, glow border
+- [ ] FreezeOverlay: vignette radiale + colore per tipo attività + testo motivazionale specifico
+- [ ] Color coding attività: `border-top: 4px solid` colorato per tipo sul pannello activity
+- [ ] Bottoni: border-radius 12px, box-shadow sul primario, transform scale su hover/active
+- [ ] Opzioni Intent: border-radius 12px, hover con translateX(4px), selected con box-shadow inset
+- [ ] Pannello "Corretto!": animazione pop, glow border verde
 
 ### Medio termine (medio sforzo, medio impatto)
-- [ ] Palette: aggiornare variabili CSS in `index.css`; scacchiera marrone/beige
-- [ ] Schermata completamento: stelle animate in sequenza, titolo celebrativo
-- [ ] Domanda attività: font-size 1.1rem, weight 800, colore per tipo
-- [ ] Visual aids sistematici: aggiornare prompt IA per richiedere `visualAids` su ogni step con riferimenti a case
+- [ ] Palette: aggiornare variabili CSS primario + sfondo in index.css
+- [ ] Schermata completamento: sfondo gradiente, stelle animate in sequenza, titolo 800
+- [ ] Domanda attività: font-size 1rem → 1.1rem, weight 800, colore per tipo
+- [ ] Visual aids sistematici: aggiornare prompt IA per richiedere visualAids su ogni step con riferimenti a case
 
-### Lungo termine (più sforzo, completamento sistema)
-- [ ] Parsing automatico case nel testo: highlight sulla scacchiera per ogni riferimento `[a-h][1-8]` trovato nel contenuto degli step `text`
-- [ ] Brush personalizzati Chessground: stile "hint" tratteggiato per aiuti opzionali
-- [ ] Countdown circolare SVG per freeze
-
----
-
-## 8. Cosa NON fare
-
-- **Cambiare la struttura layout** — funziona, non toccarla
-- **Aggiungere audio** — fuori scope, richiede gestione accessibilità e permessi
-- **Intervenire sulla Console Coach** — è per adulti, va bene com'è
-- **Librerie JS per animazioni** — tutto realizzabile in CSS puro, nessuna dipendenza aggiuntiva
-- **Emoji nel testo delle lezioni** — il contenuto didattico deve restare pulito; le emoji appartengono all'UI shell, non al contenuto
+### Lungo termine (completamento sistema)
+- [ ] Parsing automatico case nel testo: highlight su board per pattern [a-h][1-8] negli step text
+- [ ] Brush custom Chessground: stile "hint" tratteggiato per aiuti opzionali
+- [ ] Countdown circolare SVG in sostituzione del numero
 
 ---
 
-*Documento creato: 2026-03-14*
-*Riferimenti: Sweller (1988) Cognitive Load Theory; Mayer & Moreno (2003) principio di contiguità*
+## Cosa NON fare
+
+- Cambiare la struttura layout (funziona)
+- Aggiungere audio (fuori scope)
+- Intervenire sulla Console Coach (è per adulti, va bene)
+- Librerie JS per animazioni (tutto fattibile in CSS puro)
+- Emoji nel contenuto didattico (appartengono all'UI shell, non alle lezioni)
+
+---
+
+*Documento creato: 2026-03-14 — Riferimenti: Sweller (1988) Cognitive Load Theory; Mayer & Moreno (2003) principio di contiguità*
