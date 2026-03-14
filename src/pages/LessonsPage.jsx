@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { listDraftLessons, loadDraftLesson, deleteDraftLesson } from '../engine/lessonStore.js'
+import { listLessons, deleteLesson } from '../engine/lessonStore.js'
 import './LessonsPage.css'
 
 const DIFFICULTY_LABELS = {
@@ -14,37 +14,15 @@ function formatDateIT(isoString) {
   return date.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-function loadFullLessons() {
-  const drafts = listDraftLessons()
-  return drafts
-    .map((draft) => {
-      const entry = loadDraftLesson(draft.id)
-      const lesson = entry?.lesson ?? {}
-      return {
-        id: draft.id,
-        savedAt: draft.savedAt,
-        updatedAt: lesson.updatedAt || draft.savedAt || null,
-        title: draft.title || lesson.title || lesson.titolo || 'Senza titolo',
-        difficulty: lesson.difficulty || lesson.difficolta || null,
-        category: lesson.category || lesson.categoria || null,
-        stepsCount: Array.isArray(lesson.steps) ? lesson.steps.length : 0,
-        estimatedMinutes: lesson.estimatedMinutes || null,
-        status: lesson.status || 'draft',
-      }
-    })
-    // Sort most recently modified first
-    .sort((a, b) => {
-      const ta = new Date(a.updatedAt || a.savedAt || 0).getTime()
-      const tb = new Date(b.updatedAt || b.savedAt || 0).getTime()
-      return tb - ta
-    })
-}
-
 export default function LessonsPage() {
   const [lessons, setLessons] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  function refresh() {
-    setLessons(loadFullLessons())
+  async function refresh() {
+    setLoading(true)
+    const data = await listLessons()
+    setLessons(data)
+    setLoading(false)
   }
 
   useEffect(() => {
@@ -56,9 +34,9 @@ export default function LessonsPage() {
     window.location.hash = '#/player'
   }
 
-  function handleDelete(id, title) {
+  async function handleDelete(id, title) {
     if (!window.confirm(`Eliminare la lezione "${title}"? L'azione non è reversibile.`)) return
-    deleteDraftLesson(id)
+    await deleteLesson(id)
     refresh()
   }
 
@@ -67,14 +45,18 @@ export default function LessonsPage() {
       <header className="lessons-header">
         <div className="lessons-header-inner">
           <h1 className="lessons-title">Le mie lezioni</h1>
-          {lessons.length > 0 && (
+          {!loading && lessons.length > 0 && (
             <span className="lessons-count">{lessons.length} lezione{lessons.length !== 1 ? 'i' : ''}</span>
           )}
         </div>
       </header>
 
       <div className="lessons-content">
-        {lessons.length === 0 ? (
+        {loading ? (
+          <div className="lessons-empty">
+            <p className="lessons-empty-text">Caricamento...</p>
+          </div>
+        ) : lessons.length === 0 ? (
           <div className="lessons-empty">
             <div className="lessons-empty-icon" aria-hidden="true">♟</div>
             <p className="lessons-empty-text">Nessuna lezione salvata.</p>
@@ -87,62 +69,65 @@ export default function LessonsPage() {
           </div>
         ) : (
           <div className="lessons-grid">
-            {lessons.map((lesson) => (
-              <article key={lesson.id} className="lesson-card">
-                <div className="lesson-card-top">
-                  <div className="lesson-card-badges">
-                    {lesson.difficulty && (
-                      <span className={`badge badge-difficulty badge-difficulty--${lesson.difficulty}`}>
-                        {DIFFICULTY_LABELS[lesson.difficulty] ?? lesson.difficulty}
-                      </span>
-                    )}
-                    {(lesson.status === 'published' || lesson.status === 'approved') ? (
-                      <span className="badge badge-approved">Approvata</span>
-                    ) : (
-                      <span className="badge badge-draft">Bozza</span>
-                    )}
+            {lessons.map((lesson) => {
+              const stepsCount = lesson.steps?.length ?? 0
+              return (
+                <article key={lesson.id} className="lesson-card">
+                  <div className="lesson-card-top">
+                    <div className="lesson-card-badges">
+                      {lesson.difficulty && (
+                        <span className={`badge badge-difficulty badge-difficulty--${lesson.difficulty}`}>
+                          {DIFFICULTY_LABELS[lesson.difficulty] ?? lesson.difficulty}
+                        </span>
+                      )}
+                      {(lesson.status === 'published' || lesson.status === 'approved') ? (
+                        <span className="badge badge-approved">Approvata</span>
+                      ) : (
+                        <span className="badge badge-draft">Bozza</span>
+                      )}
+                    </div>
+                    <h2 className="lesson-card-title">{lesson.title}</h2>
+                    <div className="lesson-card-meta">
+                      {lesson.category && (
+                        <span className="lesson-meta-item">
+                          <span className="lesson-meta-label">Categoria</span>
+                          {lesson.category}
+                        </span>
+                      )}
+                      {stepsCount > 0 && (
+                        <span className="lesson-meta-item">
+                          <span className="lesson-meta-label">Step</span>
+                          {stepsCount}
+                        </span>
+                      )}
+                      {lesson.estimatedMinutes != null && (
+                        <span className="lesson-meta-item">
+                          <span className="lesson-meta-label">Durata</span>
+                          {lesson.estimatedMinutes} min
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <h2 className="lesson-card-title">{lesson.title}</h2>
-                  <div className="lesson-card-meta">
-                    {lesson.category && (
-                      <span className="lesson-meta-item">
-                        <span className="lesson-meta-label">Categoria</span>
-                        {lesson.category}
-                      </span>
-                    )}
-                    {lesson.stepsCount > 0 && (
-                      <span className="lesson-meta-item">
-                        <span className="lesson-meta-label">Step</span>
-                        {lesson.stepsCount}
-                      </span>
-                    )}
-                    {lesson.estimatedMinutes != null && (
-                      <span className="lesson-meta-item">
-                        <span className="lesson-meta-label">Durata</span>
-                        {lesson.estimatedMinutes} min
-                      </span>
-                    )}
+                  <div className="lesson-card-bottom">
+                    <span className="lesson-date">{formatDateIT(lesson.savedAt)}</span>
+                    <div className="lesson-card-actions">
+                      <button
+                        className="btn btn-play"
+                        onClick={() => handlePlay(lesson.id)}
+                      >
+                        Gioca
+                      </button>
+                      <button
+                        className="btn btn-delete"
+                        onClick={() => handleDelete(lesson.id, lesson.title)}
+                      >
+                        Elimina
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div className="lesson-card-bottom">
-                  <span className="lesson-date">{formatDateIT(lesson.savedAt)}</span>
-                  <div className="lesson-card-actions">
-                    <button
-                      className="btn btn-play"
-                      onClick={() => handlePlay(lesson.id)}
-                    >
-                      Gioca
-                    </button>
-                    <button
-                      className="btn btn-delete"
-                      onClick={() => handleDelete(lesson.id, lesson.title)}
-                    >
-                      Elimina
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              )
+            })}
           </div>
         )}
       </div>

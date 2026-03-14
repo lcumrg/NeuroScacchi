@@ -8,7 +8,7 @@ import CandidateActivity from '../components/player/CandidateActivity'
 import MoveActivity from '../components/player/MoveActivity'
 import TextActivity from '../components/player/TextActivity'
 import DemoActivity from '../components/player/DemoActivity'
-import { loadDraftLesson, saveLessonFeedback } from '../engine/lessonStore'
+import { loadLesson, saveLessonFeedback } from '../engine/lessonStore'
 import { legalDests, makeMove, turnColor as getTurnColor, parseUci } from '../engine/chessService'
 import './PlayerPage.css'
 
@@ -87,14 +87,14 @@ export default function PlayerPage() {
       setError('Nessuna lezione selezionata.')
       return
     }
-    const stored = loadDraftLesson(id)
-    if (!stored || !stored.lesson) {
-      setError(`Lezione "${id}" non trovata.`)
-      return
-    }
-    const l = stored.lesson
-    setLesson(l)
-    setFen(l.steps[0]?.fen ?? l.initialFen)
+    loadLesson(id).then(lesson => {
+      if (!lesson) {
+        setError(`Lezione "${id}" non trovata.`)
+        return
+      }
+      setLesson(lesson)
+      setFen(lesson.steps[0]?.fen ?? lesson.initialFen)
+    })
   }, [])
 
   // ── Start freeze phase whenever step/phase changes ────────────────────────
