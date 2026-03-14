@@ -24,13 +24,26 @@
   padding: 1.25rem;
 }
 
+.doc-sidebar-group {
+  margin-bottom: 1.25rem;
+}
+
+.doc-sidebar-group:last-child {
+  margin-bottom: 0;
+}
+
 .doc-sidebar h2 {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 0.5rem 0;
+}
+
+.doc-toc button.doc-active {
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 .doc-toc {
