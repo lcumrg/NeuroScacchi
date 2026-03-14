@@ -49,8 +49,8 @@ export default async (req) => {
   params.set('moves', moves)
   params.set('topGames', 0)
   params.set('recentGames', 0)
-  for (const r of ratings) params.append('ratings', r)
-  for (const s of speeds) params.append('speeds', s)
+  if (ratings.length > 0) params.set('ratings', ratings.join(','))
+  if (speeds.length > 0) params.set('speeds', speeds.join(','))
 
   const url = `${LICHESS_EXPLORER}?${params}`
 
