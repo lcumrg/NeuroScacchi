@@ -3,6 +3,8 @@
 import { LESSON_SYSTEM_PROMPT } from './lessonSystemPrompt.js'
 import { LESSON_PLAN_PROMPT, getTagsForTheme } from './lessonPlanPrompt.js'
 import { LESSON_BUILD_PROMPT } from './lessonBuildPrompt.js'
+import { OPENING_PLAN_PROMPT } from './openingPlanPrompt.js'
+import { OPENING_BUILD_PROMPT } from './openingBuildPrompt.js'
 import { validateLesson } from './lessonSchema.js'
 import puzzleDatabase from './puzzleDatabase.js'
 
@@ -526,6 +528,110 @@ export async function buildLesson({ plan, materials, model }) {
   }
 
   // Sanitizza mosse (rimuovi x, +, # etc.) e struttura
+  sanitizeLessonMoves(lesson)
+  sanitizeLessonStructure(lesson)
+
+  return { lesson, usage: result.usage }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PIPELINE APERTURE — planOpening e buildOpeningLesson
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Passo 1 della pipeline aperture: l'IA pianifica struttura e mosse.
+ * Restituisce la sequenza UCI della linea principale e il piano pedagogico.
+ *
+ * @param {Object} params
+ * @param {string} params.apertura - Es. "Ruy Lopez, variante Berlino"
+ * @param {string} params.colore - "white" | "black"
+ * @param {string} params.livello - "principiante" | "intermedio" | "avanzato"
+ * @param {string} [params.varianti] - Varianti specifiche da coprire
+ * @param {number} [params.profondita] - Numero di mosse da coprire
+ * @param {string} [params.model]
+ * @returns {Promise<{ plan: Object, usage: Object }>}
+ */
+export async function planOpening({ apertura, colore, livello, varianti, profondita, model }) {
+  const parts = [
+    `Pianifica una lezione sull'apertura: "${apertura}".`,
+    `Colore studiato: ${colore === 'white' ? 'Bianco' : 'Nero'}.`,
+    `Livello studente: ${livello}.`,
+  ]
+
+  if (varianti) parts.push(`Varianti da coprire: ${varianti}.`)
+  if (profondita) parts.push(`Profondità: fino alla mossa ${profondita}.`)
+
+  parts.push('Rispondi SOLO con il JSON del piano.')
+
+  const messages = [{ role: 'user', content: parts.join('\n') }]
+  let result = await sendMessage(messages, OPENING_PLAN_PROMPT, model)
+  let plan = extractJSON(result.content)
+
+  if (!plan) {
+    const retryMessages = [
+      ...messages,
+      { role: 'assistant', content: result.content },
+      { role: 'user', content: 'Il JSON contiene un errore. Restituisci SOLO il JSON corretto.' },
+    ]
+    result = await sendMessage(retryMessages, OPENING_PLAN_PROMPT, model)
+    plan = extractJSON(result.content)
+  }
+
+  if (!plan) throw new AIServiceError("L'IA non ha restituito un piano JSON valido")
+
+  // Assicura che colore sia coerente
+  if (!plan.colore) plan.colore = colore
+
+  return { plan, usage: result.usage }
+}
+
+/**
+ * Passo 3 della pipeline aperture: l'IA costruisce la lezione con i materiali certificati.
+ *
+ * @param {Object} params
+ * @param {Object} params.plan - Piano dal Passo 1
+ * @param {Object} params.materials - OpeningMaterialsPackage dal Passo 2
+ * @param {string} [params.model]
+ * @returns {Promise<{ lesson: Object, usage: Object }>}
+ */
+export async function buildOpeningLesson({ plan, materials, model }) {
+  const userMessage = [
+    '## PIANO DELLA LEZIONE',
+    JSON.stringify(plan, null, 2),
+    '',
+    '## PACCHETTO MATERIALI',
+    '### Posizioni calcolate',
+    JSON.stringify(materials.positions, null, 2),
+    '',
+    '### Dati Opening Explorer (statistiche reali)',
+    materials.explorerData.map(d => `Posizione ${d.positionIndex}:\n${d.formatted}`).join('\n\n'),
+    '',
+    '### Analisi Stockfish',
+    JSON.stringify(materials.sfAnalysis, null, 2),
+    '',
+    'Costruisci la lezione completa in JSON v3.0.0.',
+    'Usa ESCLUSIVAMENTE le FEN e mosse dai materiali.',
+    'NON aggiungere il campo transition — verrà calcolato automaticamente.',
+    'Rispondi SOLO con il JSON.',
+  ].join('\n')
+
+  const messages = [{ role: 'user', content: userMessage }]
+  let result = await sendMessage(messages, OPENING_BUILD_PROMPT, model)
+  let lesson = extractJSON(result.content)
+
+  if (!lesson) {
+    const retryMessages = [
+      ...messages,
+      { role: 'assistant', content: result.content },
+      { role: 'user', content: 'Il JSON contiene un errore. Restituisci SOLO il JSON corretto e completo.' },
+    ]
+    result = await sendMessage(retryMessages, OPENING_BUILD_PROMPT, model)
+    lesson = extractJSON(result.content)
+  }
+
+  if (!lesson) throw new AIServiceError("L'IA non ha restituito un JSON lezione valido")
+  if (lesson.error) throw new AIServiceError(`L'IA ha segnalato un problema: ${lesson.error}`)
+
   sanitizeLessonMoves(lesson)
   sanitizeLessonStructure(lesson)
 

@@ -4,7 +4,7 @@ import StockfishPanel from '../components/StockfishPanel.jsx'
 import LessonViewer from '../components/LessonViewer.jsx'
 import { INITIAL_FEN, legalDests, makeMove, turnColor, isCheck, kingSquareInCheck, parseFen } from '../engine/chessService.js'
 import { generateLesson, refineLesson } from '../engine/aiService.js'
-import { generateLessonPipeline } from '../engine/lessonPipeline.js'
+import { generateOpeningLesson } from '../engine/openingPipeline.js'
 import { analyzeLesson } from '../engine/sfAnalysisService.js'
 import { saveDraftLesson, markAsApproved } from '../engine/lessonStore.js'
 import './ConsolePage.css'
@@ -15,11 +15,12 @@ export default function ConsolePage() {
   const [fenInput, setFenInput] = useState(INITIAL_FEN)
   const [lastMove, setLastMove] = useState(null)
 
-  // Settings form state
-  const [tema, setTema] = useState('')
+  // Settings form state — aperture
+  const [apertura, setApertura] = useState('')
+  const [colore, setColore] = useState('white')
   const [livello, setLivello] = useState('')
-  const [ratingMin, setRatingMin] = useState('')
-  const [ratingMax, setRatingMax] = useState('')
+  const [varianti, setVarianti] = useState('')
+  const [profondita, setProfondita] = useState('')
   const [obiettivo, setObiettivo] = useState('')
 
   // Lesson generation state
@@ -33,8 +34,7 @@ export default function ConsolePage() {
   const [refining, setRefining] = useState(false)
   const [chatHistory, setChatHistory] = useState([]) // history per refineLesson
   const [selectedModel, setSelectedModel] = useState('claude-sonnet-4-6')
-  const [usePipeline, setUsePipeline] = useState(true) // nuova pipeline attiva di default
-  const [pipelineMaterials, setPipelineMaterials] = useState(null) // per debug/visualizzazione
+  const [pipelineMaterials, setPipelineMaterials] = useState(null)
 
   // Chat state
   const [chatInput, setChatInput] = useState('')
@@ -117,9 +117,9 @@ export default function ConsolePage() {
     setSfValidation(result)
   }, [])
 
-  // ─── Generazione con NUOVA pipeline (4 passi) ───
-  const handleGeneratePipeline = useCallback(async () => {
-    if (!tema || !livello) return
+  // ─── Generazione pipeline aperture ───
+  const handleGenerate = useCallback(async () => {
+    if (!apertura || !livello) return
 
     setGenerating(true)
     setLessonError(null)
@@ -135,15 +135,14 @@ export default function ConsolePage() {
       setMessages(prev => [...prev, { role, content }])
 
     try {
-      const result = await generateLessonPipeline({
-        tema,
+      const result = await generateOpeningLesson({
+        apertura,
+        colore,
         livello,
-        ratingMin: ratingMin ? Number(ratingMin) : undefined,
-        ratingMax: ratingMax ? Number(ratingMax) : undefined,
-        obiettivo: obiettivo || undefined,
+        varianti: varianti || undefined,
+        profondita: profondita ? Number(profondita) : undefined,
         model: selectedModel,
-        onProgress: ({ step, phase, message }) => {
-          // Aggiorna l'ultimo messaggio di sistema con lo stato corrente
+        onProgress: ({ phase, message }) => {
           setMessages(prev => {
             const updated = [...prev]
             const lastSysIdx = updated.findLastIndex(m => m.role === 'system' && m.content.startsWith('⟳'))
@@ -157,19 +156,13 @@ export default function ConsolePage() {
         },
       })
 
-      const { lesson, validation, materialsValidation, sfValidation: moveLegality, materials, usage } = result
+      const { lesson, validation, sfValidation: moveLegality, materials, usage } = result
 
       setLessonResult(lesson)
       setLessonValidation(validation)
       setSfValidation(moveLegality)
       setPipelineMaterials(materials)
 
-      // Avvisi materiali
-      if (materialsValidation.errors.length > 0) {
-        addMsg('system', `⚠ ${materialsValidation.errors.length} FEN inventate dall'IA (non dai materiali)`)
-      }
-
-      // Avvisi mosse illegali
       const illegalCount = Object.values(moveLegality).reduce((n, v) => n + (v.illegalMoves?.length || 0), 0)
       if (illegalCount > 0) {
         addMsg('system', `⚠ ${illegalCount} mosse illegali rilevate`)
@@ -177,107 +170,16 @@ export default function ConsolePage() {
 
       addMsg('assistant',
         `Lezione generata: "${lesson.title}"\n` +
-        `${lesson.steps?.length || 0} step — ${materials.puzzles.length} puzzle Lichess — ` +
+        `${lesson.steps?.length || 0} step — ${materials.summary} — ` +
         `${usage?.input_tokens || '?'} + ${usage?.output_tokens || '?'} token`
       )
-
-      if (lesson.sourcePuzzleIds?.length > 0) {
-        addMsg('system', `Puzzle usati: ${lesson.sourcePuzzleIds.join(', ')}`)
-      }
     } catch (err) {
       setLessonError(err.message)
       addMsg('error', `Errore: ${err.message}`)
     } finally {
       setGenerating(false)
     }
-  }, [tema, livello, ratingMin, ratingMax, obiettivo, selectedModel])
-
-  // ─── Generazione con VECCHIA pipeline (legacy) ───
-  const handleGenerateLegacy = useCallback(async () => {
-    if (!tema || !livello) return
-
-    setGenerating(true)
-    setLessonError(null)
-    setLessonResult(null)
-    setLessonValidation(null)
-    setSfValidation(null)
-    setSelectedStepIndex(null)
-    setSaveStatus(null)
-    setChatHistory([])
-    setPipelineMaterials(null)
-
-    const addMsg = (role, content) =>
-      setMessages(prev => [...prev, { role, content }])
-
-    addMsg('system', `⟳ [Legacy] Contatto modello IA [${selectedModel}]…`)
-
-    try {
-      const result = await generateLesson({
-        tema,
-        livello,
-        ratingMin: ratingMin ? Number(ratingMin) : undefined,
-        ratingMax: ratingMax ? Number(ratingMax) : undefined,
-        obiettivo: obiettivo || undefined,
-        fenPartenza: fen !== INITIAL_FEN ? fen : undefined,
-        model: selectedModel,
-      })
-
-      const { lesson, validation, usage } = result
-      setLessonResult(lesson)
-      setLessonValidation(validation)
-      addMsg('system', '✓ Lezione generata (legacy)')
-      addMsg('assistant',
-        `Lezione generata: "${lesson.title || tema}"\n${lesson.steps?.length || 0} step — ${usage?.input_tokens || '?'} + ${usage?.output_tokens || '?'} token`
-      )
-      validateMovesWithChessService(lesson)
-
-      // Analisi Stockfish post-generazione
-      addMsg('system', '⟳ Analisi Stockfish in corso…')
-      try {
-        const sfResults = await analyzeLesson(lesson, {
-          depth: 15,
-          onProgress: ({ stepIndex, total, status }) => {
-            if (status === 'analyzing') {
-              setMessages(prev => {
-                const updated = [...prev]
-                const sfIdx = updated.findLastIndex(m => m.role === 'system' && m.content.startsWith('⟳ Analisi Stockfish'))
-                if (sfIdx >= 0) {
-                  updated[sfIdx] = { role: 'system', content: `⟳ Analisi Stockfish: step ${stepIndex + 1}/${total}…` }
-                }
-                return updated
-              })
-            }
-          },
-        })
-        setSfValidation(prev => {
-          const merged = { ...(prev || {}) }
-          for (const r of sfResults) {
-            merged[r.stepIndex] = {
-              ...merged[r.stepIndex],
-              quality: r.quality, cpLoss: r.cpLoss,
-              bestMove: r.bestMove, eval: r.eval, mate: r.mate, lines: r.lines,
-            }
-          }
-          return merged
-        })
-        const issues = sfResults.filter(r => r.quality === 'mistake' || r.quality === 'blunder')
-        if (issues.length > 0) {
-          addMsg('system', `⚠ SF: ${issues.length} step con problemi`)
-        } else {
-          addMsg('system', '✓ Analisi SF ok')
-        }
-      } catch (sfErr) {
-        addMsg('system', `⚠ Analisi SF fallita: ${sfErr.message}`)
-      }
-    } catch (err) {
-      setLessonError(err.message)
-      addMsg('error', `Errore: ${err.message}`)
-    } finally {
-      setGenerating(false)
-    }
-  }, [tema, livello, ratingMin, ratingMax, obiettivo, fen, selectedModel, validateMovesWithChessService])
-
-  const handleGenerate = usePipeline ? handleGeneratePipeline : handleGenerateLegacy
+  }, [apertura, colore, livello, varianti, profondita, selectedModel])
 
   const handleStepSelect = useCallback((index) => {
     setSelectedStepIndex(index)
@@ -362,57 +264,85 @@ export default function ConsolePage() {
           <h2>Impostazione Obiettivi</h2>
           <div className="settings-form">
             <div className="form-group">
-              <label htmlFor="tema">Tema</label>
-              <select id="tema" value={tema} onChange={e => setTema(e.target.value)}>
-                <option value="">Seleziona tema...</option>
-                <option value="tattica">Tattica</option>
-                <option value="aperture">Aperture</option>
-                <option value="finali">Finali</option>
-                <option value="strategia">Strategia</option>
-              </select>
+              <label htmlFor="apertura">Apertura</label>
+              <input
+                id="apertura"
+                type="text"
+                placeholder="Es. Ruy Lopez, Siciliana Najdorf, Difesa Francese..."
+                value={apertura}
+                onChange={e => setApertura(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Colore studiato</label>
+              <div className="radio-group">
+                <label className="radio-label">
+                  <input
+                    type="radio"
+                    name="colore"
+                    value="white"
+                    checked={colore === 'white'}
+                    onChange={() => setColore('white')}
+                  />
+                  Bianco
+                </label>
+                <label className="radio-label">
+                  <input
+                    type="radio"
+                    name="colore"
+                    value="black"
+                    checked={colore === 'black'}
+                    onChange={() => setColore('black')}
+                  />
+                  Nero
+                </label>
+              </div>
             </div>
 
             <div className="form-group">
               <label htmlFor="livello">Livello studente</label>
               <select id="livello" value={livello} onChange={e => setLivello(e.target.value)}>
                 <option value="">Seleziona livello...</option>
-                <option value="principiante">Principiante</option>
-                <option value="intermedio">Intermedio</option>
-                <option value="avanzato">Avanzato</option>
+                <option value="principiante">Principiante (fino a 1200)</option>
+                <option value="intermedio">Intermedio (1200–1600)</option>
+                <option value="avanzato">Avanzato (1600+)</option>
               </select>
             </div>
 
             <div className="form-group">
-              <label>Rating range</label>
-              <div className="rating-range">
-                <input
-                  type="number"
-                  placeholder="Min"
-                  value={ratingMin}
-                  onChange={e => setRatingMin(e.target.value)}
-                  min={0}
-                  max={3000}
-                />
-                <span>—</span>
-                <input
-                  type="number"
-                  placeholder="Max"
-                  value={ratingMax}
-                  onChange={e => setRatingMax(e.target.value)}
-                  min={0}
-                  max={3000}
-                />
-              </div>
+              <label htmlFor="varianti">Varianti da coprire</label>
+              <textarea
+                id="varianti"
+                placeholder="Es. Concentrati sulla variante Berlino. Includi la risposta al Gambetto di Re..."
+                value={varianti}
+                onChange={e => setVarianti(e.target.value)}
+                rows={2}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="profondita">Profondità (mosse)</label>
+              <input
+                id="profondita"
+                type="number"
+                placeholder="Es. 8"
+                value={profondita}
+                onChange={e => setProfondita(e.target.value)}
+                min={4}
+                max={20}
+              />
+              <p className="form-hint">Quante mosse coprire dall'inizio della partita.</p>
             </div>
 
             <div className="form-group">
               <label htmlFor="obiettivo">Obiettivo didattico</label>
               <textarea
                 id="obiettivo"
-                placeholder="Descrivi l'obiettivo della lezione..."
+                placeholder="Cosa deve capire lo studente alla fine di questa lezione?"
                 value={obiettivo}
                 onChange={e => setObiettivo(e.target.value)}
-                rows={3}
+                rows={2}
               />
             </div>
 
@@ -428,30 +358,12 @@ export default function ConsolePage() {
                   <option value="gemini-2.5-pro">Gemini 2.5 Pro — POTENTE</option>
                 </optgroup>
               </select>
-              <p className="form-hint">
-                Sonnet e Flash garantiscono risposta entro 30s. Opus e Pro possono richiedere 60–90s.
-              </p>
-            </div>
-
-            <div className="form-group">
-              <label className="toggle-label">
-                <input
-                  type="checkbox"
-                  checked={usePipeline}
-                  onChange={e => setUsePipeline(e.target.checked)}
-                />
-                <span>Pipeline 3.0 (puzzle Lichess + SF + chessops)</span>
-              </label>
-              <p className="form-hint">
-                {usePipeline
-                  ? 'Nuova pipeline: posizioni validate, mosse calcolate, zero allucinazioni. ~40-60s.'
-                  : 'Pipeline legacy: l\'IA genera tutto (posizioni, mosse, FEN). Veloce ma errori frequenti.'}
-              </p>
+              <p className="form-hint">Sonnet e Flash: ~40-60s. Opus e Pro: 60–90s.</p>
             </div>
 
             <button
               className="btn-generate"
-              disabled={generating || !tema || !livello}
+              disabled={generating || !apertura || !livello}
               onClick={handleGenerate}
             >
               {generating ? 'Generazione in corso…' : 'Genera lezione'}
@@ -514,6 +426,7 @@ export default function ConsolePage() {
               sfValidation={sfValidation}
               onStepSelect={handleStepSelect}
               selectedStepIndex={selectedStepIndex}
+              orientation={lessonResult?.orientation || 'white'}
             />
           )}
 
