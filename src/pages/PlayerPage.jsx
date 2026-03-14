@@ -143,13 +143,6 @@ export default function PlayerPage() {
   }
   const boardTurnColor = activeFen ? getTurnColor(activeFen) : 'white'
 
-  // DEBUG — rimuovere dopo diagnosi
-  if (process.env.NODE_ENV !== 'production' || true) {
-    if (currentStep) {
-      console.log(`[PlayerPage] step=${stepIndex} type=${currentStepType} phase=${phase} interactive=${isBoardInteractive} dests=${boardDests.size} turnColor=${boardTurnColor} fen=${activeFen?.slice(0,40)}`)
-    }
-  }
-
   // ── Activity callbacks ────────────────────────────────────────────────────
 
   function enterFeedback(correct, feedbackText, visualAids) {
