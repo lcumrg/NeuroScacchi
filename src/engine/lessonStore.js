@@ -1,64 +1,6 @@
-// Salva lezioni in localStorage (bozze) e Firestore (approvate)
+// Salva e recupera lezioni da Firestore via Netlify Functions
 
-const PREFIX = 'ns3_draft_'
-
-// ── localStorage ────────────────────────────────────────────────────────────
-
-export function saveDraftLesson(lesson) {
-  const key = PREFIX + lesson.id
-  const value = JSON.stringify({ lesson, savedAt: new Date().toISOString() })
-  localStorage.setItem(key, value)
-}
-
-export function loadDraftLesson(id) {
-  const key = PREFIX + id
-  const raw = localStorage.getItem(key)
-  if (!raw) return null
-  try {
-    return JSON.parse(raw)
-  } catch {
-    return null
-  }
-}
-
-export function listDraftLessons() {
-  const results = []
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i)
-    if (!key || !key.startsWith(PREFIX)) continue
-    const raw = localStorage.getItem(key)
-    if (!raw) continue
-    try {
-      const { lesson, savedAt } = JSON.parse(raw)
-      results.push({ id: lesson.id, title: lesson.title || lesson.titolo || '', savedAt })
-    } catch {
-      // skip malformed entries
-    }
-  }
-  return results.sort((a, b) => (b.savedAt > a.savedAt ? 1 : -1))
-}
-
-export function deleteDraftLesson(id) {
-  localStorage.removeItem(PREFIX + id)
-}
-
-export function markAsApproved(lesson) {
-  const approved = {
-    ...lesson,
-    status: 'published',
-    origin: 'collaborative',
-  }
-  saveDraftLesson(approved)
-  return approved
-}
-
-// ── Firestore (via Netlify Function) ─────────────────────────────────────────
-
-/**
- * Salva una lezione approvata su Firestore.
- * Non blocca — restituisce una Promise (errori gestiti internamente).
- */
-export async function publishLesson(lesson) {
+export async function saveLesson(lesson) {
   try {
     const res = await fetch('/api/lesson-save', {
       method: 'POST',
@@ -67,19 +9,72 @@ export async function publishLesson(lesson) {
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      console.error('[lessonStore] publishLesson fallito:', err.error || res.status)
+      console.error('[lessonStore] saveLesson fallito:', err.error || res.status)
       return { ok: false, error: err.error || `HTTP ${res.status}` }
     }
     return { ok: true }
   } catch (err) {
-    console.error('[lessonStore] publishLesson errore di rete:', err.message)
+    console.error('[lessonStore] saveLesson errore di rete:', err.message)
     return { ok: false, error: err.message }
   }
 }
 
-/**
- * Salva il feedback di una sessione lezione su Firestore.
- */
+export async function loadLesson(id) {
+  try {
+    const res = await fetch(`/api/lesson-get?id=${encodeURIComponent(id)}`)
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      console.error('[lessonStore] loadLesson fallito:', err.error || res.status)
+      return null
+    }
+    const data = await res.json()
+    return data.lesson ?? null
+  } catch (err) {
+    console.error('[lessonStore] loadLesson errore di rete:', err.message)
+    return null
+  }
+}
+
+export async function listLessons() {
+  try {
+    const res = await fetch('/api/lesson-list')
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      console.error('[lessonStore] listLessons fallito:', err.error || res.status)
+      return []
+    }
+    const data = await res.json()
+    return data.lessons ?? []
+  } catch (err) {
+    console.error('[lessonStore] listLessons errore di rete:', err.message)
+    return []
+  }
+}
+
+export async function deleteLesson(id) {
+  try {
+    const res = await fetch('/api/lesson-delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      console.error('[lessonStore] deleteLesson fallito:', err.error || res.status)
+      return { ok: false, error: err.error || `HTTP ${res.status}` }
+    }
+    return { ok: true }
+  } catch (err) {
+    console.error('[lessonStore] deleteLesson errore di rete:', err.message)
+    return { ok: false, error: err.message }
+  }
+}
+
+export function markAsApproved(lesson) {
+  // Sincrono — solo aggiunge campi, non salva
+  return { ...lesson, status: 'published', origin: 'collaborative' }
+}
+
 export async function saveLessonFeedback({ lessonId, lessonTitle, lessonCategory, overallRating, note, stepFeedback }) {
   try {
     const res = await fetch('/api/feedback-save', {

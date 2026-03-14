@@ -6,7 +6,7 @@ import { INITIAL_FEN, legalDests, makeMove, turnColor, isCheck, kingSquareInChec
 import { generateLesson, refineLesson } from '../engine/aiService.js'
 import { generateOpeningLesson } from '../engine/openingPipeline.js'
 import { analyzeLesson } from '../engine/sfAnalysisService.js'
-import { saveDraftLesson, markAsApproved, publishLesson } from '../engine/lessonStore.js'
+import { saveLesson, markAsApproved } from '../engine/lessonStore.js'
 import './ConsolePage.css'
 
 export default function ConsolePage() {
@@ -373,7 +373,7 @@ export default function ConsolePage() {
               <div className="lesson-actions">
                 <button
                   className="btn-save"
-                  onClick={() => { saveDraftLesson(lessonResult); setSaveStatus('saved') }}
+                  onClick={() => { saveLesson(lessonResult); setSaveStatus('saved') }}
                   disabled={saveStatus === 'approved'}
                 >
                   {saveStatus === 'saved' ? 'Salvata ✓' : 'Salva bozza'}
@@ -383,7 +383,7 @@ export default function ConsolePage() {
                   onClick={() => {
                     const approved = markAsApproved(lessonResult)
                     setSaveStatus('approved')
-                    publishLesson(approved)
+                    saveLesson(approved)
                   }}
                   disabled={saveStatus === 'approved'}
                 >
