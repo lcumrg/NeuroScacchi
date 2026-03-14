@@ -85,7 +85,8 @@ export default function PlayerPage() {
     const freezeEnabled = freezeConfig?.enabled ?? true
     const durationMs = freezeConfig?.durationMs ?? 2000
 
-    if (!freezeEnabled || durationMs <= 0) {
+    // Skip freeze for text steps — the text itself is the content, no board to observe
+    if (!freezeEnabled || durationMs <= 0 || currentStep?.type === 'text') {
       setPhase('activity')
       return
     }
