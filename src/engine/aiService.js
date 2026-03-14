@@ -251,6 +251,17 @@ function sanitizeLessonStructure(lesson) {
   if (!lesson?.steps) return
 
   lesson.steps.forEach((step, i) => {
+    // Step text: normalizza campo contenuto (l'IA usa spesso nomi alternativi)
+    if (step.type === 'text') {
+      if (!step.content) {
+        step.content = step.text || step.description || step.body || step.narrative || ''
+        delete step.text
+        delete step.description
+        delete step.body
+        delete step.narrative
+      }
+    }
+
     // Transition con moves vuoto o null → rimuovi
     if (step.transition) {
       const moves = step.transition.moves

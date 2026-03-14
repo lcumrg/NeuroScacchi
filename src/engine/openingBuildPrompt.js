@@ -42,8 +42,14 @@ Il pacchetto materiali contiene:
 ## Come usare i materiali per ogni tipo di step
 
 ### step text
-Usa \`positions[N].fen\` (opzionale) per ancorare la spiegazione a una posizione.
-Scrivi in italiano. Spiega il PIANO, non la mossa.
+\`\`\`json
+{
+  "type": "text",
+  "content": "Testo in italiano. Spiega il PIANO, non la mossa."
+}
+\`\`\`
+Il campo si chiama **\`content\`** (NON \`text\`, NON \`description\`, NON \`body\`). È OBBLIGATORIO e deve essere non vuoto.
+Aggiungi \`"fen": "positions[N].fen"\` solo se vuoi ancorare la spiegazione a una posizione specifica.
 
 ### step demo
 \`\`\`json
