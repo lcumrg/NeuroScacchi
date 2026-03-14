@@ -6,7 +6,47 @@
 
 ## Lavoro in corso
 
-### Sessione 2026-03-14
+### Sessione 2026-03-14 (continuazione — fix pipeline aperture)
+
+**Contesto:** Prima sessione di test reali con i figli del coach. Identificati e risolti numerosi bug nella pipeline aperture. La pipeline è ora funzionante; la qualità delle lezioni dipende dai dati Explorer (proxy appena deployato — da verificare nel prossimo test).
+
+**Fix implementati:**
+
+- **Prompt ottimizzato per bambini** (`openingBuildPrompt.js`) ✓
+  - Limiti espliciti: domande ≤12 parole, opzioni ≤5 parole, feedback ≤2 frasi, hints ≤6 parole
+  - Max 1 step `text` per lezione (regola "si impara facendo")
+  - Step `demo` scoraggiato — solo in casi eccezionali, non fa parte del metodo
+  - `visualAids` (frecce/cerchi) richiesti sistematicamente su ogni step interattivo, con esempi JSON
+  - Tabella mosse speciali UCI per arrocco (previene confusione post-arrocco nella sequenza)
+
+- **Fix schema** (`lessonSchema.js`) ✓
+  - `allowedMoves` e `correctMoves` ora opzionali per step `intent` — `IntentActivity` è pure multiple-choice, la scacchiera non è mai interattiva durante intent
+
+- **Freeze saltato per step text** (`PlayerPage.jsx`) ✓
+  - Il testo è già l'attività — attendere 2 secondi prima di poter leggere è frustrante
+
+- **Mosse illegali non crashano** (`openingEnricher.js`) ✓
+  - `walkOpeningMoves` ora tronca alla prima mossa illegale invece di restituire errore
+  - La lezione viene costruita sulle posizioni valide disponibili
+  - Errore visibile nell'avanzamento passo 2 (non crash)
+
+- **Fix params Lichess Explorer** (`openingExplorer.js`) ✓
+  - `ratings` e `speeds` devono essere parametri ripetuti (`ratings=1000&ratings=1200`), non CSV (`ratings=1000,1200`)
+  - Bug precedente causava 0 dati Explorer per tutte le posizioni
+
+- **Proxy Netlify per Opening Explorer** (`netlify/functions/opening-explorer.js`) ✓
+  - `explorer.lichess.ovh` restituisce 401 per richieste dirette dal browser
+  - Nuova Netlify Function che proxia server-side con User-Agent appropriato
+  - Client aggiornato per usare `POST /.netlify/functions/opening-explorer`
+
+- **Try-catch su legalDests** (`PlayerPage.jsx`) ✓
+  - Previene crash del rendering se un FEN invalido arriva in uno step
+
+**Prossimo passo:** verificare che il proxy Explorer funzioni correttamente (dati reali nelle lezioni), iterare sui prompt in base alla qualità delle lezioni generate con dati Explorer.
+
+---
+
+### Sessione 2026-03-14 (prima parte — implementazione pipeline aperture)
 
 **Decisioni strategiche:**
 
@@ -14,7 +54,7 @@
 - **Nuova fonte dati**: Lichess Opening Explorer API (statistiche reali per fascia Elo, frequenza mosse, win rate). Il database puzzle Lichess rimane su Firestore per uso futuro (tattica).
 - **Architettura invariata**: stesse attività didattiche, stesso schema JSON v3.0.0, stesso flusso di approvazione coach.
 
-**Implementato in questa sessione:**
+**Implementato:**
 
 - **Pipeline aperture completa (Fase 1C)** — 5 nuovi file engine + form Console Coach rifatto ✓
   - `openingExplorer.js` — client Lichess Opening Explorer API con rate limiting e formattazione per prompt
@@ -26,8 +66,6 @@
 - **Scacchiera orientabile** — `orientation` passato dal lesson.orientation al LessonViewer
 - **Analisi competitiva** documentata — Chessdriller (repo GitHub), ChessMind AI, Chessline.io
 - **Hub documentazione** nell'app (`#/doc`) con 4 documenti navigabili
-
-**Prossimo passo:** test end-to-end su Netlify, iterare sui prompt in base ai risultati.
 
 ---
 
