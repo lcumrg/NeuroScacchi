@@ -6,13 +6,14 @@
  * filtrate per fascia Elo e cadenza.
  */
 
-const EXPLORER_BASE = 'https://explorer.lichess.ovh/lichess'
+// Proxy Netlify Function — evita CORS e 401 da richieste browser dirette
+const EXPLORER_PROXY = '/.netlify/functions/opening-explorer'
 
 // Mappa livello NeuroScacchi → fasce Elo Lichess Explorer
 const LEVEL_TO_RATINGS = {
-  principiante: '1000,1200',
-  intermedio: '1400,1600',
-  avanzato: '1800,2000,2200',
+  principiante: [1000, 1200],
+  intermedio: [1400, 1600],
+  avanzato: [1800, 2000, 2200],
 }
 
 /**
@@ -31,24 +32,19 @@ const LEVEL_TO_RATINGS = {
 export async function getExplorerData(fen, { livello = 'intermedio', topMoves = 5 } = {}) {
   const ratings = LEVEL_TO_RATINGS[livello] || LEVEL_TO_RATINGS.intermedio
 
-  // L'API Lichess Explorer richiede parametri ripetuti, non comma-separated:
-  // ratings=1000&ratings=1200, NON ratings=1000,1200
-  const params = new URLSearchParams()
-  params.set('fen', fen)
-  params.set('moves', topMoves)
-  params.set('topGames', 0)
-  params.set('recentGames', 0)
-  for (const r of ratings.split(',')) params.append('ratings', r.trim())
-  for (const s of ['rapid', 'classical']) params.append('speeds', s)
-
-  const url = `${EXPLORER_BASE}?${params}`
-
-  const response = await fetch(url, {
-    headers: { 'Accept': 'application/json' },
+  const response = await fetch(EXPLORER_PROXY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      fen,
+      ratings,
+      speeds: ['rapid', 'classical'],
+      moves: topMoves,
+    }),
   })
 
   if (!response.ok) {
-    throw new Error(`Opening Explorer error ${response.status} per FEN: ${fen.substring(0, 40)}`)
+    throw new Error(`Opening Explorer proxy error ${response.status}`)
   }
 
   const data = await response.json()
