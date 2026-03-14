@@ -5,6 +5,7 @@ import LessonsPage from './pages/LessonsPage.jsx'
 
 const DocPage = lazy(() => import('./pages/DocPage.jsx'))
 const PlayerPage = lazy(() => import('./pages/PlayerPage.jsx'))
+const FeedbackPage = lazy(() => import('./pages/FeedbackPage.jsx'))
 
 function getRoute() {
   const hash = window.location.hash || '#/'
@@ -12,6 +13,7 @@ function getRoute() {
   if (hash.startsWith('#/doc')) return 'doc'
   if (hash.startsWith('#/lessons')) return 'lessons'
   if (hash.startsWith('#/player')) return 'player'
+  if (hash.startsWith('#/feedback')) return 'feedback'
   return 'demo'
 }
 
@@ -111,6 +113,21 @@ export default function App() {
         >
           Lezioni
         </a>
+        <a
+          href="#/feedback"
+          style={{
+            textDecoration: 'none',
+            fontSize: '0.875rem',
+            fontWeight: route === 'feedback' ? 700 : 500,
+            color: route === 'feedback' ? 'var(--color-primary)' : 'var(--text-secondary)',
+            padding: '0.25rem 0.5rem',
+            borderRadius: '6px',
+            background: route === 'feedback' ? 'var(--color-primary-bg)' : 'transparent',
+            transition: 'background var(--transition-fast)',
+          }}
+        >
+          Feedback
+        </a>
       </nav>
 
       {/* Page content */}
@@ -126,6 +143,11 @@ export default function App() {
         {route === 'player' && (
           <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Caricamento...</div>}>
             <PlayerPage />
+          </Suspense>
+        )}
+        {route === 'feedback' && (
+          <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Caricamento...</div>}>
+            <FeedbackPage />
           </Suspense>
         )}
       </main>
