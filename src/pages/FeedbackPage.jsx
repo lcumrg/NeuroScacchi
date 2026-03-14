@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { loadDraftLesson, saveDraftLesson } from '../engine/lessonStore.js'
+import { loadLesson, saveLesson } from '../engine/lessonStore.js'
 import './FeedbackPage.css'
 
 function Stars({ rating, max = 5 }) {
@@ -70,20 +70,10 @@ export default function FeedbackPage() {
 
   async function handleReplay(feedback) {
     const { lessonId } = feedback
-    let draft = loadDraftLesson(lessonId)
-    if (!draft) {
-      setReplayLoading(lessonId)
-      try {
-        const res = await fetch(`/api/lesson-get?id=${encodeURIComponent(lessonId)}`)
-        if (res.ok) {
-          const { lesson } = await res.json()
-          saveDraftLesson(lesson)
-          draft = { lesson }
-        }
-      } catch {}
-      setReplayLoading(null)
-    }
-    if (!draft) {
+    setReplayLoading(lessonId)
+    const lesson = await loadLesson(lessonId)
+    setReplayLoading(null)
+    if (!lesson) {
       alert('Lezione non trovata. Genera di nuovo dalla Console Coach.')
       return
     }
