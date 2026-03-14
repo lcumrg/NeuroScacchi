@@ -6,141 +6,71 @@
 
 ## Lavoro in corso
 
-### Sessione 2026-03-14 (continuazione — sistema feedback lezioni)
+### Stato al 2026-03-14 — Sintesi
 
-**Obiettivo:** implementare un sistema di feedback strutturato per raccogliere valutazioni del coach dopo ogni lezione. Il feedback viene salvato su Firestore e riletto nelle sessioni future per guidare l'iterazione sui prompt.
+**Pipeline aperture: FUNZIONANTE** ✓
+- Opening Explorer proxy attivo con OAuth token Lichess — 11/11 posizioni con dati reali verificati
+- Prima lezione completa generata e testata su studenti reali (Ruy Lopez)
+- Prossimo passo: iterare sui prompt in base ai feedback raccolti; aumentare la qualità pedagogica degli step `intent` e `candidate`
 
-**Implementato:**
+**Sistema feedback coach: COMPLETO** ✓
+- Raccolta stelle per step durante la lezione + form valutazione finale su Firestore
+- FeedbackPage (`#/feedback`) per review sessioni passate e replay lezioni
+- Dati feedback verificati su Firestore (almeno 1 sessione con stepFeedback strutturato)
 
-- **Salvataggio lezioni approvate su Firestore** (`netlify/functions/lesson-save.js`, `lessonStore.js`) ✓
-  - Nuova Netlify Function `lesson-save.js` con Firebase Admin SDK
-  - `publishLesson(lesson)` in `lessonStore.js` — POST a `/api/lesson-save`
-  - `ConsolePage.jsx`: al click "Approva" chiama anche `publishLesson()` in aggiunta al salvataggio localStorage
-
-- **Stelle per step durante la lezione** (`FeedbackPanel.jsx`, `player-activities.css`) ✓
-  - Rating 1-3 stelle nel pannello feedback dopo ogni step (Difficile / Ok / Facile)
-  - Props opzionali `onRate` e `currentRating` — retrocompatibile
-  - `PlayerPage.jsx`: stato `stepRatings` (index → 1-3), passato e raccolto step per step
-
-- **Freeze saltato per step text** (`PlayerPage.jsx`) ✓
-  - Il testo è già l'attività — attendere 2 secondi prima di poter leggere è frustrante
-  - Condizione: `if (!freezeEnabled || durationMs <= 0 || currentStep?.type === 'text') → setPhase('activity')`
-
-- **Form feedback finale** (`PlayerPage.jsx`, `PlayerPage.css`) ✓
-  - Schermata "Lezione completata!" con pulsante "Valuta la lezione →"
-  - Form con: rating complessivo 1-5 stelle, rating 1-3 per ogni step, campo note libere
-  - **Per ogni step: campo nota testuale** (opzionale) — per appunti specifici su cosa sistemare
-  - Layout step: riga superiore (tipo step + sommario + stelle) + riga inferiore (input nota)
-  - Stato `stepNotes` (index → stringa) raccolto insieme a `stepRatings`
-  - Salvataggio via `saveLessonFeedback()` su Firestore `lessonFeedback/{autoId}`
-
-- **Salvataggio feedback su Firestore** (`netlify/functions/feedback-save.js`, `lessonStore.js`) ✓
-  - Nuova Netlify Function `feedback-save.js`
-  - Campi salvati: `lessonId`, `lessonTitle`, `lessonCategory`, `overallRating`, `note`, `stepFeedback[]` (con stepIndex, stepType, summary, rating, note), `playedAt`
-  - `saveLessonFeedback({...})` in `lessonStore.js` — POST a `/api/feedback-save`
-
-**Flusso feedback completo:**
-
-```
-Gioca lezione
-  → FeedbackPanel per ogni step: 3 stelle (Difficile/Ok/Facile)
-  → Schermata completamento
-  → [opzionale] Form valutazione:
-      - 5 stelle complessivo
-      - Per ogni step: 3 stelle + nota testuale
-      - Note generali
-  → Salva su Firestore lessonFeedback
-  → Coach rileva dati, chiede a Claude di analizzarli → miglioramento prompt
-```
-
-**Prossimo passo:** verificare che il proxy Explorer funzioni correttamente (dati reali nelle lezioni), iterare sui prompt in base alla qualità delle lezioni generate con dati Explorer e ai feedback raccolti.
+**Debito tecnico noto:** `Chessboard.jsx` reinit via dipendenze `useEffect` — soluzione alternativa con `key` prop documentata in fondo a questa roadmap.
 
 ---
 
-### Sessione 2026-03-14 (prima parte — fix pipeline aperture)
+### Storico sessioni di lavoro
 
-**Contesto:** Prima sessione di test reali con i figli del coach. Identificati e risolti numerosi bug nella pipeline aperture. La pipeline è ora funzionante; la qualità delle lezioni dipende dai dati Explorer (proxy appena deployato — da verificare nel prossimo test).
+#### Sessione 2026-03-14 — Fix pipeline + sistema feedback + migrazione Firestore
 
-**Fix implementati:**
+**Fix pipeline aperture:**
+- Proxy Netlify `opening-explorer.js` con OAuth token Lichess (fix 401) ✓
+- Fix params Explorer: `ratings`/`speeds` come CSV, non repeated params (fix 400) ✓
+- Errori Explorer ora visibili in chat coach invece di essere silenziosi ✓
+- `openingPipeline.js`: tracking `generatedBy` (modello IA usato) ✓
+- Prompt ottimizzato per bambini: domande ≤12 parole, opzioni ≤5, max 1 step `text` ✓
+- Fix schema: `allowedMoves`/`correctMoves` opzionali per step `intent` ✓
+- Mosse illegali non crashano: `openingEnricher.js` tronca alla prima illegale ✓
+- Try-catch su `legalDests` in `PlayerPage.jsx` ✓
 
-- **Prompt ottimizzato per bambini** (`openingBuildPrompt.js`) ✓
-  - Limiti espliciti: domande ≤12 parole, opzioni ≤5 parole, feedback ≤2 frasi, hints ≤6 parole
-  - Max 1 step `text` per lezione (regola "si impara facendo")
-  - Step `demo` scoraggiato — solo in casi eccezionali, non fa parte del metodo
-  - `visualAids` (frecce/cerchi) richiesti sistematicamente su ogni step interattivo, con esempi JSON
-  - Tabella mosse speciali UCI per arrocco (previene confusione post-arrocco nella sequenza)
+**Fix board interattiva:**
+- Bug: Chessground non aggiornava `draggable.enabled` via `.set()` (transizione non-interattiva → interattiva)
+- Fix: `interactive` e `viewOnly` aggiunti alle dipendenze dell'useEffect di init in `Chessboard.jsx` ✓
 
-- **Fix schema** (`lessonSchema.js`) ✓
-  - `allowedMoves` e `correctMoves` ora opzionali per step `intent` — `IntentActivity` è pure multiple-choice, la scacchiera non è mai interattiva durante intent
+**Migrazione localStorage → Firestore (completa):**
+- `lessonStore.js` riscritto completamente: zero localStorage, tutto async via API ✓
+- Nuove Netlify Functions: `lesson-list.js`, `lesson-get.js`, `lesson-delete.js` ✓
+- `LessonsPage.jsx` e `ConsolePage.jsx` aggiornati ✓
 
-- **Freeze saltato per step text** (`PlayerPage.jsx`) ✓
-  - Il testo è già l'attività — attendere 2 secondi prima di poter leggere è frustrante
+**Sistema feedback coach:**
+- Stelle per step durante lezione (FeedbackPanel, 1-3: Difficile/Ok/Facile) ✓
+- Form valutazione finale: 5 stelle globale + 3 stelle + nota testuale per step ✓
+- Salvataggio su Firestore `lessonFeedback` via `feedback-save.js` ✓
+- `FeedbackPage.jsx` (`#/feedback`): lista sessioni, espansione dettagli step, replay ✓
+- `feedback-list.js` Netlify Function ✓
 
-- **Mosse illegali non crashano** (`openingEnricher.js`) ✓
-  - `walkOpeningMoves` ora tronca alla prima mossa illegale invece di restituire errore
-  - La lezione viene costruita sulle posizioni valide disponibili
-  - Errore visibile nell'avanzamento passo 2 (non crash)
+#### Sessione 2026-03-13 — Migrazione Firestore + pipeline tattica + analisi architetturale
 
-- **Fix params Lichess Explorer** (`openingExplorer.js`) ✓
-  - `ratings` e `speeds` devono essere parametri ripetuti (`ratings=1000&ratings=1200`), non CSV (`ratings=1000,1200`)
-  - Bug precedente causava 0 dati Explorer per tutte le posizioni
+- Migrazione puzzle da Turso a Firestore (`puzzle-search.js`, `puzzle-meta.js`) ✓
+- `FIREBASE_SERVICE_ACCOUNT` impostata in Netlify ✓
+- Analisi Stockfish post-generazione integrata (pallini qualità, confronto mossa IA vs SF) ✓
+- Identificati 8 gap critici nell'architettura di generazione lezioni
+- Progettata e implementata nuova pipeline "IA fa pedagogia, il sistema fa scacchi":
+  - `puzzleEnricher.js`, `lessonPipeline.js`, `lessonPlanPrompt.js`, `lessonBuildPrompt.js` ✓
+  - Toggle pipeline 3.0/legacy nella Console Coach ✓
 
-- **Proxy Netlify per Opening Explorer** (`netlify/functions/opening-explorer.js`) ✓
-  - `explorer.lichess.ovh` restituisce 401 per richieste dirette dal browser
-  - Nuova Netlify Function che proxia server-side con User-Agent appropriato
-  - Client aggiornato per usare `POST /.netlify/functions/opening-explorer`
+#### Sessione 2026-03-06/08 — Pipeline aperture (Fase 1C)
 
-- **Try-catch su legalDests** (`PlayerPage.jsx`) ✓
-  - Previene crash del rendering se un FEN invalido arriva in uno step
-
-**Prossimo passo:** verificare che il proxy Explorer funzioni correttamente (dati reali nelle lezioni), iterare sui prompt in base alla qualità delle lezioni generate con dati Explorer.
-
----
-
-### Sessione 2026-03-14 (prima parte — implementazione pipeline aperture)
-
-**Decisioni strategiche:**
-
-- **Focus esclusivo sulle aperture** per la pipeline di generazione lezioni. Tattica e finali esclusi dalla pipeline finché le aperture non raggiungono qualità reale.
-- **Nuova fonte dati**: Lichess Opening Explorer API (statistiche reali per fascia Elo, frequenza mosse, win rate). Il database puzzle Lichess rimane su Firestore per uso futuro (tattica).
-- **Architettura invariata**: stesse attività didattiche, stesso schema JSON v3.0.0, stesso flusso di approvazione coach.
-
-**Implementato:**
-
-- **Pipeline aperture completa (Fase 1C)** — 5 nuovi file engine + form Console Coach rifatto ✓
-  - `openingExplorer.js` — client Lichess Opening Explorer API con rate limiting e formattazione per prompt
-  - `openingEnricher.js` — cammina mosse con chessops, interroga Explorer per ogni posizione, analisi SF
-  - `openingPipeline.js` — orchestratore 4 passi, transizioni deterministiche, validazione legalità
-  - `openingPlanPrompt.js` — prompt pianificazione: IA produce mosse UCI + struttura pedagogica
-  - `openingBuildPrompt.js` — prompt costruzione: focalizzato su comprensione piano, dati Explorer integrati
-- **Console Coach** — form completamente rifatto: apertura (testo libero), colore bianco/nero, livello, varianti, profondità
-- **Scacchiera orientabile** — `orientation` passato dal lesson.orientation al LessonViewer
-- **Analisi competitiva** documentata — Chessdriller (repo GitHub), ChessMind AI, Chessline.io
-- **Hub documentazione** nell'app (`#/doc`) con 4 documenti navigabili
-
----
-
-### Sessione 2026-03-13
-
-**Lavoro completato:**
-
-- **Migrazione puzzle da Turso a Firestore** — riscrittura `puzzle-search.js` e `puzzle-meta.js` per Firebase Admin SDK
-- `FIREBASE_SERVICE_ACCOUNT` impostata in Netlify — query puzzle Lichess attive ✓
-- **Analisi Stockfish integrata** nel flusso di generazione — pallini qualità, confronto mossa IA vs SF
-- Fix LessonViewer: renderizzazione `transition` come oggetto (era crash React #31)
-- **Analisi architetturale profonda** della pipeline di generazione — identificati 8 gap critici
-- **Progettazione nuova pipeline** "IA fa pedagogia, il sistema fa scacchi" → documentata in `docs/architettura-pipeline-lezioni.md`
-
-**Conclusione chiave:** l'architettura attuale chiede all'IA di calcolare scacchi (FEN, mosse, valutazioni) — cosa che gli LLM non sanno fare. La nuova pipeline separa i ruoli: Lichess fornisce posizioni reali, chessops calcola FEN, Stockfish analizza, l'IA scrive solo la parte pedagogica.
-
-**Nuova pipeline implementata (2026-03-13):**
-
-- Fase A (Foundation): `puzzleEnricher.js` con `computePuzzlePositions()`, helper `makeMoveFromUci`/`getSan` in `chessService.js`, skeleton `lessonPipeline.js` ✓
-- Fase B (Passo 1+2): `lessonPlanPrompt.js` con mappa tema→tag Lichess espansa (40+ voci), `planLesson()`, `buildMaterialsPackage()` con SF ✓
-- Fase C (Passo 3+UI): `lessonBuildPrompt.js` con regole ferree, `buildLesson()`, validazione materiali, transizioni deterministiche, wiring ConsolePage con toggle ✓
-- Fase D (Polish): toggle pipeline 3.0/legacy nella Console Coach, fallback allargamento range rating ✓
-
-**Prossimo passo:** test end-to-end su Netlify, iterare sui prompt in base ai risultati, eventuale cloud eval Lichess.
+- Decisione: focus esclusivo aperture, tattica in standby
+- `openingExplorer.js`, `openingEnricher.js`, `openingPipeline.js` ✓
+- `openingPlanPrompt.js`, `openingBuildPrompt.js` ✓
+- Console Coach rifatta con form aperture ✓
+- Scacchiera orientabile (bianco/nero) ✓
+- Analisi competitiva documentata (Chessdriller, ChessMind AI, Chessline.io) ✓
+- Hub documentazione nell'app (`#/doc`) ✓
 
 ---
 
@@ -424,13 +354,13 @@ Il cuore della 3.0: il sistema di creazione lezioni. L'IA arriva subito perché 
 
 - **Analisi Stockfish automatica dopo generazione** ✓ — ogni step viene analizzato con SF depth 15, mostra qualità (best/good/inaccuracy/mistake/blunder), mossa migliore SF vs mossa IA, top linee. Ri-analisi anche dopo raffinamento via chat.
 
-**Stato Fase 1A: INFRASTRUTTURA COMPLETA — Pipeline di generazione da rifare (vedi sotto).**
+**Stato Fase 1A: INFRASTRUTTURA COMPLETA** ✓
 
-Il database puzzle Lichess è attivo su Firestore (`FIREBASE_SERVICE_ACCOUNT` impostata), l'analisi Stockfish post-generazione funziona, ma la qualità delle lezioni generate non è accettabile. Vedi sezione dedicata.
-
-**Ancora mancante in 1A:**
-- Salvataggio lezioni su Firestore (solo localStorage)
-- Pipeline aperture con Opening Explorer (vedi Fase 1C sotto)
+- Database puzzle Lichess attivo su Firestore ✓
+- Analisi Stockfish post-generazione funziona ✓
+- Salvataggio lezioni su Firestore completo (`lessonStore.js` — zero localStorage) ✓
+- Pipeline tattica (puzzle Lichess) implementata ma **in standby** — da validare con test reali prima di riaprire
+- Pipeline aperture con Opening Explorer: vedi Fase 1C (completata)
 
 ---
 
@@ -609,20 +539,24 @@ Pipeline dedicata alle aperture, costruita sulla stessa architettura della Fase 
 Il player minimo per eseguire le lezioni create in Fase 1.
 
 - Freeze (attesa temporizzata quando non ci sono attività) ✓
+- Freeze saltato per step `text` (il testo è già l'attività) ✓
 - Tutti e 6 i tipi di attività: Intent, Detective, Candidate, Move, Text, Demo ✓
 - Aiuti visivi (frecce e case evidenziate) ✓
 - Feedback base corretto/scorretto ✓
 - Lista lezioni (LessonsPage), clic per aprire e giocare ✓
 - Transizioni animate tra step ✓
 - Schermata completamento lezione ✓
-- **Sistema feedback coach** ✓ — stelle per step durante la lezione, form valutazione finale (5 stelle globale + 3 stelle + nota per ogni step + note generali), salvataggio su Firestore
-- **Salvataggio lezioni approvate su Firestore** ✓ — `lesson-save.js` + `publishLesson()` in `lessonStore.js`
+- **Sistema feedback coach** ✓ — stelle per step durante la lezione (Difficile/Ok/Facile), form valutazione finale (5 stelle globale + 3 stelle + nota per ogni step + note generali), salvataggio su Firestore `lessonFeedback`
+- **Salvataggio e lettura lezioni da Firestore** ✓ — `lessonStore.js` completamente asincrono, zero localStorage; Netlify Functions `lesson-save`, `lesson-list`, `lesson-get`, `lesson-delete`
+- **FeedbackPage** (`#/feedback`) ✓ — review feedback passati, espansione dettagli per step, replay lezioni
+- **Scacchiera orientabile** ✓ — `orientation` da `lesson.orientation` (bianco/nero per aperture)
+- **Board interattiva corretta** ✓ — fix Chessground reinit su cambio `interactive`/`viewOnly`
 
 **Nota sull'engagement:** La ricerca indica 10–20 minuti come durata ottimale per sessione di contenuti scacchistici educativi con bambini di 8–12 anni. La soglia critica per verificare l'efficacia è di 25–30 ore totali di istruzione (Sala & Gobet, 2016), che a 3–5 sessioni settimanali da 10–20 minuti richiede 8–16 settimane di uso sostenuto.
 
 ### Fase 3 — Scheda studente e personalizzazione
 
-**Stato: DA FARE**
+**Stato: DA FARE** — Stima: 2-3 sessioni (~5-8 ore)
 
 La didattica personalizzata prende forma.
 
@@ -633,7 +567,7 @@ La didattica personalizzata prende forma.
 
 ### Fase 4 — Raffinamento console coach
 
-**Stato: DA FARE**
+**Stato: DA FARE** — Stima: 2-3 sessioni (~6-10 ore)
 
 Lo studio di registrazione diventa completo.
 
@@ -643,7 +577,7 @@ Lo studio di registrazione diventa completo.
 
 ### Fase 5 — Strumenti modulari nel player
 
-**Stato: DA FARE**
+**Stato: DA FARE** — Stima: 3-4 sessioni (~8-12 ore)
 
 Il player supporta tutto ciò che è opzionale.
 
@@ -654,7 +588,7 @@ Il player supporta tutto ciò che è opzionale.
 
 ### Fase 6 — Percorsi e verifiche
 
-**Stato: DA FARE**
+**Stato: DA FARE** — Stima: 3-5 sessioni (~10-16 ore)
 
 La struttura di avanzamento.
 
@@ -664,13 +598,25 @@ La struttura di avanzamento.
 
 ### Fase 7 — Multi-utente (futuro)
 
-**Stato: DA FARE**
+**Stato: DA FARE** — Stima: 4-6 sessioni (~15-25 ore)
 
 L'apertura ad altri.
 
 - Account studenti
 - Il coach assegna lezioni e percorsi a studenti specifici
 - Dashboard per visualizzare feedback e dati di utilizzo
+
+---
+
+### Stime cumulative
+
+| Completato (6-14 Mar 2026) | ~24-30 ore attive in ~6 giorni di lavoro |
+|---|---|
+| **Restante (Fasi 3-7)** | **~44-71 ore stimate** |
+| Velocità osservata | ~3-4 ore per sessione intensa |
+| Stima sessioni rimanenti | ~15-25 sessioni |
+
+*Nota: ogni fase include una quota di debug imprevedibile (~30% del tempo storico). La variabile principale è la qualità iterativa dei prompt IA — se richiedono molti cicli di raffinamento, le fasi di generazione si allungano.*
 
 ### Debito tecnico — Chessboard.jsx
 
