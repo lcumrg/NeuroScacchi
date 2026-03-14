@@ -149,21 +149,19 @@ function validateIntentStep(step, path, errors) {
     });
   }
 
-  if (!Array.isArray(step.allowedMoves) || step.allowedMoves.length === 0) {
-    errors.push(`${path}.allowedMoves: must be a non-empty array`);
-  } else {
+  // allowedMoves e correctMoves sono opzionali per intent — IntentActivity è pure multiple-choice
+  // e PlayerPage non rende la scacchiera interattiva durante gli step intent.
+  if (Array.isArray(step.allowedMoves) && step.allowedMoves.length > 0) {
     step.allowedMoves.forEach((m, i) => {
       if (!isValidUciMove(m)) errors.push(`${path}.allowedMoves[${i}]: invalid UCI move "${m}"`);
     });
   }
 
-  if (!Array.isArray(step.correctMoves) || step.correctMoves.length === 0) {
-    errors.push(`${path}.correctMoves: must be a non-empty array`);
-  } else {
+  if (Array.isArray(step.correctMoves) && step.correctMoves.length > 0) {
     step.correctMoves.forEach((m, i) => {
       if (!isValidUciMove(m)) errors.push(`${path}.correctMoves[${i}]: invalid UCI move "${m}"`);
     });
-    if (Array.isArray(step.allowedMoves)) {
+    if (Array.isArray(step.allowedMoves) && step.allowedMoves.length > 0) {
       const notAllowed = step.correctMoves.filter(m => !step.allowedMoves.includes(m));
       if (notAllowed.length > 0) {
         errors.push(`${path}.correctMoves: moves [${notAllowed.join(', ')}] are not in allowedMoves`);

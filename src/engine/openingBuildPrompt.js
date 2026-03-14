@@ -92,8 +92,6 @@ Aggiungi \`"fen": "positions[N].fen"\` solo se vuoi ancorare la spiegazione a un
     { "text": "Attacca il Re", "correct": false },
     { "text": "Libera l'alfiere", "correct": false }
   ],
-  "allowedMoves": ["e2e4", "d2d4"],
-  "correctMoves": ["e2e4"],
   "feedback": {
     "correct": "Sì! Cf3 punta su e5 e d4.",
     "incorrect": "Pensa al controllo del centro."
@@ -103,7 +101,7 @@ Aggiungi \`"fen": "positions[N].fen"\` solo se vuoi ancorare la spiegazione a un
   }
 }
 \`\`\`
-Prendi \`allowedMoves\` e \`correctMoves\` dai dati Explorer (\`explorerData[N].moves[].uci\`).
+\`allowedMoves\` e \`correctMoves\` NON sono richiesti per gli step intent — omettili.
 **Usa \`visualAids\`** per mostrare frecce sulle case chiave dopo la risposta.
 
 ### step detective
