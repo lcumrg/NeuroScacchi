@@ -1,6 +1,8 @@
-# Pipeline Aperture — Analisi e Architettura
+# Pipeline Aperture — Analisi, Architettura e Implementazione
 
 *NeuroScacchi 3.0 | Marzo 2026*
+
+**Stato: IMPLEMENTATA ✓** — Sessione 2026-03-14
 
 ---
 
@@ -201,3 +203,42 @@ Chessline.io tenta un approccio simile (Opening Explorer + engine + spiegazione 
 - Hanno 2 persone e nessun background pedagogico dichiarato
 
 NeuroScacchi ha già l'infrastruttura (pipeline, attività, LessonViewer, SF, database Lichess) — serve solo re-orientarla verso le aperture con la nuova fonte dati.
+
+---
+
+## Implementazione — Sessione 2026-03-14
+
+### File creati
+
+| File | Ruolo | Note |
+|---|---|---|
+| `src/engine/openingExplorer.js` | Client Lichess Opening Explorer API | Rate limit: 200ms tra chiamate. Mappa livello → fascia Elo. Formatta dati per prompt. |
+| `src/engine/openingEnricher.js` | Passo 2: materiali certificati | Cammina mosse con chessops → Explorer per ogni FEN → SF sulle posizioni chiave del colore che studia |
+| `src/engine/openingPipeline.js` | Orchestratore 4 passi | Transizioni deterministiche con mappa FEN→nextMove. Validazione legalità mosse. |
+| `src/engine/openingPlanPrompt.js` | Prompt Passo 1 | IA produce: mosse UCI linea principale + stepPlan con tipi di attività |
+| `src/engine/openingBuildPrompt.js` | Prompt Passo 3 | Focalizzato su comprensione piano. Esempi espliciti per ogni tipo di step. Cita dati Explorer. |
+
+### File modificati
+
+| File | Modifiche |
+|---|---|
+| `src/engine/aiService.js` | Aggiunte `planOpening()` e `buildOpeningLesson()` |
+| `src/pages/ConsolePage.jsx` | Form rifatto: apertura (testo), colore (radio), livello, varianti, profondità. Rimossa pipeline legacy e toggle. |
+| `src/pages/ConsolePage.css` | CSS per radio group bianco/nero |
+| `src/components/LessonViewer.jsx` | Prop `orientation` passata al viewer |
+
+### Form Console Coach
+
+Il coach imposta:
+- **Apertura** — testo libero (es. "Ruy Lopez", "Siciliana Najdorf, variante Inglese")
+- **Colore** — Bianco / Nero (radio button; determina orientation della scacchiera)
+- **Livello** — Principiante/Intermedio/Avanzato (mappa su fascia Elo Explorer)
+- **Varianti** — testo libero opzionale (es. "Concentrati sulla variante Berlino")
+- **Profondità** — numero di mosse da coprire (4–20)
+- **Obiettivo didattico** — testo libero opzionale
+
+### Prossimi passi dopo il test
+
+1. Verificare qualità lezioni generate — iterare sui prompt
+2. Eventuale ottimizzazione rate limit Explorer per aperture con molte mosse
+3. Supporto varianti multiple nella stessa lezione (linea principale + deviazioni)

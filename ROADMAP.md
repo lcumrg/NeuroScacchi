@@ -8,14 +8,26 @@
 
 ### Sessione 2026-03-14
 
-**Decisione strategica:**
+**Decisioni strategiche:**
 
-- **Focus esclusivo sulle aperture** per la pipeline di generazione lezioni. Tattica e finali esclusi dalla pipeline finché le aperture non raggiungono qualità reale. La qualità richiede specializzazione: spiegare un'apertura è un'attività profondamente diversa da spiegare una tattica.
-- **Nuova fonte dati per le aperture**: Lichess Opening Explorer API (statistiche reali per fascia Elo, frequenza mosse, win rate) — al posto del database puzzle Lichess che rimane per la futura pipeline tattica.
-- **Architettura confermata**: stesse attività didattiche (intent, detective, candidate, move, text, demo), stesso schema lezione JSON v3.0.0, stesso flusso di approvazione coach. Cambia solo la fonte dati e il prompt IA (centrato su comprensione del piano, non memorizzazione).
-- **Documento di riferimento**: `docs/analisi-pipeline-aperture.md`
+- **Focus esclusivo sulle aperture** per la pipeline di generazione lezioni. Tattica e finali esclusi dalla pipeline finché le aperture non raggiungono qualità reale.
+- **Nuova fonte dati**: Lichess Opening Explorer API (statistiche reali per fascia Elo, frequenza mosse, win rate). Il database puzzle Lichess rimane su Firestore per uso futuro (tattica).
+- **Architettura invariata**: stesse attività didattiche, stesso schema JSON v3.0.0, stesso flusso di approvazione coach.
 
-**Prossimo passo:** implementazione pipeline aperture (via libera dal coach).
+**Implementato in questa sessione:**
+
+- **Pipeline aperture completa (Fase 1C)** — 5 nuovi file engine + form Console Coach rifatto ✓
+  - `openingExplorer.js` — client Lichess Opening Explorer API con rate limiting e formattazione per prompt
+  - `openingEnricher.js` — cammina mosse con chessops, interroga Explorer per ogni posizione, analisi SF
+  - `openingPipeline.js` — orchestratore 4 passi, transizioni deterministiche, validazione legalità
+  - `openingPlanPrompt.js` — prompt pianificazione: IA produce mosse UCI + struttura pedagogica
+  - `openingBuildPrompt.js` — prompt costruzione: focalizzato su comprensione piano, dati Explorer integrati
+- **Console Coach** — form completamente rifatto: apertura (testo libero), colore bianco/nero, livello, varianti, profondità
+- **Scacchiera orientabile** — `orientation` passato dal lesson.orientation al LessonViewer
+- **Analisi competitiva** documentata — Chessdriller (repo GitHub), ChessMind AI, Chessline.io
+- **Hub documentazione** nell'app (`#/doc`) con 4 documenti navigabili
+
+**Prossimo passo:** test end-to-end su Netlify, iterare sui prompt in base ai risultati.
 
 ---
 
@@ -457,7 +469,7 @@ Ogni posizione è analizzata da SF. L'IA poi mappa queste posizioni su step dell
 
 ### Fase 1C — Pipeline aperture con Opening Explorer
 
-**Stato: DA FARE — PROSSIMA PRIORITÀ**
+**Stato: COMPLETATA** ✓
 
 Pipeline dedicata alle aperture, costruita sulla stessa architettura della Fase 1A ma con fonte dati e prompt completamente diversi. L'obiettivo è la comprensione del piano, non la memorizzazione delle mosse.
 

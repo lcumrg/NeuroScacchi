@@ -1,6 +1,6 @@
 # Analisi Piattaforme Concorrenti
 
-*NeuroScacchi — Ricerca competitiva | Marzo 2026*
+*NeuroScacchi — Ricerca competitiva | Marzo 2026 — aggiornato 2026-03-14*
 
 ---
 
@@ -157,6 +157,26 @@ Connettendo l'account Lichess dello studente (scope `games:read`), si potrebbero
 | **Metacognizione** | No | Minima | No | Principio fondante |
 | **Lichess** | Solo studi/PGN | Non usato | Partite + engine stats | Puzzle database (4.7M puzzle) |
 | **Processo decisionale** | Non tematizzato | Non tematizzato | Non tematizzato | Nucleo del metodo |
+
+---
+
+## Chessline.io — Approfondimento (analisi tecnica marzo 2026)
+
+### Realtà vs marketing
+
+**La generazione repertori** non usa LLM per le mosse. Il meccanismo reale è: database partite reali (probabilmente Lichess) filtrato per fascia Elo + validazione Stockfish. Essenzialmente è l'Opening Explorer di Lichess con un'interfaccia più semplice.
+
+**L'"AI coach" (ChessGPT)** è ancora in waitlist a marzo 2026. Da quello che trapela sarà RAG (Retrieval-Augmented Generation): posizione → ricerca in database partite annotate da esperti → LLM presenta i commenti in linguaggio naturale. Non rivelano quale LLM usano.
+
+**Personalizzazione reale oggi:** solo Elo e "quanto vuoi coprire". Stile di gioco, analisi avversario specifico, sistema adattivo → tutto roadmap non ancora implementata.
+
+**Limiti evidenti:**
+- 5 aperture/mese nel piano premium (costo computazionale elevato o architettura non ottimizzata)
+- Nessuna statistica winrate visibile all'utente nelle pagine aperture (Lichess le mostra gratis)
+- Nessuna attività didattica interattiva — solo move trainer = memorizzazione
+- 2 persone, lancio ottobre 2025, prodotto core ancora a metà
+
+**Finanziamenti:** VentureKick CHF 10.000 + Hasler Foundation CHF 50.000 per "explainable AI". Backing accademico FHNW (Data Science Institute).
 
 ---
 
