@@ -54,14 +54,17 @@ export default async (req) => {
 
   const url = `${LICHESS_EXPLORER}?${params}`
 
+  const requestHeaders = {
+    'Accept': 'application/json',
+    'User-Agent': 'NeuroScacchi/3.0 (educational chess app)',
+  }
+  if (process.env.LICHESS_API_TOKEN) {
+    requestHeaders['Authorization'] = `Bearer ${process.env.LICHESS_API_TOKEN}`
+  }
+
   let lichessRes
   try {
-    lichessRes = await fetch(url, {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'NeuroScacchi/3.0 (educational chess app)',
-      },
-    })
+    lichessRes = await fetch(url, { headers: requestHeaders })
   } catch (err) {
     return new Response(JSON.stringify({ error: `Lichess fetch error: ${err.message}` }), {
       status: 502,
