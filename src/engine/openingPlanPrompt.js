@@ -45,6 +45,19 @@ Rispondi SOLO con un JSON in questo formato:
 - \`keyMoves\`: indici delle mosse più importanti da analizzare con Stockfish
 - \`stepPlan\`: 5-8 step. Non esagerare — meglio pochi step profondi che molti superficiali.
 - \`moveIndex\` in stepPlan: l'indice nella sequenza moves[] (0-based). null per step senza posizione.
+- **Profondità**: preferisci sequenze di 6-10 mosse. Sequenze lunghe (>12) aumentano il rischio di errori.
+
+## Mosse speciali — attenzione
+
+| Mossa | Notazione UCI corretta |
+|---|---|
+| Arrocco corto Bianco | e1g1 |
+| Arrocco lungo Bianco | e1c1 |
+| Arrocco corto Nero | e8g8 |
+| Arrocco lungo Nero | e8c8 |
+| Promozione a Regina | es. e7e8q |
+
+**IMPORTANTE**: dopo un arrocco corto del Bianco (e1g1), la torre è su f1 e il re su g1. Le mosse successive devono partire da queste case. Non usare e1 o h1 dopo l'arrocco.
 
 ## Tipi di step disponibili
 

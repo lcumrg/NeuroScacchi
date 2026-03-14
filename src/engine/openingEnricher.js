@@ -45,9 +45,13 @@ export function walkOpeningMoves(moves, startFen = STARTING_FEN) {
   for (let i = 0; i < moves.length; i++) {
     const result = makeMoveFromUci(currentFen, moves[i])
     if (!result.valid) {
+      // Tronca alla prima mossa illegale — meglio una lezione parziale che nessuna lezione
+      console.warn(`[openingEnricher] Mossa illegale "${moves[i]}" alla posizione ${i} — sequenza troncata a ${i} mosse`)
       return {
         positions,
-        error: `Mossa illegale: ${moves[i]} dopo ${i} mosse`,
+        truncated: true,
+        truncatedAt: i,
+        truncatedMove: moves[i],
       }
     }
     currentFen = result.fen
@@ -60,7 +64,7 @@ export function walkOpeningMoves(moves, startFen = STARTING_FEN) {
     })
   }
 
-  return { positions }
+  return { positions, truncated: false }
 }
 
 /**
@@ -80,9 +84,14 @@ export async function buildOpeningMaterialsPackage(params, { onProgress } = {}) 
   // ── Step 1: Calcola posizioni con chessops ──
   onProgress?.({ phase: 'compute', message: 'Calcolo posizioni apertura...' })
 
-  const { positions, error } = walkOpeningMoves(moves, startFen)
-  if (error) {
-    throw new Error(`Errore nel calcolo delle posizioni: ${error}`)
+  const { positions, truncated, truncatedAt, truncatedMove } = walkOpeningMoves(moves, startFen)
+
+  if (positions.length < 2) {
+    throw new Error(`Impossibile calcolare le posizioni: la sequenza di mosse è vuota o invalida fin dall'inizio.`)
+  }
+
+  if (truncated) {
+    onProgress?.({ phase: 'compute', message: `Mossa illegale "${truncatedMove}" alla posizione ${truncatedAt} — lezione costruita sulle prime ${positions.length - 1} mosse valide.` })
   }
 
   // ── Step 2: Opening Explorer per ogni posizione ──
