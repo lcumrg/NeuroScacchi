@@ -57,7 +57,9 @@ export default function Chessboard({
     return () => ro.disconnect()
   }, [])
 
-  // Init/destroy Chessground
+  // Init/destroy Chessground — include interactive/viewOnly per forzare reinit
+  // quando la board passa da non-interattiva a interattiva (draggable.enabled non
+  // viene aggiornato correttamente da Chessground.set() in alcuni casi)
   useEffect(() => {
     if (!cgContainerRef.current || size === 0) return
 
@@ -68,7 +70,7 @@ export default function Chessboard({
       cg.destroy()
       cgRef.current = null
     }
-  }, [size])
+  }, [size, interactive, viewOnly])
 
   // Update config on prop changes
   useEffect(() => {
