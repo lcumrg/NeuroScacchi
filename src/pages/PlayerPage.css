@@ -95,6 +95,208 @@
   background: var(--color-primary-light);
 }
 
+/* ── Feedback form (schermata finale) ──────────────────────────── */
+.player-feedback {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
+}
+
+.player-feedback__title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.player-feedback__subtitle {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: -0.75rem;
+}
+
+.player-feedback__overall {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.player-feedback__overall-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.player-feedback__stars {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.player-feedback__star {
+  background: none;
+  border: none;
+  font-size: 2.2rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  opacity: 0.3;
+  padding: 0;
+  line-height: 1;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.player-feedback__star--active,
+.player-feedback__star:hover {
+  color: #F5C518;
+  opacity: 1;
+}
+
+.player-feedback__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.player-feedback__steps-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.player-feedback__step-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  background: var(--bg-main);
+}
+
+.player-feedback__step-type {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-primary);
+  min-width: 60px;
+}
+
+.player-feedback__step-summary {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-feedback__step-stars {
+  display: flex;
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
+
+.player-feedback__step-star {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  opacity: 0.3;
+  padding: 0;
+  line-height: 1;
+  transition: opacity 0.15s;
+}
+
+.player-feedback__step-star--active,
+.player-feedback__step-star:hover {
+  color: #F5C518;
+  opacity: 1;
+}
+
+.player-feedback__note {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.player-feedback__note-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.player-feedback__note-input {
+  width: 100%;
+  min-height: 70px;
+  padding: 0.6rem 0.75rem;
+  border: 1.5px solid var(--border-color, #e0e0e0);
+  border-radius: 8px;
+  background: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  font-size: 0.88rem;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.player-feedback__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.player-feedback__btn {
+  padding: 0.65rem 1.8rem;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.player-feedback__btn--primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.player-feedback__btn--secondary {
+  background: var(--bg-main);
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border-color, #e0e0e0);
+}
+
+.player-feedback__btn:hover { opacity: 0.85; }
+.player-feedback__saved {
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--move-ottima, #2e7d32);
+}
+
+.player-feedback__back {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.7rem 2rem;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
 /* ── Header ────────────────────────────────────────────────────── */
 .player-header {
   width: 100%;

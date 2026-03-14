@@ -141,6 +141,38 @@
   background: var(--color-primary-light);
 }
 
+/* stelle valutazione step */
+.feedback-panel__rating {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.feedback-panel__rating-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-right: 0.15rem;
+}
+
+.feedback-panel__star {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  opacity: 0.4;
+  padding: 0;
+  line-height: 1;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.feedback-panel__star--active,
+.feedback-panel__star:hover {
+  color: #F5C518;
+  opacity: 1;
+}
+
 /* ────────────────────────────────────────────────────────────────
    Shared activity base styles
    ──────────────────────────────────────────────────────────────── */

@@ -19,7 +19,7 @@ function renderMarkdown(text) {
 
 const CONTINUE_DELAY_MS = 600
 
-export default function FeedbackPanel({ correct, feedbackText, onContinue }) {
+export default function FeedbackPanel({ correct, feedbackText, onContinue, onRate, currentRating }) {
   const [btnVisible, setBtnVisible] = useState(false)
 
   // Delay "Continua" to prevent accidental taps
@@ -38,6 +38,24 @@ export default function FeedbackPanel({ correct, feedbackText, onContinue }) {
         className="feedback-panel__text feedback-panel__text--markdown"
         dangerouslySetInnerHTML={{ __html: html }}
       />
+
+      {onRate && (
+        <div className="feedback-panel__rating">
+          <span className="feedback-panel__rating-label">Valuta:</span>
+          {[1, 2, 3].map(n => (
+            <button
+              key={n}
+              className={`feedback-panel__star${currentRating >= n ? ' feedback-panel__star--active' : ''}`}
+              onClick={() => onRate(currentRating === n ? 0 : n)}
+              title={n === 1 ? 'Difficile' : n === 2 ? 'Ok' : 'Facile'}
+              aria-label={`${n} stelle`}
+            >
+              ★
+            </button>
+          ))}
+        </div>
+      )}
+
       {btnVisible && (
         <button className="feedback-panel__btn" onClick={onContinue}>
           Continua
