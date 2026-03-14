@@ -133,8 +133,22 @@ export default function PlayerPage() {
 
   // Shapes: visualAids (feedback) ha priorità; durante activity usa preview hover
   const boardShapes = shapes.length > 0 ? shapes : (previewShapes ?? [])
-  const boardDests = isBoardInteractive && activeFen ? legalDests(activeFen) : new Map()
+  let boardDests = new Map()
+  if (isBoardInteractive && activeFen) {
+    try {
+      boardDests = legalDests(activeFen)
+    } catch (e) {
+      console.error('[PlayerPage] legalDests fallito:', e?.message, 'FEN:', activeFen)
+    }
+  }
   const boardTurnColor = activeFen ? getTurnColor(activeFen) : 'white'
+
+  // DEBUG — rimuovere dopo diagnosi
+  if (process.env.NODE_ENV !== 'production' || true) {
+    if (currentStep) {
+      console.log(`[PlayerPage] step=${stepIndex} type=${currentStepType} phase=${phase} interactive=${isBoardInteractive} dests=${boardDests.size} turnColor=${boardTurnColor} fen=${activeFen?.slice(0,40)}`)
+    }
+  }
 
   // ── Activity callbacks ────────────────────────────────────────────────────
 
