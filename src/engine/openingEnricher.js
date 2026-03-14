@@ -98,6 +98,7 @@ export async function buildOpeningMaterialsPackage(params, { onProgress } = {}) 
   onProgress?.({ phase: 'explorer', message: `Analisi Opening Explorer (${positions.length} posizioni)...` })
 
   const explorerData = []
+  let firstExplorerError = null
   for (let i = 0; i < positions.length; i++) {
     const pos = positions[i]
     try {
@@ -110,8 +111,9 @@ export async function buildOpeningMaterialsPackage(params, { onProgress } = {}) 
         formatted: formatExplorerForPrompt(data, pos.sideToMove),
       })
     } catch (explorerErr) {
-      // Se Explorer non risponde, continua senza dati per questa posizione
-      console.error(`[openingEnricher] Explorer fallito per posizione ${i}:`, explorerErr?.message || explorerErr)
+      const errMsg = explorerErr?.message || String(explorerErr)
+      console.error(`[openingEnricher] Explorer fallito per posizione ${i}:`, errMsg)
+      if (!firstExplorerError) firstExplorerError = errMsg
       explorerData.push({
         positionIndex: i,
         fen: pos.fen,
@@ -125,6 +127,10 @@ export async function buildOpeningMaterialsPackage(params, { onProgress } = {}) 
 
     // Rispetta rate limit: 200ms tra chiamate
     if (i < positions.length - 1) await delay(200)
+  }
+
+  if (firstExplorerError) {
+    onProgress?.({ phase: 'explorer-error-done', message: `Explorer error: ${firstExplorerError}` })
   }
 
   // Estrai nome apertura dal primo dato Explorer che lo ha
