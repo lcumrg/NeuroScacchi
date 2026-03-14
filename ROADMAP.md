@@ -672,6 +672,28 @@ L'apertura ad altri.
 - Il coach assegna lezioni e percorsi a studenti specifici
 - Dashboard per visualizzare feedback e dati di utilizzo
 
+### Debito tecnico — Chessboard.jsx
+
+**Reinit di Chessground al cambio di interattività**
+
+La fix attuale aggiunge `interactive` e `viewOnly` alle dipendenze dell'`useEffect` che inizializza Chessground, forzando un destroy + reinit completo ogni volta che la board passa da non-interattiva a interattiva (e viceversa). Funziona, ma non è la soluzione più pulita.
+
+**Causa radice:** Chessground ha un bug interno — `.set()` non aggiorna correttamente `draggable.enabled` quando passa da `false` a `true`.
+
+**Soluzione preferibile:** usare il prop `key` sul container div invece di gestire le dipendenze manualmente:
+
+```jsx
+<div
+  key={`cg-${interactive ? 'i' : 'n'}-${viewOnly ? 'v' : 'n'}`}
+  ref={cgContainerRef}
+  style={{ width: size, height: size }}
+/>
+```
+
+React smonta e rimonta il DOM element al cambio di `key`, triggering il ciclo cleanup/init dell'`useEffect` in modo naturale. L'`useEffect` di init tornerebbe alla sola dipendenza `[size]`. Prima di implementare: verificare che React gestisca correttamente il reattachment del `ref` al remount e che non ci siano race condition con il ResizeObserver.
+
+---
+
 ### Orizzonte futuro (non in roadmap)
 
 Idee da esplorare in futuro senza impegno attuale:
