@@ -172,14 +172,35 @@
   letter-spacing: 0.05em;
 }
 
+.player-feedback__step-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
 .player-feedback__step-row {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 0.6rem;
-  border-radius: 8px;
+  border-radius: 8px 8px 0 0;
   background: var(--bg-main);
 }
+
+.player-feedback__step-note {
+  padding: 0.3rem 0.6rem;
+  border: none;
+  border-top: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 0 0 8px 8px;
+  background: var(--bg-main);
+  color: var(--text-secondary);
+  font-family: var(--font-main);
+  font-size: 0.78rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.player-feedback__step-note::placeholder { opacity: 0.5; }
 
 .player-feedback__step-type {
   font-size: 0.7rem;
