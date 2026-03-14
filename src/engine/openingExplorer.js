@@ -31,14 +31,15 @@ const LEVEL_TO_RATINGS = {
 export async function getExplorerData(fen, { livello = 'intermedio', topMoves = 5 } = {}) {
   const ratings = LEVEL_TO_RATINGS[livello] || LEVEL_TO_RATINGS.intermedio
 
-  const params = new URLSearchParams({
-    fen,
-    ratings,
-    speeds: 'rapid,classical',
-    moves: topMoves,
-    topGames: 0,
-    recentGames: 0,
-  })
+  // L'API Lichess Explorer richiede parametri ripetuti, non comma-separated:
+  // ratings=1000&ratings=1200, NON ratings=1000,1200
+  const params = new URLSearchParams()
+  params.set('fen', fen)
+  params.set('moves', topMoves)
+  params.set('topGames', 0)
+  params.set('recentGames', 0)
+  for (const r of ratings.split(',')) params.append('ratings', r.trim())
+  for (const s of ['rapid', 'classical']) params.append('speeds', s)
 
   const url = `${EXPLORER_BASE}?${params}`
 
