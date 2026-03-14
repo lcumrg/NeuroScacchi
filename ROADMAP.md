@@ -6,6 +6,19 @@
 
 ## Lavoro in corso
 
+### Sessione 2026-03-14
+
+**Decisione strategica:**
+
+- **Focus esclusivo sulle aperture** per la pipeline di generazione lezioni. Tattica e finali esclusi dalla pipeline finché le aperture non raggiungono qualità reale. La qualità richiede specializzazione: spiegare un'apertura è un'attività profondamente diversa da spiegare una tattica.
+- **Nuova fonte dati per le aperture**: Lichess Opening Explorer API (statistiche reali per fascia Elo, frequenza mosse, win rate) — al posto del database puzzle Lichess che rimane per la futura pipeline tattica.
+- **Architettura confermata**: stesse attività didattiche (intent, detective, candidate, move, text, demo), stesso schema lezione JSON v3.0.0, stesso flusso di approvazione coach. Cambia solo la fonte dati e il prompt IA (centrato su comprensione del piano, non memorizzazione).
+- **Documento di riferimento**: `docs/analisi-pipeline-aperture.md`
+
+**Prossimo passo:** implementazione pipeline aperture (via libera dal coach).
+
+---
+
 ### Sessione 2026-03-13
 
 **Lavoro completato:**
@@ -316,7 +329,7 @@ Il database puzzle Lichess è attivo su Firestore (`FIREBASE_SERVICE_ACCOUNT` im
 
 **Ancora mancante in 1A:**
 - Salvataggio lezioni su Firestore (solo localStorage)
-- Opening Explorer non integrato (bassa priorità)
+- Pipeline aperture con Opening Explorer (vedi Fase 1C sotto)
 
 ---
 
@@ -432,13 +445,61 @@ Ogni posizione è analizzata da SF. L'IA poi mappa queste posizioni su step dell
 
 ---
 
-**Fase 1B — Raffinamenti pipeline.**
+**Fase 1B — Raffinamenti pipeline tattica.**
 
-**Stato: DA FARE (dopo completamento pipeline)**
+**Stato: DA FARE (bassa priorità — tattica in standby)**
 - Cloud eval Lichess come prima fonte, SF locale come fallback
 - Gestione fallback quando non ci sono abbastanza puzzle per i criteri
 - Supporto per FEN fornita dal coach (bypass puzzle database)
 - Raffinamento iterativo: il coach chiede modifiche via chat, la pipeline ri-valida
+
+---
+
+### Fase 1C — Pipeline aperture con Opening Explorer
+
+**Stato: DA FARE — PROSSIMA PRIORITÀ**
+
+Pipeline dedicata alle aperture, costruita sulla stessa architettura della Fase 1A ma con fonte dati e prompt completamente diversi. L'obiettivo è la comprensione del piano, non la memorizzazione delle mosse.
+
+**Documento di riferimento:** `docs/analisi-pipeline-aperture.md`
+
+**Principio chiave:** L'IA spiega il *perché* di ogni mossa usando dati statistici reali ("il 73% dei giocatori al tuo livello risponde così") e analisi Stockfish. Lo studente ragiona prima di muovere, non dopo aver memorizzato.
+
+**File da creare:**
+
+| File | Ruolo |
+|---|---|
+| `src/engine/openingExplorer.js` | Client Lichess Opening Explorer API |
+| `src/engine/openingEnricher.js` | Cammina mosse + statistiche Explorer + analisi SF |
+| `src/engine/openingPipeline.js` | Orchestratore 4 passi per aperture |
+| `src/engine/openingPlanPrompt.js` | Prompt pianificazione lezione apertura |
+| `src/engine/openingBuildPrompt.js` | Prompt costruzione step (centrato su comprensione piano) |
+
+**File da modificare:**
+
+| File | Modifiche |
+|---|---|
+| `src/pages/ConsolePage.jsx` | Sezione aperture: form con apertura, colore, varianti, profondità |
+| `src/engine/aiService.js` | Aggiungere `planOpening()` e `buildOpeningLesson()` |
+| `src/pages/LessonViewer.jsx` | Orientation: passare bianco/nero a Chessground |
+
+**Input coach per una lezione di apertura:**
+- Apertura (es. "Siciliana Najdorf, variante Inglese")
+- Colore (Bianco / Nero) — determina l'orientamento della scacchiera
+- Varianti da coprire (testo libero)
+- Profondità (numero di mosse)
+- Livello studente (mappato su fascia Elo Explorer)
+
+**Come le attività esistenti si applicano alle aperture:**
+
+| Attività | Uso per aperture |
+|---|---|
+| **text** | Introduce l'idea dell'apertura, spiega la struttura |
+| **intent** | "Perché il Nero gioca ...c5 invece di ...e5?" |
+| **detective** | Trova la casa/pezzo che definisce la struttura |
+| **candidate** | Scegli tra le mosse più giocate a questo livello (statistiche reali) |
+| **move** | Esegui la mossa dell'apertura (rinforzo) |
+| **demo** | Mostra la sequenza con narrazione del piano |
 
 ### Fase 2 — Il player studente (base)
 

@@ -3,6 +3,7 @@ import { marked } from 'marked'
 import roadmapRaw from '../../ROADMAP.md?raw'
 import architetturaPipelineRaw from '../../docs/architettura-pipeline-lezioni.md?raw'
 import analisiPiattaformeRaw from '../../docs/analisi-piattaforme-concorrenti.md?raw'
+import analisiApertureRaw from '../../docs/analisi-pipeline-aperture.md?raw'
 import './DocPage.css'
 
 const DOCS = [
@@ -23,6 +24,12 @@ const DOCS = [
     label: 'Analisi piattaforme',
     group: 'Analisi & Ricerca',
     raw: analisiPiattaformeRaw,
+  },
+  {
+    id: 'analisi-pipeline-aperture',
+    label: 'Pipeline aperture',
+    group: 'Analisi & Ricerca',
+    raw: analisiApertureRaw,
   },
 ]
 
