@@ -61,6 +61,7 @@ export default function PlayerPage() {
 
   // Feedback raccolta per ogni step (index → rating 1-3, 0 = non valutato)
   const [stepRatings, setStepRatings] = useState({})
+  const [stepNotes, setStepNotes] = useState({}) // index → stringa nota
 
   // Schermata feedback finale
   const [feedbackPhase, setFeedbackPhase] = useState(false) // true dopo 'done'
@@ -337,6 +338,7 @@ export default function PlayerPage() {
       stepType: step.type,
       summary: stepSummary(step),
       rating: stepRatings[i] || 0,
+      note: stepNotes[i] || '',
     }))
 
     await saveLessonFeedback({
@@ -401,20 +403,29 @@ export default function PlayerPage() {
           <div className="player-feedback__steps">
             <span className="player-feedback__steps-label">Step individuali</span>
             {(lesson.steps || []).map((step, i) => (
-              <div key={i} className="player-feedback__step-row">
-                <span className="player-feedback__step-type">{step.type}</span>
-                <span className="player-feedback__step-summary">{stepSummary(step)}</span>
-                <div className="player-feedback__step-stars">
-                  {[1, 2, 3].map(n => (
-                    <button
-                      key={n}
-                      className={`player-feedback__step-star${(stepRatings[i] || 0) >= n ? ' player-feedback__step-star--active' : ''}`}
-                      onClick={() => setStepRatings(prev => ({ ...prev, [i]: prev[i] === n ? 0 : n }))}
-                      title={n === 1 ? 'Difficile/non funziona' : n === 2 ? 'Ok' : 'Ben fatto'}
-                      aria-label={`Step ${i + 1}: ${n} stelle`}
-                    >★</button>
-                  ))}
+              <div key={i} className="player-feedback__step-block">
+                <div className="player-feedback__step-row">
+                  <span className="player-feedback__step-type">{step.type}</span>
+                  <span className="player-feedback__step-summary">{stepSummary(step)}</span>
+                  <div className="player-feedback__step-stars">
+                    {[1, 2, 3].map(n => (
+                      <button
+                        key={n}
+                        className={`player-feedback__step-star${(stepRatings[i] || 0) >= n ? ' player-feedback__step-star--active' : ''}`}
+                        onClick={() => setStepRatings(prev => ({ ...prev, [i]: prev[i] === n ? 0 : n }))}
+                        title={n === 1 ? 'Difficile/non funziona' : n === 2 ? 'Ok' : 'Ben fatto'}
+                        aria-label={`Step ${i + 1}: ${n} stelle`}
+                      >★</button>
+                    ))}
+                  </div>
                 </div>
+                <input
+                  type="text"
+                  className="player-feedback__step-note"
+                  placeholder="Nota (opzionale)..."
+                  value={stepNotes[i] || ''}
+                  onChange={e => setStepNotes(prev => ({ ...prev, [i]: e.target.value }))}
+                />
               </div>
             ))}
           </div>

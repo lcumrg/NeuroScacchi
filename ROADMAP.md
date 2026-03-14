@@ -6,7 +6,58 @@
 
 ## Lavoro in corso
 
-### Sessione 2026-03-14 (continuazione — fix pipeline aperture)
+### Sessione 2026-03-14 (continuazione — sistema feedback lezioni)
+
+**Obiettivo:** implementare un sistema di feedback strutturato per raccogliere valutazioni del coach dopo ogni lezione. Il feedback viene salvato su Firestore e riletto nelle sessioni future per guidare l'iterazione sui prompt.
+
+**Implementato:**
+
+- **Salvataggio lezioni approvate su Firestore** (`netlify/functions/lesson-save.js`, `lessonStore.js`) ✓
+  - Nuova Netlify Function `lesson-save.js` con Firebase Admin SDK
+  - `publishLesson(lesson)` in `lessonStore.js` — POST a `/api/lesson-save`
+  - `ConsolePage.jsx`: al click "Approva" chiama anche `publishLesson()` in aggiunta al salvataggio localStorage
+
+- **Stelle per step durante la lezione** (`FeedbackPanel.jsx`, `player-activities.css`) ✓
+  - Rating 1-3 stelle nel pannello feedback dopo ogni step (Difficile / Ok / Facile)
+  - Props opzionali `onRate` e `currentRating` — retrocompatibile
+  - `PlayerPage.jsx`: stato `stepRatings` (index → 1-3), passato e raccolto step per step
+
+- **Freeze saltato per step text** (`PlayerPage.jsx`) ✓
+  - Il testo è già l'attività — attendere 2 secondi prima di poter leggere è frustrante
+  - Condizione: `if (!freezeEnabled || durationMs <= 0 || currentStep?.type === 'text') → setPhase('activity')`
+
+- **Form feedback finale** (`PlayerPage.jsx`, `PlayerPage.css`) ✓
+  - Schermata "Lezione completata!" con pulsante "Valuta la lezione →"
+  - Form con: rating complessivo 1-5 stelle, rating 1-3 per ogni step, campo note libere
+  - **Per ogni step: campo nota testuale** (opzionale) — per appunti specifici su cosa sistemare
+  - Layout step: riga superiore (tipo step + sommario + stelle) + riga inferiore (input nota)
+  - Stato `stepNotes` (index → stringa) raccolto insieme a `stepRatings`
+  - Salvataggio via `saveLessonFeedback()` su Firestore `lessonFeedback/{autoId}`
+
+- **Salvataggio feedback su Firestore** (`netlify/functions/feedback-save.js`, `lessonStore.js`) ✓
+  - Nuova Netlify Function `feedback-save.js`
+  - Campi salvati: `lessonId`, `lessonTitle`, `lessonCategory`, `overallRating`, `note`, `stepFeedback[]` (con stepIndex, stepType, summary, rating, note), `playedAt`
+  - `saveLessonFeedback({...})` in `lessonStore.js` — POST a `/api/feedback-save`
+
+**Flusso feedback completo:**
+
+```
+Gioca lezione
+  → FeedbackPanel per ogni step: 3 stelle (Difficile/Ok/Facile)
+  → Schermata completamento
+  → [opzionale] Form valutazione:
+      - 5 stelle complessivo
+      - Per ogni step: 3 stelle + nota testuale
+      - Note generali
+  → Salva su Firestore lessonFeedback
+  → Coach rileva dati, chiede a Claude di analizzarli → miglioramento prompt
+```
+
+**Prossimo passo:** verificare che il proxy Explorer funzioni correttamente (dati reali nelle lezioni), iterare sui prompt in base alla qualità delle lezioni generate con dati Explorer e ai feedback raccolti.
+
+---
+
+### Sessione 2026-03-14 (prima parte — fix pipeline aperture)
 
 **Contesto:** Prima sessione di test reali con i figli del coach. Identificati e risolti numerosi bug nella pipeline aperture. La pipeline è ora funzionante; la qualità delle lezioni dipende dai dati Explorer (proxy appena deployato — da verificare nel prossimo test).
 
@@ -564,6 +615,8 @@ Il player minimo per eseguire le lezioni create in Fase 1.
 - Lista lezioni (LessonsPage), clic per aprire e giocare ✓
 - Transizioni animate tra step ✓
 - Schermata completamento lezione ✓
+- **Sistema feedback coach** ✓ — stelle per step durante la lezione, form valutazione finale (5 stelle globale + 3 stelle + nota per ogni step + note generali), salvataggio su Firestore
+- **Salvataggio lezioni approvate su Firestore** ✓ — `lesson-save.js` + `publishLesson()` in `lessonStore.js`
 
 **Nota sull'engagement:** La ricerca indica 10–20 minuti come durata ottimale per sessione di contenuti scacchistici educativi con bambini di 8–12 anni. La soglia critica per verificare l'efficacia è di 25–30 ore totali di istruzione (Sala & Gobet, 2016), che a 3–5 sessioni settimanali da 10–20 minuti richiede 8–16 settimane di uso sostenuto.
 
