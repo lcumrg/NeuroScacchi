@@ -641,6 +641,8 @@ L'apertura ad altri.
 
 **Stato: PROSSIMA** — Stima: 2-3 sessioni (~6-10 ore)
 
+**Documento di riferimento:** `docs/design-ux-bambini.md` — analisi completa con varianti freeze, tipografia, bottoni, frecce/evidenziazioni, problema visualizzazione mentale della scacchiera, checklist implementazione.
+
 **Contesto:** I test con i bambini confermano che l'aspetto grafico è un fattore decisivo di engagement, motivazione e percezione della qualità. La base CSS è solida (variabili, tema, responsive) ma il look attuale è corporate e freddo — progettato inconsciamente per adulti, non per bambini di 8-12 anni.
 
 **Aree di intervento in ordine di priorità:**

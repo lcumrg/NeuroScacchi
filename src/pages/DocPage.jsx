@@ -4,6 +4,7 @@ import roadmapRaw from '../../ROADMAP.md?raw'
 import architetturaPipelineRaw from '../../docs/architettura-pipeline-lezioni.md?raw'
 import analisiPiattaformeRaw from '../../docs/analisi-piattaforme-concorrenti.md?raw'
 import analisiApertureRaw from '../../docs/analisi-pipeline-aperture.md?raw'
+import designUxRaw from '../../docs/design-ux-bambini.md?raw'
 import './DocPage.css'
 
 const DOCS = [
@@ -30,6 +31,12 @@ const DOCS = [
     label: 'Pipeline aperture',
     group: 'Analisi & Ricerca',
     raw: analisiApertureRaw,
+  },
+  {
+    id: 'design-ux-bambini',
+    label: 'Design & UX bambini',
+    group: 'Analisi & Ricerca',
+    raw: designUxRaw,
   },
 ]
 
