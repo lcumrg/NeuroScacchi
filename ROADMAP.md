@@ -612,11 +612,79 @@ L'apertura ad altri.
 
 | Completato (6-14 Mar 2026) | ~24-30 ore attive in ~6 giorni di lavoro |
 |---|---|
-| **Restante (Fasi 3-7)** | **~44-71 ore stimate** |
+| **Restante (Fasi 2bis + 3-7)** | **~54-86 ore stimate** |
 | Velocità osservata | ~3-4 ore per sessione intensa |
-| Stima sessioni rimanenti | ~15-25 sessioni |
+| Stima sessioni rimanenti | ~18-28 sessioni |
 
 *Nota: ogni fase include una quota di debug imprevedibile (~30% del tempo storico). La variabile principale è la qualità iterativa dei prompt IA — se richiedono molti cicli di raffinamento, le fasi di generazione si allungano.*
+
+---
+
+### Priorità operative — stato attuale (2026-03-14)
+
+**Principio guida:** le aperture sono l'unico tipo di contenuto attivo finché non hanno feedback costantemente positivi. Nessuna nuova tipologia di contenuto prima di questo traguardo.
+
+**Priorità 1 — Qualità contenuti aperture** (in corso)
+- Iterare sui prompt in base ai feedback raccolti
+- Obiettivo: generare lezioni che i bambini trovino chiare, stimolanti, corrette
+
+**Priorità 2 — Esperienza visiva player** (prossima, vedi Fase 2bis)
+- L'aspetto grafico è decisivo nei test con i bambini: stimola, gratifica, sostiene
+- Un buon contenuto presentato male appare come un cattivo contenuto
+- Non è secondario: è parte integrante della qualità percepita
+
+**Priorità 3 — Fasi 3-7** (dopo validazione contenuti + UI)
+
+---
+
+### Fase 2bis — Esperienza visiva per bambini
+
+**Stato: PROSSIMA** — Stima: 2-3 sessioni (~6-10 ore)
+
+**Contesto:** I test con i bambini confermano che l'aspetto grafico è un fattore decisivo di engagement, motivazione e percezione della qualità. La base CSS è solida (variabili, tema, responsive) ma il look attuale è corporate e freddo — progettato inconsciamente per adulti, non per bambini di 8-12 anni.
+
+**Aree di intervento in ordine di priorità:**
+
+**A. Palette e identità visiva** (impatto alto, sforzo medio)
+- Sostituire il blu indigo corporate (#283593) con una palette più calda e vivace
+- Direzione: colori ispirati agli scacchi ma giocosi — legno caldo, verde vivace, accenti oro
+- Color coding per tipo di attività: ogni attività ha il suo colore identificativo
+  - Intent → azzurro (pensiero strategico)
+  - Detective → arancio (scoperta, investigazione)
+  - Candidate → verde (generazione alternativa)
+  - Move → viola/indaco (esecuzione, azione)
+  - Text → neutro caldo (lettura, contesto)
+
+**B. Scacchiera** (impatto alto, sforzo basso)
+- Colori case: sostituire il grigio anonimo con marrone/beige tradizionale (es. Lichess brown: #b58863 / #f0d9b5)
+- Coordinate: font più leggibile, colori vivaci
+- Pezzi: verificare che il set sia leggibile a tutte le dimensioni
+
+**C. Celebrazioni e feedback positivo** (impatto molto alto, sforzo medio)
+- Animazione "Corretto!" con elemento celebrativo (confetti CSS, pulse colorato)
+- Schermata "Lezione completata!" con animazione e tono festoso
+- Micro-animazione su risposta corretta nelle opzioni Intent (scale + glow)
+- FreezeOverlay: meno severo, più "momento di preparazione" che "blocco"
+
+**D. Differenziazione visiva delle attività** (impatto alto, sforzo medio)
+- Ogni tipo di attività ha bordo/header colorato distintivo
+- Icona visiva per tipo (domanda, lente, rami, freccia)
+- Il bambino riconosce a colpo d'occhio "che tipo di sfida" sta per affrontare
+
+**E. Bottoni e interazioni** (impatto medio, sforzo basso)
+- Scale-up sottile su hover dei bottoni (1.04×)
+- Opzioni Intent: bordo più marcato, visual feedback hover più deciso
+- Progress bar: più spessa, colorata per fase
+
+**F. Tipografia e leggibilità** (impatto medio, sforzo basso)
+- Aumentare le dimensioni base dei testi nei pannelli attività
+- Domande delle attività: font-size più grande e bold marcato
+- Label troppo piccole (0.65rem): portare a minimo 0.75rem
+
+**Non fare (scope out):**
+- Aggiungere suoni/audio (fuori scope)
+- Ridisegnare la Console Coach (è per adulti — va bene com'è)
+- Cambiare la struttura layout (funziona)
 
 ### Debito tecnico — Chessboard.jsx
 
@@ -649,6 +717,7 @@ Idee da esplorare in futuro senza impegno attuale:
 - Modalità partita con scaffolding
 - Apertura a collaboratori fidati e/o fondazione educativa
 - Possibile commercializzazione sulla base dei risultati reali
+- **Randomizzazione del ripasso** (ispirazione ChessMind.ai): dopo aver completato una lezione, possibilità di rivedere le posizioni chiave in ordine casuale invece che lineare — costringe il riconoscimento del contesto invece della memorizzazione della sequenza. Riusa le attività esistenti, nessun nuovo schema dati necessario.
 
 #### Hover preview avanzato per le opzioni Intent (estensioni future)
 
