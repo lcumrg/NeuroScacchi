@@ -166,8 +166,6 @@ export default function PlayerPage() {
   }
   const boardTurnColor = activeFen ? getTurnColor(activeFen) : 'white'
 
-  // DEBUG TEMPORANEO
-  console.log('[DEBUG]', { phase, stepIndex, currentStepType, isBoardInteractive, activeFen, boardDestsSize: boardDests.size })
 
   // ── Activity callbacks ────────────────────────────────────────────────────
 
