@@ -38,7 +38,7 @@ Ogni puzzle nel pacchetto ha:
 |-----------|------------|-------|----------------|
 | **intent** | \`positions[1].fen\` (posizione puzzle) | \`correctMoves\`: la mossa soluzione del puzzle (\`moves[1]\`). \`allowedMoves\`: le top 3-4 mosse dall'analisi SF. | Domanda, opzioni con \`correct\`/\`text\`, feedback |
 | **detective** | \`positions[1].fen\` | \`correctSquare\`: casa di destinazione della mossa migliore (ultime 2 lettere di bestMove) | Domanda, hints, feedback |
-| **candidate** | \`positions[1].fen\` | \`candidateMoves\`: top N mosse da SF. \`bestMove\`: la migliore da SF. | Istruzione, feedback |
+| **candidate** | \`positions[1].fen\` | \`candidateMoves\`: array di **stringhe UCI** (NON oggetti). \`bestMove\`: stringa UCI della mossa migliore. \`requiredCount\`: numero intero (quante mosse lo studente deve trovare, di solito 1-2). | Istruzione, feedback |
 | **move** | \`positions[1].fen\` | \`correctMoves\`: \`[moves[1]]\` (la soluzione del puzzle) | Istruzione, feedback |
 | **text** | opzionale (qualsiasi FEN dai materiali o nessuna) | nessuna | Contenuto testuale in italiano |
 | **demo** | \`positions[0].fen\` o altra posizione | \`moves\`: sottosequenza delle mosse del puzzle | Spiegazione |
@@ -60,6 +60,36 @@ analysis[0].topMoves = [
 
 Se bestMove è "d1h5", la casa di destinazione è "h5".
 → \`correctSquare\`: "h5"
+
+### Esempio: come costruire un step candidate
+
+Dall'analisi SF del puzzle, prendi i topMoves:
+\`\`\`
+analysis[0].topMoves = [
+  { move: "d5b3", eval: 320, moveSan: "Bb3" },
+  { move: "f1c4", eval: 200, moveSan: "Bc4" },
+  { move: "d2d4", eval: 50, moveSan: "d4" }
+]
+\`\`\`
+→ \`candidateMoves\`: ["d5b3", "f1c4", "d2d4"]  (SOLO le stringhe UCI, NON gli oggetti)
+→ \`bestMove\`: "d5b3"  (SOLO la stringa UCI, NON l'oggetto)
+→ \`requiredCount\`: 1  (o 2 se vuoi che trovino più mosse)
+
+**ERRORE COMUNE DA EVITARE:**
+\`\`\`json
+"candidateMoves": [{ "move": "d5b3", "eval": 320 }]  ← SBAGLIATO (oggetto!)
+"candidateMoves": ["d5b3"]                             ← CORRETTO (stringa UCI)
+\`\`\`
+
+### Esempio: come costruire un step demo
+
+\`\`\`
+"type": "demo"
+"fen": positions[0].fen  (posizione di partenza)
+"moves": ["e2e4", "e7e5"]  (sottosequenza UCI delle mosse del puzzle)
+"explanation": "Spiegazione in italiano di cosa succede in questa dimostrazione."
+\`\`\`
+Il campo \`explanation\` è OBBLIGATORIO per ogni step demo.
 
 ## Schema JSON lezione v3.0.0
 
@@ -107,6 +137,23 @@ Se bestMove è "d1h5", la casa di destinazione è "h5".
         "correct": "Ottimo!",
         "incorrect": "Riprova..."
       }
+    },
+    {
+      "type": "candidate",
+      "fen": "FEN_DAL_PACCHETTO",
+      "candidateMoves": ["e2e4", "d2d4", "g1f3"],
+      "bestMove": "e2e4",
+      "requiredCount": 1,
+      "feedback": {
+        "correct": "Ottimo! Hai trovato le mosse più forti.",
+        "incorrect": "Riprova — cerca le mosse che migliorano la tua posizione."
+      }
+    },
+    {
+      "type": "demo",
+      "fen": "FEN_DAL_PACCHETTO",
+      "moves": ["e2e4", "e7e5"],
+      "explanation": "Spiegazione in italiano di cosa accade in questa sequenza di mosse."
     }
   ],
   "config": {

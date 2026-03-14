@@ -310,9 +310,10 @@ export function validateLesson(lesson) {
           errors.push(`steps[${lastIndex}]: last step must not have a transition`);
         }
       } else {
-        if (!step.transition) {
+        const hasFen = !!step.fen;
+        if (!step.transition && hasFen) {
           warnings.push(`steps[${i}]: non-last step should have a transition`);
-        } else if (step.transition.resultingFen && lesson.steps[i + 1]) {
+        } else if (step.transition && step.transition.resultingFen && lesson.steps[i + 1]) {
           const nextFen = lesson.steps[i + 1].fen;
           if (nextFen && step.transition.resultingFen.trim() !== nextFen.trim()) {
             errors.push(
