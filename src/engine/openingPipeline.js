@@ -90,6 +90,9 @@ export async function generateOpeningLesson(params) {
   // 4a. Assicura orientation corretto
   lesson.orientation = colore === 'black' ? 'black' : 'white'
 
+  // 4a-bis. Salva il modello IA usato per la generazione
+  lesson.generatedBy = model || 'unknown'
+
   // 4b. Assicura category = openings
   lesson.category = 'openings'
 
