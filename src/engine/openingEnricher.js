@@ -109,8 +109,9 @@ export async function buildOpeningMaterialsPackage(params, { onProgress } = {}) 
         ...data,
         formatted: formatExplorerForPrompt(data, pos.sideToMove),
       })
-    } catch {
+    } catch (explorerErr) {
       // Se Explorer non risponde, continua senza dati per questa posizione
+      console.error(`[openingEnricher] Explorer fallito per posizione ${i}:`, explorerErr?.message || explorerErr)
       explorerData.push({
         positionIndex: i,
         fen: pos.fen,

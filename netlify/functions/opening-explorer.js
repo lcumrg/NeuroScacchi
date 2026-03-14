@@ -12,7 +12,7 @@ function corsHeaders() {
   }
 }
 
-export default async function handler(req) {
+export default async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('', { status: 204, headers: corsHeaders() })
   }
@@ -82,4 +82,8 @@ export default async function handler(req) {
     status: 200,
     headers: corsHeaders(),
   })
+}
+
+export const config = {
+  path: '/.netlify/functions/opening-explorer',
 }
