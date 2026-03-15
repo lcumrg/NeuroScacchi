@@ -8,6 +8,7 @@ import CandidateActivity from '../components/player/CandidateActivity'
 import MoveActivity from '../components/player/MoveActivity'
 import TextActivity from '../components/player/TextActivity'
 import DemoActivity from '../components/player/DemoActivity'
+import DevFeedbackSidebar from '../components/player/DevFeedbackSidebar'
 import { loadLesson, saveLessonFeedback } from '../engine/lessonStore'
 import { legalDests, makeMove, turnColor as getTurnColor, parseUci } from '../engine/chessService'
 import './PlayerPage.css'
@@ -59,15 +60,15 @@ export default function PlayerPage() {
   // Candidate activity state
   const [candidateMoves, setCandidateMoves] = useState([])
 
-  // Feedback raccolta per ogni step (index → rating 1-3, 0 = non valutato)
-  const [stepRatings, setStepRatings] = useState({})
-  const [stepNotes, setStepNotes] = useState({}) // index → stringa nota
+  // Dev feedback per-step: array di { tag, note, errors }
+  const [devFeedback, setDevFeedback] = useState([])
+  const devFeedbackRef = useRef([])   // ref per accesso senza stale closure
+  useEffect(() => { devFeedbackRef.current = devFeedback }, [devFeedback])
 
-  // Schermata feedback finale
-  const [feedbackPhase, setFeedbackPhase] = useState(false) // true dopo 'done'
-  const [overallRating, setOverallRating] = useState(0)
-  const [feedbackNote, setFeedbackNote] = useState('')
-  const [feedbackSaved, setFeedbackSaved] = useState(false)
+  // Browser error capture (keyed by step index)
+  const capturedErrorsRef = useRef({})
+  const currentStepIndexRef = useRef(0)
+  useEffect(() => { currentStepIndexRef.current = stepIndex }, [stepIndex])
 
   // Hover preview shapes (intent activity)
   const [previewShapes, setPreviewShapes] = useState(null)
@@ -79,6 +80,29 @@ export default function PlayerPage() {
   const demoMoveIndexRef = useRef(0)
 
   const freezeTimerRef = useRef(null)
+
+  // ── Browser error capture ──────────────────────────────────────────────────
+  useEffect(() => {
+    const addError = (msg, stack) => {
+      const idx = currentStepIndexRef.current
+      const entry = { message: msg, stack: stack || '', timestamp: new Date().toISOString() }
+      capturedErrorsRef.current = {
+        ...capturedErrorsRef.current,
+        [idx]: [...(capturedErrorsRef.current[idx] || []), entry],
+      }
+    }
+    const onError = e => addError(e.message, e.error?.stack)
+    const onRejection = e => addError(
+      e.reason?.message || String(e.reason),
+      e.reason?.stack
+    )
+    window.addEventListener('error', onError)
+    window.addEventListener('unhandledrejection', onRejection)
+    return () => {
+      window.removeEventListener('error', onError)
+      window.removeEventListener('unhandledrejection', onRejection)
+    }
+  }, [])
 
   // ── Load lesson on mount ──────────────────────────────────────────────────
   useEffect(() => {
@@ -94,6 +118,7 @@ export default function PlayerPage() {
       }
       setLesson(lesson)
       setFen(lesson.steps[0]?.fen ?? lesson.initialFen)
+      setDevFeedback(lesson.steps.map(() => ({ tag: null, note: '', errors: [] })))
     })
   }, [])
 
@@ -294,6 +319,20 @@ export default function PlayerPage() {
 
     if (nextIndex >= lesson.steps.length) {
       setPhase('done')
+      // Auto-save dev feedback (fire-and-forget)
+      const stepFeedback = lesson.steps.map((step, i) => ({
+        stepIndex: i,
+        stepType: step.type,
+        tag: devFeedbackRef.current[i]?.tag || null,
+        note: devFeedbackRef.current[i]?.note || '',
+        errors: capturedErrorsRef.current[i] || [],
+      }))
+      saveLessonFeedback({
+        lessonId: lesson.id,
+        lessonTitle: lesson.title,
+        lessonCategory: lesson.category,
+        stepFeedback,
+      })
       return
     }
 
@@ -311,6 +350,20 @@ export default function PlayerPage() {
     setShapes([])
     setStepIndex(nextIndex)
     setPhase('freeze')
+  }
+
+  // ── Dev feedback update ───────────────────────────────────────────────────
+  function updateDevFeedback(idx, field, value) {
+    setDevFeedback(prev => {
+      const next = [...prev]
+      const item = { ...next[idx], [field]: value }
+      // Quando il tag diventa 'bloccato' snapshotta gli errori catturati fino ad ora
+      if (field === 'tag' && value === 'bloccato') {
+        item.errors = [...(capturedErrorsRef.current[idx] || [])]
+      }
+      next[idx] = item
+      return next
+    })
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -332,131 +385,16 @@ export default function PlayerPage() {
     )
   }
 
-  // ── Salva feedback e vai alla schermata finale ────────────────────────────
-  async function handleSubmitFeedback() {
-    const stepFeedback = (lesson.steps || []).map((step, i) => ({
-      stepIndex: i,
-      stepType: step.type,
-      summary: stepSummary(step),
-      rating: stepRatings[i] || 0,
-      note: stepNotes[i] || '',
-    }))
-
-    await saveLessonFeedback({
-      lessonId: lesson.id,
-      lessonTitle: lesson.title,
-      lessonCategory: lesson.category,
-      overallRating,
-      note: feedbackNote,
-      stepFeedback,
-    })
-    setFeedbackSaved(true)
-  }
 
   if (phase === 'done') {
-    if (!feedbackPhase) {
-      return (
-        <div className="player-page player-page--done">
-          <div className="player-done">
-            <div className="player-done__icon">★</div>
-            <h2 className="player-done__title">Lezione completata!</h2>
-            <p className="player-done__subtitle">{lesson.title}</p>
-            <div style={{ display: 'flex', gap: '0.75rem', flexDirection: 'column', alignItems: 'center' }}>
-              <button
-                className="player-done__btn"
-                onClick={() => setFeedbackPhase(true)}
-                style={{ cursor: 'pointer', border: 'none' }}
-              >
-                Valuta la lezione →
-              </button>
-              <a href="#/lessons" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textDecoration: 'underline' }}>
-                Salta e torna alle lezioni
-              </a>
-            </div>
-          </div>
-        </div>
-      )
-    }
-
-    // ── Form di feedback ────────────────────────────────────────────────────
     return (
       <div className="player-page player-page--done">
-        <div className="player-feedback">
-          <h2 className="player-feedback__title">Come è andata?</h2>
-          <p className="player-feedback__subtitle">{lesson.title}</p>
-
-          {/* Rating globale */}
-          <div className="player-feedback__overall">
-            <span className="player-feedback__overall-label">Valutazione complessiva</span>
-            <div className="player-feedback__stars">
-              {[1, 2, 3, 4, 5].map(n => (
-                <button
-                  key={n}
-                  className={`player-feedback__star${overallRating >= n ? ' player-feedback__star--active' : ''}`}
-                  onClick={() => setOverallRating(overallRating === n ? 0 : n)}
-                  aria-label={`${n} stelle`}
-                >★</button>
-              ))}
-            </div>
-          </div>
-
-          {/* Rating per step */}
-          <div className="player-feedback__steps">
-            <span className="player-feedback__steps-label">Step individuali</span>
-            {(lesson.steps || []).map((step, i) => (
-              <div key={i} className="player-feedback__step-block">
-                <div className="player-feedback__step-row">
-                  <span className="player-feedback__step-type">{step.type}</span>
-                  <span className="player-feedback__step-summary">{stepSummary(step)}</span>
-                  <div className="player-feedback__step-stars">
-                    {[1, 2, 3].map(n => (
-                      <button
-                        key={n}
-                        className={`player-feedback__step-star${(stepRatings[i] || 0) >= n ? ' player-feedback__step-star--active' : ''}`}
-                        onClick={() => setStepRatings(prev => ({ ...prev, [i]: prev[i] === n ? 0 : n }))}
-                        title={n === 1 ? 'Difficile/non funziona' : n === 2 ? 'Ok' : 'Ben fatto'}
-                        aria-label={`Step ${i + 1}: ${n} stelle`}
-                      >★</button>
-                    ))}
-                  </div>
-                </div>
-                <input
-                  type="text"
-                  className="player-feedback__step-note"
-                  placeholder="Nota (opzionale)..."
-                  value={stepNotes[i] || ''}
-                  onChange={e => setStepNotes(prev => ({ ...prev, [i]: e.target.value }))}
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Nota testuale */}
-          <div className="player-feedback__note">
-            <span className="player-feedback__note-label">Note (opzionale)</span>
-            <textarea
-              className="player-feedback__note-input"
-              placeholder="Cosa ha funzionato? Cosa sistemare? Osservazioni sui bambini..."
-              value={feedbackNote}
-              onChange={e => setFeedbackNote(e.target.value)}
-            />
-          </div>
-
-          {feedbackSaved ? (
-            <>
-              <p className="player-feedback__saved">✓ Feedback salvato!</p>
-              <a href="#/lessons" className="player-feedback__back">Torna alle lezioni</a>
-            </>
-          ) : (
-            <div className="player-feedback__actions">
-              <button className="player-feedback__btn player-feedback__btn--secondary" onClick={() => window.location.hash = '#/lessons'}>
-                Salta
-              </button>
-              <button className="player-feedback__btn player-feedback__btn--primary" onClick={handleSubmitFeedback}>
-                Salva feedback
-              </button>
-            </div>
-          )}
+        <div className="player-done">
+          <div className="player-done__icon">★</div>
+          <h2 className="player-done__title">Lezione completata!</h2>
+          <p className="player-done__subtitle">{lesson.title}</p>
+          <p className="player-done__dev-note">Dev log salvato automaticamente</p>
+          <a href="#/lessons" className="player-done__btn">Torna alle lezioni</a>
         </div>
       </div>
     )
@@ -466,9 +404,9 @@ export default function PlayerPage() {
   const progressPct = ((stepIndex) / totalSteps) * 100
 
   return (
-    <div className="player-page">
+    <div className="player-page player-page--with-sidebar">
       {/* Header */}
-      <header className="player-header">
+      <header className="player-header player-header--wide">
         <div className="player-header__meta">
           <h1 className="player-header__title">{lesson.title}</h1>
           <span className="player-header__step">Step {stepIndex + 1} di {totalSteps}</span>
@@ -575,6 +513,16 @@ export default function PlayerPage() {
       </section>
 
       </div> {/* /player-content */}
+
+      {/* Dev feedback sidebar */}
+      {lesson && (
+        <DevFeedbackSidebar
+          steps={lesson.steps}
+          currentStepIndex={stepIndex}
+          feedbackData={devFeedback}
+          onUpdate={updateDevFeedback}
+        />
+      )}
     </div>
   )
 }

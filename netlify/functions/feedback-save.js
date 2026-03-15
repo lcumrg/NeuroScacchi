@@ -39,17 +39,26 @@ export default async (req) => {
 
   try {
     const body = await req.json()
-    const { lessonId, lessonTitle, lessonCategory, overallRating, note, stepFeedback } = body
+    const { lessonId, lessonTitle, lessonCategory, stepFeedback } = body
 
     if (!lessonId) return jsonResponse({ error: 'lessonId è obbligatorio' }, 400)
 
+    // stepFeedback items: { stepIndex, stepType, tag, note, errors[] }
     const doc = {
       lessonId,
       lessonTitle: lessonTitle || '',
       lessonCategory: lessonCategory || '',
-      overallRating: overallRating ?? null,
-      note: note || '',
-      stepFeedback: stepFeedback || [],
+      stepFeedback: (stepFeedback || []).map(s => ({
+        stepIndex: s.stepIndex,
+        stepType: s.stepType || '',
+        tag: s.tag || null,
+        note: s.note || '',
+        errors: (s.errors || []).map(e => ({
+          message: String(e.message || '').substring(0, 500),
+          stack: String(e.stack || '').substring(0, 2000),
+          timestamp: e.timestamp || '',
+        })),
+      })),
       playedAt: FieldValue.serverTimestamp(),
     }
 

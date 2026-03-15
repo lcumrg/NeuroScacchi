@@ -42,6 +42,232 @@
   background: var(--color-primary-light);
 }
 
+/* ── Dev Log sidebar ───────────────────────────────────────────── */
+
+.dev-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 220px;
+  height: 100vh;
+  background: #16161a;
+  border-left: 1px solid #2a2a33;
+  display: flex;
+  flex-direction: column;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  z-index: 50;
+  overflow: hidden;
+}
+
+.dev-sidebar__header {
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid #2a2a33;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.dev-sidebar__title {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #60a5fa;
+}
+
+.dev-sidebar__count {
+  font-size: 0.62rem;
+  color: #5c5c6e;
+}
+
+.dev-sidebar__steps {
+  overflow-y: auto;
+  flex: 1;
+  padding: 6px 0;
+}
+
+.dev-step {
+  border-bottom: 1px solid #1e1e26;
+}
+
+.dev-step__row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  cursor: default;
+}
+
+.dev-step--current .dev-step__row {
+  background: #1e1e2a;
+}
+
+.dev-step--past .dev-step__row {
+  opacity: 0.65;
+}
+
+.dev-step__num {
+  color: #5c5c6e;
+  min-width: 16px;
+  font-size: 0.65rem;
+}
+
+.dev-step__icon {
+  font-size: 0.75rem;
+}
+
+.dev-step__type {
+  color: #9898a6;
+  flex: 1;
+  font-size: 0.7rem;
+}
+
+.dev-step__tag-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dev-step__err-badge {
+  font-size: 0.62rem;
+  color: #f87171;
+}
+
+/* Body step corrente */
+.dev-step__body {
+  padding: 6px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #1a1a22;
+}
+
+.dev-step__tags {
+  display: flex;
+  gap: 4px;
+}
+
+.dev-tag-btn {
+  flex: 1;
+  padding: 4px 2px;
+  border: 1px solid #2e2e3a;
+  border-radius: 4px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: #9898a6;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.dev-tag-btn:hover {
+  border-color: var(--tag-color, #9898a6);
+  color: var(--tag-color, #e8e8ed);
+}
+
+.dev-tag-btn.active {
+  background: color-mix(in srgb, var(--tag-color) 15%, transparent);
+  border-color: var(--tag-color);
+  color: var(--tag-color);
+}
+
+.dev-step__note {
+  width: 100%;
+  background: #111116;
+  border: 1px solid #2e2e3a;
+  border-radius: 4px;
+  color: #c8c8d4;
+  font-family: inherit;
+  font-size: 0.68rem;
+  padding: 5px 7px;
+  resize: none;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+.dev-step__note::placeholder {
+  color: #5c5c6e;
+}
+
+.dev-step__note--required {
+  border-color: #f87171;
+}
+
+.dev-step__note-warn {
+  font-size: 0.6rem;
+  color: #f87171;
+  margin-top: -2px;
+}
+
+.dev-step__errors {
+  background: #1a0e0e;
+  border: 1px solid #4a1515;
+  border-radius: 4px;
+  padding: 5px 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dev-step__errors-label {
+  font-size: 0.6rem;
+  color: #f87171;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 2px;
+}
+
+.dev-step__error-item {
+  font-size: 0.6rem;
+  color: #fca5a5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+
+/* Nota step passati (compatta) */
+.dev-step__past-note {
+  padding: 2px 12px 5px 28px;
+  font-size: 0.62rem;
+  color: #5c5c6e;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Layout con sidebar attiva */
+.player-page--with-sidebar {
+  padding-right: calc(220px + 1rem);
+}
+
+@media (min-width: 900px) {
+  .player-header--wide {
+    max-width: 900px;
+  }
+}
+
+/* Nasconde sidebar su mobile (troppo piccola) */
+@media (max-width: 899px) {
+  .dev-sidebar { display: none; }
+  .player-page--with-sidebar { padding-right: 1rem; }
+}
+
+/* Done screen dev note */
+.player-done__dev-note {
+  font-size: 0.75rem;
+  color: var(--text-label);
+  font-family: var(--font-mono);
+}
+
 /* ── Done screen ───────────────────────────────────────────────── */
 .player-page--done {
   justify-content: center;

@@ -75,12 +75,12 @@ export function markAsApproved(lesson) {
   return { ...lesson, status: 'published', origin: 'collaborative' }
 }
 
-export async function saveLessonFeedback({ lessonId, lessonTitle, lessonCategory, overallRating, note, stepFeedback }) {
+export async function saveLessonFeedback({ lessonId, lessonTitle, lessonCategory, stepFeedback }) {
   try {
     const res = await fetch('/api/feedback-save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lessonId, lessonTitle, lessonCategory, overallRating, note, stepFeedback }),
+      body: JSON.stringify({ lessonId, lessonTitle, lessonCategory, stepFeedback }),
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
