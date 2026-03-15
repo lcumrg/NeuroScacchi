@@ -28,6 +28,29 @@ function stepSummary(step) {
   }
 }
 
+// Snapshot immutabile del contenuto dello step visto dallo studente.
+// Incluso nel feedback per costruire dataset (content, judgment) per il training dell'IA.
+function stepSnapshot(step) {
+  if (!step) return {}
+  const base = { fen: step.fen || null }
+  switch (step.type) {
+    case 'intent':
+      return { ...base, question: step.question, options: step.options, correctAnswer: step.correctAnswer, explanation: step.explanation }
+    case 'detective':
+      return { ...base, question: step.question, targetSquare: step.targetSquare, explanation: step.explanation }
+    case 'candidate':
+      return { ...base, candidateMoves: step.candidateMoves, explanation: step.explanation }
+    case 'move':
+      return { ...base, correctMoves: step.correctMoves, explanation: step.explanation }
+    case 'text':
+      return { content: step.content }
+    case 'demo':
+      return { ...base, explanation: step.explanation, moves: step.moves }
+    default:
+      return base
+  }
+}
+
 function visualAidsToShapes(visualAids) {
   if (!visualAids) return []
   const shapes = []
@@ -326,6 +349,7 @@ export default function PlayerPage() {
         tag: devFeedbackRef.current[i]?.tag || null,
         note: devFeedbackRef.current[i]?.note || '',
         errors: capturedErrorsRef.current[i] || [],
+        snapshot: stepSnapshot(step),  // contenuto visto dallo studente — immutabile
       }))
       saveLessonFeedback({
         lessonId: lesson.id,
