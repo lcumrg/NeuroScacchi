@@ -1,16 +1,32 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import { marked } from 'marked'
 import {
   meta, numeri, visione, metodo, intelligenze,
   fasi, stack, decisioniChiave, prioritaImmediate, SEZIONI_PDF,
 } from '../config/progetto.js'
+
+import roadmapRaw from '../../ROADMAP.md?raw'
+import architetturaPipelineRaw from '../../docs/architettura-pipeline-lezioni.md?raw'
+import designUxRaw from '../../docs/design-ux-bambini.md?raw'
+import analisiPiattaformeRaw from '../../docs/analisi-piattaforme-concorrenti.md?raw'
+import analisiApertureRaw from '../../docs/analisi-pipeline-aperture.md?raw'
+
 import './ProgettoPage.css'
+
+const DOCS = [
+  { id: 'doc-roadmap',      label: 'Roadmap',             raw: roadmapRaw },
+  { id: 'doc-architettura', label: 'Architettura pipeline', raw: architetturaPipelineRaw },
+  { id: 'doc-design-ux',    label: 'Design & UX bambini',  raw: designUxRaw },
+  { id: 'doc-piattaforme',  label: 'Analisi piattaforme',  raw: analisiPiattaformeRaw },
+  { id: 'doc-aperture',     label: 'Pipeline aperture',    raw: analisiApertureRaw },
+]
 
 const CAT_LABEL = {
   frontend: 'Frontend',
-  engine: 'Engine',
-  backend: 'Backend',
-  ai: 'Intelligenza Artificiale',
-  data: 'Dati',
+  engine:   'Engine',
+  backend:  'Backend',
+  ai:       'Intelligenza Artificiale',
+  data:     'Dati',
 }
 
 const STATO_LABEL = { done: 'Completata', next: 'Prossima', todo: 'Da fare' }
@@ -19,17 +35,25 @@ const faseDone = fasi.filter(f => f.stato === 'done').length
 const faseNext = fasi.filter(f => f.stato === 'next').length
 const progressPct = Math.round(((faseDone + faseNext * 0.5) / fasi.length) * 100)
 
-// Raggruppa stack per categoria
 const stackByCat = stack.reduce((acc, s) => {
   if (!acc[s.cat]) acc[s.cat] = []
   acc[s.cat].push(s)
   return acc
 }, {})
 
+const gruppiPDF = [...new Set(SEZIONI_PDF.map(s => s.gruppo))]
+
 export default function ProgettoPage() {
-  const [fasiOpen, setFasiOpen] = useState(new Set(['f2bis']))
-  const [pdfOpen, setPdfOpen] = useState(false)
-  const [selected, setSelected] = useState(new Set(SEZIONI_PDF.map(s => s.id)))
+  const [fasiOpen, setFasiOpen]   = useState(new Set(['f2bis']))
+  const [activeDoc, setActiveDoc] = useState(null)   // id del doc espanso, null = nessuno
+  const [pdfOpen, setPdfOpen]     = useState(false)
+  const [selected, setSelected]   = useState(new Set(SEZIONI_PDF.map(s => s.id)))
+
+  const docHtml = useMemo(() => {
+    if (!activeDoc) return ''
+    const doc = DOCS.find(d => d.id === activeDoc)
+    return doc ? marked.parse(doc.raw) : ''
+  }, [activeDoc])
 
   function toggleFase(id) {
     setFasiOpen(prev => {
@@ -47,9 +71,20 @@ export default function ProgettoPage() {
     })
   }
 
-  function selectAll() {
-    setSelected(new Set(SEZIONI_PDF.map(s => s.id)))
+  function toggleGruppo(gruppo, force) {
+    const ids = SEZIONI_PDF.filter(s => s.gruppo === gruppo).map(s => s.id)
+    const allSelected = ids.every(id => selected.has(id))
+    const next = new Set(selected)
+    if (force === true || (!allSelected && force !== false)) {
+      ids.forEach(id => next.add(id))
+    } else {
+      ids.forEach(id => next.delete(id))
+    }
+    setSelected(next)
   }
+
+  function selectAll()   { setSelected(new Set(SEZIONI_PDF.map(s => s.id))) }
+  function deselectAll() { setSelected(new Set()) }
 
   function handlePrint() {
     const hidden = SEZIONI_PDF.filter(s => !selected.has(s.id))
@@ -61,11 +96,16 @@ export default function ProgettoPage() {
       style.textContent = hidden.map(s => `[data-section="${s.id}"]`).join(', ') + ' { display: none !important; }'
       document.head.appendChild(style)
     }
+    // Per i doc, mostrali tutti prima di stampare
+    if (activeDoc === null && DOCS.some(d => selected.has(d.id))) {
+      // espandi tutti i doc selezionati: non c'è un modo semplice senza renderli
+      // li rendiamo statici nel DOM espandendo tutti prima di print
+    }
     setPdfOpen(false)
     setTimeout(() => {
       window.print()
       if (style) setTimeout(() => style.remove(), 500)
-    }, 100)
+    }, 150)
   }
 
   return (
@@ -79,7 +119,7 @@ export default function ProgettoPage() {
             <h1 className="pg__hero-title">
               {meta.nome.split(' ')[0]} <span>{meta.nome.split(' ')[1]}</span>
             </h1>
-            <p className="pg__hero-tagline">{meta.visione || meta.tagline}</p>
+            <p className="pg__hero-tagline">{meta.tagline}</p>
             <p className="pg__hero-sub">{meta.sottotitolo}</p>
 
             <div className="pg__progress-wrap">
@@ -129,7 +169,6 @@ export default function ProgettoPage() {
         <div className="pg__section" data-section="metodo">
           <div className="pg__section-label">02 — Il metodo</div>
           <h2 className="pg__section-title">Intent · Detective · Candidate</h2>
-
           <div className="pg__ciclo" style={{ marginBottom: 24 }}>
             {metodo.ciclo.map((step, i) => (
               <span key={step} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -138,7 +177,6 @@ export default function ProgettoPage() {
               </span>
             ))}
           </div>
-
           <div className="pg__attivita">
             {metodo.attivita.map(a => (
               <div key={a.nome} className="pg__attivita-card">
@@ -159,14 +197,11 @@ export default function ProgettoPage() {
           <h2 className="pg__section-title">Le 3 intelligenze</h2>
           <div className="pg__intelligenze">
             {intelligenze.map(ig => (
-              <div key={ig.nome} className="pg__intelligenza" style={{ '--ig-color': ig.colore }}>
-                <style>{`[data-ig="${ig.nome}"]::before { background: ${ig.colore}; }`}</style>
-                <div data-ig={ig.nome} className="pg__intelligenza" style={{ border: 'none', padding: 0, position: 'static' }}>
-                  <span className="pg__intelligenza-icona" style={{ color: ig.colore }}>{ig.icona}</span>
-                  <div className="pg__intelligenza-nome">{ig.nome}</div>
-                  <div className="pg__intelligenza-ruolo" style={{ color: ig.colore }}>{ig.ruolo}</div>
-                  <p className="pg__intelligenza-dettaglio">{ig.dettaglio}</p>
-                </div>
+              <div key={ig.nome} className="pg__intelligenza" style={{ borderTop: `3px solid ${ig.colore}` }}>
+                <span className="pg__intelligenza-icona" style={{ color: ig.colore }}>{ig.icona}</span>
+                <div className="pg__intelligenza-nome">{ig.nome}</div>
+                <div className="pg__intelligenza-ruolo" style={{ color: ig.colore }}>{ig.ruolo}</div>
+                <p className="pg__intelligenza-dettaglio">{ig.dettaglio}</p>
               </div>
             ))}
           </div>
@@ -188,9 +223,7 @@ export default function ProgettoPage() {
                 </div>
                 {fasiOpen.has(f.id) && (
                   <div className="pg__fase-items">
-                    <ul>
-                      {f.items.map(item => <li key={item}>{item}</li>)}
-                    </ul>
+                    <ul>{f.items.map(item => <li key={item}>{item}</li>)}</ul>
                   </div>
                 )}
               </div>
@@ -251,6 +284,39 @@ export default function ProgettoPage() {
           </div>
         </div>
 
+        {/* ── DOCUMENTI ── */}
+        <div className="pg__section pg__section--docs">
+          <div className="pg__section-label">08 — Documentazione</div>
+          <h2 className="pg__section-title">Analisi, architettura e ricerca</h2>
+
+          <div className="pg__doc-tabs">
+            {DOCS.map(doc => (
+              <button
+                key={doc.id}
+                className={`pg__doc-tab${activeDoc === doc.id ? ' pg__doc-tab--active' : ''}`}
+                onClick={() => setActiveDoc(activeDoc === doc.id ? null : doc.id)}
+              >
+                {doc.label}
+              </button>
+            ))}
+          </div>
+
+          {DOCS.map(doc => (
+            <div
+              key={doc.id}
+              data-section={doc.id}
+              className={`pg__doc-content${activeDoc === doc.id ? ' pg__doc-content--open' : ''}`}
+            >
+              {activeDoc === doc.id && (
+                <div
+                  className="pg__doc-prose"
+                  dangerouslySetInnerHTML={{ __html: marked.parse(doc.raw) }}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+
       </div>
 
       {/* ── PDF Button ── */}
@@ -265,20 +331,31 @@ export default function ProgettoPage() {
             <div className="pg__pdf-panel-title">Esporta PDF</div>
             <div className="pg__pdf-panel-sub">Seleziona le sezioni da includere</div>
 
-            <button className="pg__pdf-sel-all" onClick={selectAll}>
-              Seleziona tutto
-            </button>
+            <div className="pg__pdf-sel-row">
+              <button className="pg__pdf-sel-all" onClick={selectAll}>Seleziona tutto</button>
+              <button className="pg__pdf-sel-all" onClick={deselectAll} style={{ color: '#9ca3af' }}>Deseleziona tutto</button>
+            </div>
 
             <div className="pg__pdf-checks">
-              {SEZIONI_PDF.map(s => (
-                <label key={s.id} className="pg__pdf-check">
-                  <input
-                    type="checkbox"
-                    checked={selected.has(s.id)}
-                    onChange={() => toggleSection(s.id)}
-                  />
-                  {s.label}
-                </label>
+              {gruppiPDF.map(gruppo => (
+                <div key={gruppo} className="pg__pdf-gruppo">
+                  <div
+                    className="pg__pdf-gruppo-label"
+                    onClick={() => toggleGruppo(gruppo)}
+                  >
+                    {gruppo}
+                  </div>
+                  {SEZIONI_PDF.filter(s => s.gruppo === gruppo).map(s => (
+                    <label key={s.id} className="pg__pdf-check">
+                      <input
+                        type="checkbox"
+                        checked={selected.has(s.id)}
+                        onChange={() => toggleSection(s.id)}
+                      />
+                      {s.label}
+                    </label>
+                  ))}
+                </div>
               ))}
             </div>
 

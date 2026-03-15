@@ -5,7 +5,6 @@ import architetturaPipelineRaw from '../../docs/architettura-pipeline-lezioni.md
 import analisiPiattaformeRaw from '../../docs/analisi-piattaforme-concorrenti.md?raw'
 import analisiApertureRaw from '../../docs/analisi-pipeline-aperture.md?raw'
 import designUxRaw from '../../docs/design-ux-bambini.md?raw'
-import progettoDesignProposteRaw from '../../docs/progetto-design-proposte.md?raw'
 import './DocPage.css'
 
 const DOCS = [
@@ -14,12 +13,6 @@ const DOCS = [
     label: 'Roadmap',
     group: 'Progetto',
     raw: roadmapRaw,
-  },
-  {
-    id: 'progetto-design-proposte',
-    label: 'Proposte design PROGETTO',
-    group: 'Progetto',
-    raw: progettoDesignProposteRaw,
   },
   {
     id: 'architettura-pipeline',
