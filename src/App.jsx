@@ -4,12 +4,14 @@ import ConsolePage from './pages/ConsolePage.jsx'
 import LessonsPage from './pages/LessonsPage.jsx'
 
 const DocPage = lazy(() => import('./pages/DocPage.jsx'))
+const ProgettoPage = lazy(() => import('./pages/ProgettoPage.jsx'))
 const PlayerPage = lazy(() => import('./pages/PlayerPage.jsx'))
 const FeedbackPage = lazy(() => import('./pages/FeedbackPage.jsx'))
 
 function getRoute() {
   const hash = window.location.hash || '#/'
   if (hash.startsWith('#/console')) return 'console'
+  if (hash.startsWith('#/progetto')) return 'progetto'
   if (hash.startsWith('#/doc')) return 'doc'
   if (hash.startsWith('#/lessons')) return 'lessons'
   if (hash.startsWith('#/player')) return 'player'
@@ -84,6 +86,21 @@ export default function App() {
           Console Coach
         </a>
         <a
+          href="#/progetto"
+          style={{
+            textDecoration: 'none',
+            fontSize: '0.875rem',
+            fontWeight: route === 'progetto' ? 700 : 500,
+            color: route === 'progetto' ? 'var(--color-primary)' : 'var(--text-secondary)',
+            padding: '0.25rem 0.5rem',
+            borderRadius: '6px',
+            background: route === 'progetto' ? 'var(--color-primary-bg)' : 'transparent',
+            transition: 'background var(--transition-fast)',
+          }}
+        >
+          Progetto
+        </a>
+        <a
           href="#/doc"
           style={{
             textDecoration: 'none',
@@ -96,7 +113,7 @@ export default function App() {
             transition: 'background var(--transition-fast)',
           }}
         >
-          Progetto
+          Documenti
         </a>
         <a
           href="#/lessons"
@@ -135,6 +152,11 @@ export default function App() {
         {route === 'console' && <ConsolePage />}
         {route === 'demo' && <DemoPage />}
         {route === 'lessons' && <LessonsPage />}
+        {route === 'progetto' && (
+          <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Caricamento...</div>}>
+            <ProgettoPage />
+          </Suspense>
+        )}
         {route === 'doc' && (
           <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Caricamento...</div>}>
             <DocPage />
