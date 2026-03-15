@@ -2,6 +2,7 @@ import { useState, useEffect, lazy, Suspense } from 'react'
 import DemoPage from './pages/DemoPage.jsx'
 import ConsolePage from './pages/ConsolePage.jsx'
 import LessonsPage from './pages/LessonsPage.jsx'
+import ErrorBoundary from './components/ErrorBoundary.jsx'
 
 const DocPage = lazy(() => import('./pages/DocPage.jsx'))
 const ProgettoPage = lazy(() => import('./pages/ProgettoPage.jsx'))
@@ -170,9 +171,11 @@ export default function App() {
           </Suspense>
         )}
         {route === 'player' && (
-          <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Caricamento...</div>}>
-            <PlayerPage />
-          </Suspense>
+          <ErrorBoundary>
+            <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Caricamento...</div>}>
+              <PlayerPage />
+            </Suspense>
+          </ErrorBoundary>
         )}
         {route === 'feedback' && (
           <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Caricamento...</div>}>
