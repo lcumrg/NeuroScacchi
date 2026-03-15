@@ -57,9 +57,9 @@ export default function Chessboard({
     return () => ro.disconnect()
   }, [])
 
-  // Init/destroy Chessground — include interactive/viewOnly per forzare reinit
-  // quando la board passa da non-interattiva a interattiva (draggable.enabled non
-  // viene aggiornato correttamente da Chessground.set() in alcuni casi)
+  // Init/destroy Chessground — dipende solo da size.
+  // Il remount al cambio di interactive/viewOnly è gestito tramite prop key
+  // sul container div (React smonta e rimonta il nodo → cleanup/init naturale).
   useEffect(() => {
     if (!cgContainerRef.current || size === 0) return
 
@@ -70,7 +70,7 @@ export default function Chessboard({
       cg.destroy()
       cgRef.current = null
     }
-  }, [size, interactive, viewOnly])
+  }, [size])
 
   // Update config on prop changes
   useEffect(() => {
@@ -141,9 +141,14 @@ export default function Chessboard({
     }
   }
 
+  // Key che forza il remount del container quando interactive/viewOnly cambiano.
+  // Necessario perché Chessground non aggiorna draggable.enabled via .set().
+  const cgKey = `cg-${interactive ? 'i' : 'n'}-${viewOnly ? 'v' : 'n'}`
+
   return (
     <div ref={wrapperRef} style={{ width: '100%', position: 'relative' }}>
       <div
+        key={cgKey}
         ref={cgContainerRef}
         style={{ width: size, height: size }}
       />

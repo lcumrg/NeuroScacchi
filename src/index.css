@@ -33,9 +33,9 @@
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
 
-  /* Scacchiera */
-  --square-light: #E8E8E8;
-  --square-dark: #B8B8B8;
+  /* Scacchiera — marrone tradizionale (stile Lichess) */
+  --square-light: #f0d9b5;
+  --square-dark: #b58863;
 
   /* Transizioni */
   --transition-fast: 0.2s ease;
@@ -79,9 +79,9 @@
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
 
-  /* Scacchiera */
-  --square-light: #B0B0B0;
-  --square-dark: #707070;
+  /* Scacchiera — marrone tradizionale (stile Lichess, stesso del light) */
+  --square-light: #f0d9b5;
+  --square-dark: #b58863;
 }
 
 * {
