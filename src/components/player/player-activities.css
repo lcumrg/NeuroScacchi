@@ -1,10 +1,19 @@
 /* ────────────────────────────────────────────────────────────────
+   Activity color tokens — usati da freeze + pannelli + bottoni
+   ──────────────────────────────────────────────────────────────── */
+.activity--intent    { --activity-color: #1565C0; --activity-color-bg: #E3F2FD; }
+.activity--detective { --activity-color: #E64A19; --activity-color-bg: #FBE9E7; }
+.activity--candidate { --activity-color: #2E7D32; --activity-color-bg: #E8F5E9; }
+.activity--move      { --activity-color: #6A1B9A; --activity-color-bg: #F3E5F5; }
+.activity--text      { --activity-color: #4E342E; --activity-color-bg: #EFEBE9; }
+.activity--demo      { --activity-color: #F57F17; --activity-color-bg: #FFF8E1; }
+
+/* ────────────────────────────────────────────────────────────────
    FreezeOverlay
    ──────────────────────────────────────────────────────────────── */
 .freeze-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(40, 53, 147, 0.82);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -19,20 +28,21 @@
 }
 
 .freeze-overlay__countdown {
-  font-size: 5rem;
+  font-size: 3.5rem;
   font-weight: 800;
   line-height: 1;
   font-family: var(--font-main);
-  text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  text-shadow: 0 2px 16px rgba(0,0,0,0.5);
   animation: pulse 1s infinite;
 }
 
 .freeze-overlay__label {
   margin-top: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-  opacity: 0.9;
-  letter-spacing: 0.02em;
+  font-size: 0.95rem;
+  font-weight: 700;
+  opacity: 0.95;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.4);
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -125,20 +135,27 @@
 
 .feedback-panel__btn {
   margin-top: 0.5rem;
-  padding: 0.6rem 1.8rem;
+  padding: 0.65rem 1.8rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--color-primary);
   color: #fff;
   font-family: var(--font-main);
   font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background var(--transition-fast);
+  box-shadow: 0 4px 12px rgba(40, 53, 147, 0.3);
+  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .feedback-panel__btn:hover {
   background: var(--color-primary-light);
+  transform: scale(1.04);
+  box-shadow: 0 6px 16px rgba(40, 53, 147, 0.4);
+}
+
+.feedback-panel__btn:active {
+  transform: scale(0.98);
 }
 
 /* stelle valutazione step */
@@ -182,12 +199,13 @@
   gap: 0.75rem;
   padding: 1.25rem 1.5rem;
   animation: slideUp var(--transition-medium);
+  border-top: 4px solid var(--activity-color, var(--color-primary));
 }
 
 .activity__question {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--activity-color, var(--text-primary));
   line-height: 1.4;
 }
 
@@ -235,14 +253,14 @@
 
 .activity__btn {
   align-self: flex-start;
-  padding: 0.6rem 1.6rem;
+  padding: 0.65rem 1.6rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   font-family: var(--font-main);
   font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background var(--transition-fast), opacity var(--transition-fast);
+  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
 }
 
 .activity__btn:disabled {
@@ -251,22 +269,33 @@
 }
 
 .activity__btn--primary {
-  background: var(--color-primary);
+  background: var(--activity-color, var(--color-primary));
   color: #fff;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--activity-color, var(--color-primary)) 40%, transparent);
 }
 
 .activity__btn--primary:hover:not(:disabled) {
-  background: var(--color-primary-light);
+  transform: scale(1.04);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--activity-color, var(--color-primary)) 50%, transparent);
+}
+
+.activity__btn--primary:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .activity__btn--secondary {
   background: var(--bg-surface);
-  color: var(--color-primary);
-  border: 1.5px solid var(--color-primary);
+  color: var(--activity-color, var(--color-primary));
+  border: 2px solid var(--activity-color, var(--color-primary));
 }
 
 .activity__btn--secondary:hover:not(:disabled) {
-  background: var(--color-primary-bg);
+  background: var(--activity-color-bg, var(--color-primary-bg));
+  transform: scale(1.04);
+}
+
+.activity__btn--secondary:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -282,34 +311,31 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.8rem 1.1rem;
+  padding: 0.9rem 1.2rem;
   border: 1.5px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   font-size: 0.9rem;
   color: var(--text-primary);
   background: var(--bg-surface);
-  transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+  transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 
 .activity__option:hover:not(.activity__option--selected):not(.activity__option--correct):not(.activity__option--wrong) {
-  border-color: var(--color-primary);
-  background: var(--color-primary-bg);
-  box-shadow: 0 2px 8px rgba(40, 53, 147, 0.1);
+  border-color: var(--activity-color, var(--color-primary));
+  background: var(--activity-color-bg, var(--color-primary-bg));
+  transform: translateX(4px);
 }
 
 .activity__option input[type="radio"] {
-  accent-color: var(--color-primary);
-}
-
-.activity__option:hover:not(.activity__option--selected) {
-  border-color: var(--color-primary-light);
-  background: var(--color-primary-bg);
+  accent-color: var(--activity-color, var(--color-primary));
 }
 
 .activity__option--selected {
-  border-color: var(--color-primary);
-  background: var(--color-primary-bg);
+  border-color: var(--activity-color, var(--color-primary));
+  border-width: 2px;
+  background: var(--activity-color-bg, var(--color-primary-bg));
+  box-shadow: inset 0 1px 4px color-mix(in srgb, var(--activity-color, var(--color-primary)) 20%, transparent);
 }
 
 .activity__option--correct {

@@ -462,7 +462,7 @@ export default function PlayerPage() {
             onSquareClick={isDetectivePhase ? handleSquareClick : undefined}
           />
           {phase === 'freeze' && (
-            <FreezeOverlay secondsLeft={freezeSecondsLeft} />
+            <FreezeOverlay secondsLeft={freezeSecondsLeft} stepType={currentStep?.type} />
           )}
         </div>
       </main>

@@ -2,15 +2,16 @@
 @import '@lichess-org/chessground/assets/chessground.brown.css';
 @import '@lichess-org/chessground/assets/chessground.cburnett.css';
 
-/* Board colors — override brown theme with our palette via SVG pattern */
+/* Board colors — marrone tradizionale stile Lichess */
 cg-board {
-  background-color: var(--square-light, #E8E8E8);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cg id='a'%3E%3Cg id='b'%3E%3Cg id='c'%3E%3Cg id='d'%3E%3Crect width='1' height='1' fill='%23E8E8E8'/%3E%3Crect x='1' y='1' width='1' height='1' fill='%23E8E8E8'/%3E%3Crect y='1' width='1' height='1' fill='%23B8B8B8'/%3E%3Crect x='1' width='1' height='1' fill='%23B8B8B8'/%3E%3C/g%3E%3Cuse x='2' href='%23d'/%3E%3C/g%3E%3Cuse x='4' href='%23c'/%3E%3C/g%3E%3Cuse y='2' href='%23b'/%3E%3C/g%3E%3Cuse y='4' href='%23a'/%3E%3C/svg%3E") !important;
+  background-color: var(--square-light, #f0d9b5);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cg id='a'%3E%3Cg id='b'%3E%3Cg id='c'%3E%3Cg id='d'%3E%3Crect width='1' height='1' fill='%23f0d9b5'/%3E%3Crect x='1' y='1' width='1' height='1' fill='%23f0d9b5'/%3E%3Crect y='1' width='1' height='1' fill='%23b58863'/%3E%3Crect x='1' width='1' height='1' fill='%23b58863'/%3E%3C/g%3E%3Cuse x='2' href='%23d'/%3E%3C/g%3E%3Cuse x='4' href='%23c'/%3E%3C/g%3E%3Cuse y='2' href='%23b'/%3E%3C/g%3E%3Cuse y='4' href='%23a'/%3E%3C/svg%3E") !important;
 }
 
 /* Coordinates */
 .cg-wrap coords {
   font-family: var(--font-main, sans-serif);
-  font-weight: 600;
-  font-size: 0.7rem;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.45);
 }
