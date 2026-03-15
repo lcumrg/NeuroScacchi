@@ -101,21 +101,6 @@ export default function App() {
           Progetto
         </a>
         <a
-          href="#/doc"
-          style={{
-            textDecoration: 'none',
-            fontSize: '0.875rem',
-            fontWeight: route === 'doc' ? 700 : 500,
-            color: route === 'doc' ? 'var(--color-primary)' : 'var(--text-secondary)',
-            padding: '0.25rem 0.5rem',
-            borderRadius: '6px',
-            background: route === 'doc' ? 'var(--color-primary-bg)' : 'transparent',
-            transition: 'background var(--transition-fast)',
-          }}
-        >
-          Documenti
-        </a>
-        <a
           href="#/lessons"
           style={{
             textDecoration: 'none',

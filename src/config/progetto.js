@@ -242,12 +242,17 @@ export const prioritaImmediate = [
 
 // Sezioni disponibili per l'export PDF
 export const SEZIONI_PDF = [
-  { id: 'hero', label: 'Intestazione' },
-  { id: 'visione', label: 'La visione' },
-  { id: 'metodo', label: 'Il metodo' },
-  { id: 'intelligenze', label: 'Le 3 intelligenze' },
-  { id: 'fasi', label: 'Stato fasi' },
-  { id: 'stack', label: 'Stack tecnologico' },
-  { id: 'decisioni', label: 'Decisioni architetturali' },
-  { id: 'priorita', label: 'Priorità immediate' },
+  { id: 'hero',         label: 'Intestazione',              gruppo: 'Progetto' },
+  { id: 'visione',      label: 'La visione',                gruppo: 'Progetto' },
+  { id: 'metodo',       label: 'Il metodo',                 gruppo: 'Progetto' },
+  { id: 'intelligenze', label: 'Le 3 intelligenze',         gruppo: 'Progetto' },
+  { id: 'fasi',         label: 'Stato fasi',                gruppo: 'Progetto' },
+  { id: 'stack',        label: 'Stack tecnologico',         gruppo: 'Progetto' },
+  { id: 'decisioni',    label: 'Decisioni architetturali',  gruppo: 'Progetto' },
+  { id: 'priorita',     label: 'Priorità immediate',        gruppo: 'Progetto' },
+  { id: 'doc-roadmap',      label: 'Roadmap completa',       gruppo: 'Documenti' },
+  { id: 'doc-architettura', label: 'Architettura pipeline',  gruppo: 'Documenti' },
+  { id: 'doc-design-ux',    label: 'Design & UX bambini',    gruppo: 'Documenti' },
+  { id: 'doc-piattaforme',  label: 'Analisi piattaforme',    gruppo: 'Documenti' },
+  { id: 'doc-aperture',     label: 'Pipeline aperture',      gruppo: 'Documenti' },
 ]
