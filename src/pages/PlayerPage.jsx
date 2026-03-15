@@ -481,8 +481,6 @@ export default function PlayerPage() {
                 : (currentStep?.feedback?.incorrect || 'Non corretto.')
             }
             onContinue={advanceAfterFeedback}
-            onRate={rating => setStepRatings(prev => ({ ...prev, [stepIndex]: rating }))}
-            currentRating={stepRatings[stepIndex] || 0}
           />
         )}
 
