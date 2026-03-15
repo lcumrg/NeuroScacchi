@@ -63,7 +63,21 @@ const CARD_META = [
 
 const SESSIONS = [
   {
-    id: 's0', date: '2026-03-14',
+    id: 's0', date: '2026-03-15',
+    summary: 'Pagina Progetto riscritta + nuovo sistema raccolta feedback sviluppatore',
+    items: [
+      'Pagina Progetto ristrutturata in due sezioni: Fondativo (dark chess design) + Diario di Bordo',
+      'Fondativo: SVG interattivi Problema/Metodo, widget Architettura e Pipeline a 5 passi clickabili',
+      'DevFeedbackSidebar: colonna fissa 220px sempre visibile durante le lezioni',
+      'Per ogni step: tag rapido (Chiaro / Difficile / Bloccato) + nota libera',
+      'Tag Bloccato: nota obbligatoria + snapshot automatico errori browser',
+      'Browser error capture: window.error + unhandledrejection, keyati per stepIndex tramite ref',
+      'Auto-save al completamento lezione, rimozione form finale con stelle',
+      'Schema Firestore aggiornato: { tag, note, errors[] } per step',
+    ],
+  },
+  {
+    id: 's1', date: '2026-03-14',
     summary: 'Fix pipeline aperture, ottimizzazione prompt, migrazione da localStorage a Firestore',
     items: [
       'Fix pipeline aperture: Proxy Netlify, token OAuth Lichess',
@@ -74,7 +88,7 @@ const SESSIONS = [
     ],
   },
   {
-    id: 's1', date: '2026-03-13',
+    id: 's2', date: '2026-03-13',
     summary: "Problema critico «L'IA non sa fare scacchi» — progettazione pipeline 4 passi",
     items: [
       "Identificazione del problema critico: «L'IA non sa fare scacchi» e 8 gap architetturali",
@@ -83,7 +97,7 @@ const SESSIONS = [
     ],
   },
   {
-    id: 's2', date: '2026-03-06/08',
+    id: 's3', date: '2026-03-06/08',
     summary: 'Sviluppo pipeline aperture (Fase 1C)',
     items: [
       'Sviluppo completo pipeline aperture (Fase 1C)',
@@ -601,11 +615,43 @@ function DiarioSection() {
       {/* Debito tecnico */}
       <div className="pd-section">
         <div className="pd-section-title">Debito tecnico</div>
+
         <div className="pd-debt-card">
           <h4>Chessboard.jsx — reinit forzato di Chessground</h4>
           <p>Il reinit di Chessground al cambio di interattività avviene forzando l'useEffect. Causa: bug interno di Chessground — <code>.set()</code> non aggiorna <code>draggable.enabled</code>.</p>
           <div className="pd-solution">
             <strong>Soluzione futura:</strong> Usare la prop <code>key</code> sul container div, verificando prima la gestione del reattachment dei ref in React.
+          </div>
+        </div>
+
+        <div className="pd-debt-card" style={{ marginTop: '0.75rem' }}>
+          <h4>FeedbackPage — schema non aggiornato</h4>
+          <p>La pagina di visualizzazione feedback legge ancora i campi vecchi (<code>overallRating</code>, <code>note</code>, <code>rating</code> per step). Con il nuovo schema <code>{'{ tag, note, errors[] }'}</code> mostrerà dati parziali o vuoti.</p>
+          <div className="pd-solution">
+            <strong>Da fare prima dei tester:</strong> Riscrivere FeedbackPage come console sviluppatore con vista per lezione, filtri per tag, visualizzazione errori browser.
+          </div>
+        </div>
+      </div>
+
+      {/* Da pensare */}
+      <div className="pd-section">
+        <div className="pd-section-title">Da decidere / ancora aperto</div>
+
+        <div className="pd-future-grid">
+          <div className="pd-future-item">
+            <div className="pd-future-icon">👥</div>
+            <h4>Apertura ai tester familiari</h4>
+            <p>Quando si aprirà a piccoli utenti tester, associare il feedback al profilo utente (userId, nome, età) per capire i miglioramenti specifici per studente e iterare sulle lezioni in modo mirato.</p>
+          </div>
+          <div className="pd-future-item">
+            <div className="pd-future-icon">📊</div>
+            <h4>Console sviluppatore feedback</h4>
+            <p>Interfaccia dedicata per analizzare i dati raccolti: vista per lezione, frequenza dei tag per step, errori browser ricorrenti, pattern di blocco. Non urgente — prima raccogliere dati sufficienti.</p>
+          </div>
+          <div className="pd-future-item">
+            <div className="pd-future-icon">📱</div>
+            <h4>Dev sidebar su mobile</h4>
+            <p>La sidebar è nascosta su mobile perché non c'è spazio. Valutare se serve un pannello collassabile o se i test avvengono sempre su desktop durante questa fase.</p>
           </div>
         </div>
       </div>
