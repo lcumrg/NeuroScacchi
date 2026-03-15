@@ -63,6 +63,16 @@ const CARD_META = [
 
 const SESSIONS = [
   {
+    id: 's0b', date: '2026-03-15',
+    summary: 'Step snapshot per training IA + sistema auto-data diario al deploy',
+    items: [
+      'stepSnapshot(): cattura il contenuto esatto visto dallo studente al momento del salvataggio feedback',
+      'Snapshot immutabile per tipo step: intent (domanda, opzioni, risposta), detective (quadro), candidate (mosse), move, text, demo',
+      'Schema Firestore aggiornato: ogni step ora include snapshot{} — dataset labeled (contenuto → giudizio qualità) per iterare sui prompt',
+      'Diario di Bordo: "Ultimo aggiornamento" ora usa __BUILD_TIME__ (iniettato da Vite al deploy) — si aggiorna automaticamente ad ogni push',
+    ],
+  },
+  {
     id: 's0', date: '2026-03-15',
     summary: 'Pagina Progetto riscritta + nuovo sistema raccolta feedback sviluppatore',
     items: [
@@ -559,7 +569,7 @@ function DiarioSection() {
     <div className="pd">
       <header className="pd-header">
         <h1 className="pd-header-h1">♟ NeuroScacchi 3.0 <span>/ Diario di Bordo</span></h1>
-        <div className="pd-last-update">Ultimo aggiornamento: 15 marzo 2026</div>
+        <div className="pd-last-update">Ultimo aggiornamento: {typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : 'dev'}</div>
       </header>
 
       {/* Priorità */}

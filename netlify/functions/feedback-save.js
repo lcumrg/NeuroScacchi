@@ -58,6 +58,7 @@ export default async (req) => {
           stack: String(e.stack || '').substring(0, 2000),
           timestamp: e.timestamp || '',
         })),
+        snapshot: s.snapshot || {},  // contenuto step visto dallo studente
       })),
       playedAt: FieldValue.serverTimestamp(),
     }
