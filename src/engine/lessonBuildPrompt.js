@@ -15,10 +15,10 @@ calcolate e analisi Stockfish). Devi costruire la lezione completa in JSON v3.0.
 
 ## REGOLE FERREE — non negoziabili
 
-1. **USARE SOLO le FEN** fornite nel pacchetto materiali. NON inventare FEN.
-2. **USARE SOLO le mosse UCI** fornite nel pacchetto materiali. NON inventare mosse.
-3. Ogni \`correctMoves\`, \`bestMove\`, \`candidateMoves\` DEVE venire dall'analisi Stockfish nei materiali.
-4. **NON calcolare, NON inventare, NON modificare** nulla di scacchistico.
+1. **USARE SOLO le FEN** fornite nel pacchetto materiali. NON inventare FEN — il sistema le ha calcolate deterministicamente con chessops: una FEN inventata produce una posizione impossibile nel player e rende la lezione non giocabile.
+2. **USARE SOLO le mosse UCI** fornite nel pacchetto materiali. NON inventare mosse — ogni mossa viene validata da chessops: una mossa inventata causa un crash immediato nel player.
+3. Ogni \`correctMoves\`, \`bestMove\`, \`candidateMoves\` DEVE venire dall'analisi Stockfish nei materiali — non da tue valutazioni.
+4. **NON calcolare, NON inventare, NON modificare** nulla di scacchistico. Hai le posizioni e i numeri: usali.
 5. Il tuo lavoro è SOLO: domande, opzioni di risposta, feedback, spiegazioni, narrazione pedagogica.
 6. Le transizioni tra step verranno calcolate automaticamente dal sistema — NON includerle.
 
@@ -36,12 +36,12 @@ Ogni puzzle nel pacchetto ha:
 
 | Tipo step | \`step.fen\` | Mosse | Cosa scrivi tu |
 |-----------|------------|-------|----------------|
-| **intent** | \`positions[1].fen\` (posizione puzzle) | \`correctMoves\`: la mossa soluzione del puzzle (\`moves[1]\`). \`allowedMoves\`: le top 3-4 mosse dall'analisi SF. | Domanda, opzioni con \`correct\`/\`text\`, feedback |
-| **detective** | \`positions[1].fen\` | \`correctSquare\`: casa di destinazione della mossa migliore (ultime 2 lettere di bestMove) | Domanda, hints, feedback |
-| **candidate** | \`positions[1].fen\` | \`candidateMoves\`: array di **stringhe UCI** (NON oggetti). \`bestMove\`: stringa UCI della mossa migliore. \`requiredCount\`: numero intero (quante mosse lo studente deve trovare, di solito 1-2). | Istruzione, feedback |
-| **move** | \`positions[1].fen\` | \`correctMoves\`: \`[moves[1]]\` (la soluzione del puzzle) | Istruzione, feedback |
-| **text** | opzionale (qualsiasi FEN dai materiali o nessuna) | nessuna | Contenuto testuale in italiano |
-| **demo** | \`positions[0].fen\` o altra posizione | \`moves\`: sottosequenza delle mosse del puzzle | Spiegazione |
+| **intent** | \`positions[1].fen\` (posizione puzzle) | \`correctMoves\`: la mossa soluzione del puzzle (\`moves[1]\`). \`allowedMoves\`: le top 3-4 mosse dall'analisi SF. | Domanda (≤12 parole), opzioni (≤5 parole), feedback (1-2 frasi), visualAids |
+| **detective** | \`positions[1].fen\` | \`correctSquare\`: casa di destinazione della mossa migliore (ultime 2 lettere di bestMove) | Domanda (≤12 parole), hints (≤6 parole), feedback (1-2 frasi), visualAids |
+| **candidate** | \`positions[1].fen\` | \`candidateMoves\`: array di **stringhe UCI** (NON oggetti). \`bestMove\`: stringa UCI della mossa migliore. \`requiredCount\`: numero intero (quante mosse lo studente deve trovare, di solito 1-2). | Istruzione breve, feedback (1-2 frasi), visualAids |
+| **move** | \`positions[1].fen\` | \`correctMoves\`: \`[moves[1]]\` (la soluzione del puzzle) | Istruzione breve, feedback (1-2 frasi), visualAids |
+| **text** | opzionale (qualsiasi FEN dai materiali o nessuna) | nessuna | Contenuto testuale (max 2-3 frasi brevi) |
+| **demo** | \`positions[0].fen\` o altra posizione | \`moves\`: sottosequenza delle mosse del puzzle | Spiegazione (max 2 frasi) |
 
 ### Esempio: come estrarre allowedMoves per uno step intent
 
@@ -90,6 +90,50 @@ analysis[0].topMoves = [
 "explanation": "Spiegazione in italiano di cosa succede in questa dimostrazione."
 \`\`\`
 Il campo \`explanation\` è OBBLIGATORIO per ogni step demo.
+
+## REGOLE DI STILE — obbligatorie
+
+**Lo studente è un bambino o ragazzo alle prime armi. Testi brevi, diretti, incisivi.**
+
+- **Domande**: massimo 1 frase breve (≤ 12 parole).
+- **Opzioni intent**: massimo 4-5 parole ciascuna. No frasi complete.
+- **Feedback**: massimo 1-2 frasi brevi. Va dritto al punto.
+- **Hints detective**: massimo 5-6 parole ciascuno.
+- **content (text step)**: massimo 2-3 frasi brevi. MAI paragrafi lunghi.
+
+Esempi di stile corretto:
+- ✓ Domanda: "Quale pezzo puoi attaccare con la forchetta?"
+- ✓ Opzione: "Cavallo attacca due pezzi" / "Pedone promuove" / "Torre è inchiodata"
+- ✓ Feedback: "Esatto! La forchetta colpisce Torre e Re insieme."
+- ✗ Domanda: "Osservando attentamente la posizione, quale tattica puoi applicare per sfruttare la debolezza dei pezzi avversari?"
+- ✗ Opzione: "Puoi usare il Cavallo per attaccare simultaneamente il Re e la Torre"
+- ✗ Feedback: "Ottima risposta! Hai identificato correttamente la forchetta di Cavallo che minaccia il Re e la Torre avversaria..."
+
+## REGOLA CRITICA: usa \`text\` il meno possibile
+
+**\`text\` è l'ultimo resort.** Ogni volta che potresti usare un \`text\`, chiediti: posso farlo con un \`intent\`, \`detective\` o \`candidate\`?
+
+- Usa **massimo 1 step \`text\`** per lezione, solo all'inizio per introdurre il concetto (2-3 frasi).
+- Non usare \`text\` per spiegare singole tattiche — usa \`intent\` o \`detective\`.
+- **Si impara facendo**: l'80% degli step deve essere interattivo.
+
+## REGOLA: \`demo\` solo in casi eccezionali
+
+Lo step \`demo\` (mosse animate automaticamente) **NON fa parte del metodo**. Usalo SOLO se strettamente necessario per mostrare una sequenza complessa che non può essere insegnata altrimenti. Preferisci sempre step interattivi (\`move\`, \`candidate\`).
+
+## Visual Aids — usali sistematicamente
+
+\`visualAids\` supporta:
+- \`arrows\`: array di \`{ "from": "e2", "to": "e4" }\` — frecce verdi sulla scacchiera
+- \`circles\`: array di \`{ "square": "e5" }\` — cerchi gialli su case specifiche
+
+**Regola**: ogni step interattivo (intent, detective, candidate, move) dovrebbe avere \`visualAids\` con almeno una freccia o un cerchio che evidenzia il concetto chiave mostrato DOPO la risposta corretta.
+
+Esempi:
+\`\`\`json
+"visualAids": { "arrows": [{ "from": "c3", "to": "e4" }, { "from": "c3", "to": "a4" }] }
+"visualAids": { "circles": [{ "square": "f7" }] }
+\`\`\`
 
 ## Schema JSON lezione v3.0.0
 
@@ -195,6 +239,7 @@ I feedback devono essere educativi:
 
 ## Output
 
-Rispondi SOLO con il JSON della lezione, senza testo aggiuntivo.
+Rispondi SOLO con il JSON della lezione — niente testo prima, niente testo dopo, niente markdown.
+Inizia con \`{\` e finisci con \`}\`.
 Tutti i testi (titolo, descrizione, feedback, domande) in italiano.
 `.trim()
