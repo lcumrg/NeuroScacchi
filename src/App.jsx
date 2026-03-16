@@ -5,22 +5,28 @@ import LessonsPage from './pages/LessonsPage.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 
 const DocPage = lazy(() => import('./pages/DocPage.jsx'))
-const ProgettoPage = lazy(() => import('./pages/ProgettoPage.jsx'))
-const DiarioPage = lazy(() => import('./pages/DiarioPage.jsx'))
+const SviluppoPage = lazy(() => import('./pages/SviluppoPage.jsx'))
 const PlayerPage = lazy(() => import('./pages/PlayerPage.jsx'))
-const FeedbackPage = lazy(() => import('./pages/FeedbackPage.jsx'))
 
 function getRoute() {
   const hash = window.location.hash || '#/'
-  if (hash.startsWith('#/console')) return 'console'
-  if (hash.startsWith('#/progetto')) return 'progetto'
-  if (hash.startsWith('#/diario')) return 'diario'
-  if (hash.startsWith('#/doc')) return 'doc'
-  if (hash.startsWith('#/lessons')) return 'lessons'
-  if (hash.startsWith('#/player')) return 'player'
-  if (hash.startsWith('#/feedback')) return 'feedback'
+  if (hash.startsWith('#/console'))  return 'console'
+  if (hash.startsWith('#/sviluppo')) return 'sviluppo'
+  // legacy redirects — old links still work
+  if (hash.startsWith('#/progetto')) return 'sviluppo'
+  if (hash.startsWith('#/diario'))   return 'sviluppo'
+  if (hash.startsWith('#/feedback')) return 'sviluppo'
+  if (hash.startsWith('#/doc'))      return 'doc'
+  if (hash.startsWith('#/lessons'))  return 'lessons'
+  if (hash.startsWith('#/player'))   return 'player'
   return 'demo'
 }
+
+const fallback = (
+  <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+    Caricamento...
+  </div>
+)
 
 export default function App() {
   const [route, setRoute] = useState(getRoute)
@@ -30,6 +36,24 @@ export default function App() {
     window.addEventListener('hashchange', onHashChange)
     return () => window.removeEventListener('hashchange', onHashChange)
   }, [])
+
+  const navLink = (href, label, active) => (
+    <a
+      href={href}
+      style={{
+        textDecoration: 'none',
+        fontSize: '0.875rem',
+        fontWeight: active ? 700 : 500,
+        color: active ? 'var(--color-primary)' : 'var(--text-secondary)',
+        padding: '0.25rem 0.5rem',
+        borderRadius: '6px',
+        background: active ? 'var(--color-primary-bg)' : 'transparent',
+        transition: 'background var(--transition-fast)',
+      }}
+    >
+      {label}
+    </a>
+  )
 
   return (
     <div style={{
@@ -58,129 +82,33 @@ export default function App() {
         }}>
           NeuroScacchi
         </span>
-        <a
-          href="#/"
-          style={{
-            textDecoration: 'none',
-            fontSize: '0.875rem',
-            fontWeight: route === 'demo' ? 700 : 500,
-            color: route === 'demo' ? 'var(--color-primary)' : 'var(--text-secondary)',
-            padding: '0.25rem 0.5rem',
-            borderRadius: '6px',
-            background: route === 'demo' ? 'var(--color-primary-bg)' : 'transparent',
-            transition: 'background var(--transition-fast)',
-          }}
-        >
-          Demo
-        </a>
-        <a
-          href="#/console"
-          style={{
-            textDecoration: 'none',
-            fontSize: '0.875rem',
-            fontWeight: route === 'console' ? 700 : 500,
-            color: route === 'console' ? 'var(--color-primary)' : 'var(--text-secondary)',
-            padding: '0.25rem 0.5rem',
-            borderRadius: '6px',
-            background: route === 'console' ? 'var(--color-primary-bg)' : 'transparent',
-            transition: 'background var(--transition-fast)',
-          }}
-        >
-          Console Coach
-        </a>
-        <a
-          href="#/progetto"
-          style={{
-            textDecoration: 'none',
-            fontSize: '0.875rem',
-            fontWeight: route === 'progetto' ? 700 : 500,
-            color: route === 'progetto' ? 'var(--color-primary)' : 'var(--text-secondary)',
-            padding: '0.25rem 0.5rem',
-            borderRadius: '6px',
-            background: route === 'progetto' ? 'var(--color-primary-bg)' : 'transparent',
-            transition: 'background var(--transition-fast)',
-          }}
-        >
-          Progetto
-        </a>
-        <a
-          href="#/diario"
-          style={{
-            textDecoration: 'none',
-            fontSize: '0.875rem',
-            fontWeight: route === 'diario' ? 700 : 500,
-            color: route === 'diario' ? 'var(--color-primary)' : 'var(--text-secondary)',
-            padding: '0.25rem 0.5rem',
-            borderRadius: '6px',
-            background: route === 'diario' ? 'var(--color-primary-bg)' : 'transparent',
-            transition: 'background var(--transition-fast)',
-          }}
-        >
-          Diario
-        </a>
-        <a
-          href="#/lessons"
-          style={{
-            textDecoration: 'none',
-            fontSize: '0.875rem',
-            fontWeight: route === 'lessons' ? 700 : 500,
-            color: route === 'lessons' ? 'var(--color-primary)' : 'var(--text-secondary)',
-            padding: '0.25rem 0.5rem',
-            borderRadius: '6px',
-            background: route === 'lessons' ? 'var(--color-primary-bg)' : 'transparent',
-            transition: 'background var(--transition-fast)',
-          }}
-        >
-          Lezioni
-        </a>
-        <a
-          href="#/feedback"
-          style={{
-            textDecoration: 'none',
-            fontSize: '0.875rem',
-            fontWeight: route === 'feedback' ? 700 : 500,
-            color: route === 'feedback' ? 'var(--color-primary)' : 'var(--text-secondary)',
-            padding: '0.25rem 0.5rem',
-            borderRadius: '6px',
-            background: route === 'feedback' ? 'var(--color-primary-bg)' : 'transparent',
-            transition: 'background var(--transition-fast)',
-          }}
-        >
-          Feedback
-        </a>
+        {navLink('#/',         'Demo',          route === 'demo')}
+        {navLink('#/console',  'Console Coach', route === 'console')}
+        {navLink('#/lessons',  'Lezioni',       route === 'lessons')}
+        {navLink('#/sviluppo', 'Sviluppo',      route === 'sviluppo')}
       </nav>
 
       {/* Page content */}
       <main style={{ flex: 1 }}>
-        {route === 'console' && <ConsolePage />}
-        {route === 'demo' && <DemoPage />}
-        {route === 'lessons' && <LessonsPage />}
-        {route === 'progetto' && (
-          <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Caricamento...</div>}>
-            <ProgettoPage />
-          </Suspense>
-        )}
-        {route === 'diario' && (
-          <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Caricamento...</div>}>
-            <DiarioPage />
+        {route === 'console'  && <ConsolePage />}
+        {route === 'demo'     && <DemoPage />}
+        {route === 'lessons'  && <LessonsPage />}
+        {route === 'sviluppo' && (
+          <Suspense fallback={fallback}>
+            <SviluppoPage />
           </Suspense>
         )}
         {route === 'doc' && (
-          <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Caricamento...</div>}>
+          <Suspense fallback={fallback}>
             <DocPage />
           </Suspense>
         )}
         {route === 'player' && (
           <ErrorBoundary>
-            <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Caricamento...</div>}>
+            <Suspense fallback={fallback}>
               <PlayerPage />
             </Suspense>
           </ErrorBoundary>
-        )}
-        {route === 'feedback' && (
-          <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Caricamento...</div>}>
-            <FeedbackPage />
-          </Suspense>
         )}
       </main>
 
