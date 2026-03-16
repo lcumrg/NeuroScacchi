@@ -1,0 +1,43 @@
+/* ─────────────────────────────────────────────
+   SviluppoPage — layout con sub-nav a schede
+   ───────────────────────────────────────────── */
+
+.sv-page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 48px); /* sottraiamo l'altezza della nav principale */
+}
+
+.sv-subnav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 1.5rem;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.sv-tab {
+  display: inline-block;
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.sv-tab:hover {
+  color: var(--text-primary);
+}
+
+.sv-tab.active {
+  color: var(--color-primary);
+  font-weight: 700;
+  border-bottom-color: var(--color-primary);
+}
