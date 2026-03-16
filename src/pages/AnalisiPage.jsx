@@ -40,7 +40,7 @@ L'intuizione centrale è questa: un LLM non calcola varianti, ragiona su concett
 
 ## Cosa non è aggiornato o è impreciso rispetto al progetto
 
-**Il framework pedagogico citato — Detective → Intento → Profilassi → Metacognizione** — non corrisponde ai tipi di step implementati in NeuroScacchi 3.0. I tipi attuali sono: `intent`, `detective`, `candidate`, `move`, `text`, `demo`. "Profilassi" e "Metacognizione" non esistono come step type. Il documento sembra derivare da una versione precedente o parallela del framework. Prima di usare questo schema nel prompt di generazione, bisogna decidere se quei concetti si mappano su step esistenti o se richiedono nuovi tipi.
+**Il framework pedagogico citato — Detective → Intento → Profilassi → Metacognizione** — non corrisponde ai tipi di step implementati in NeuroScacchi 3.0. I tipi attuali sono: \`intent\`, \`detective\`, \`candidate\`, \`move\`, \`text\`, \`demo\`. "Profilassi" e "Metacognizione" non esistono come step type. Il documento sembra derivare da una versione precedente o parallela del framework. Prima di usare questo schema nel prompt di generazione, bisogna decidere se quei concetti si mappano su step esistenti o se richiedono nuovi tipi.
 
 **Lo schema del prompt in sezione 2.3** produce una "lezione narrativa" — testo discorsivo da revisionare. La pipeline attuale produce JSON strutturato v3.0.0 che il player esegue direttamente. Questi due output sono incompatibili. Bisogna chiarire: la Knowledge Pipeline alimenta la generazione di JSON strutturati (come oggi), o introduce un passaggio intermedio di "bozza narrativa" che il coach poi traduce in JSON? Sono flussi molto diversi.
 
