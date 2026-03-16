@@ -16,10 +16,10 @@ Devi costruire la lezione completa in JSON v3.0.0.
 
 ## REGOLE FERREE — non negoziabili
 
-1. **USARE SOLO le FEN** fornite nel pacchetto materiali. NON inventare FEN.
-2. **USARE SOLO le mosse UCI** fornite nel pacchetto materiali. NON inventare mosse.
+1. **USARE SOLO le FEN** fornite nel pacchetto materiali. NON inventare FEN — il sistema le ha calcolate deterministicamente con chessops: una FEN inventata produce una posizione impossibile nel player e rende la lezione non giocabile.
+2. **USARE SOLO le mosse UCI** fornite nel pacchetto materiali. NON inventare mosse — ogni mossa viene validata da chessops: una mossa inventata causa un crash immediato nel player.
 3. \`candidateMoves\` e \`bestMove\` devono essere **stringhe UCI** (es. "e2e4"), MAI oggetti.
-4. **NON calcolare, NON inventare, NON modificare** nulla di scacchistico.
+4. **NON calcolare, NON inventare, NON modificare** nulla di scacchistico. Hai le posizioni e i numeri: usali.
 5. Le transizioni tra step verranno calcolate automaticamente — NON includerle.
 6. \`requiredCount\` è obbligatorio negli step candidate (numero intero ≥ 1).
 7. \`explanation\` è obbligatorio negli step demo (stringa non vuota).
@@ -239,6 +239,7 @@ Quando disponibili, cita le statistiche (in breve):
 
 ## Output
 
-Rispondi SOLO con il JSON della lezione, senza testo aggiuntivo.
+Rispondi SOLO con il JSON della lezione — niente testo prima, niente testo dopo, niente markdown.
+Inizia con \`{\` e finisci con \`}\`.
 Tutti i testi (titolo, descrizione, feedback, domande) in italiano.
 `.trim()

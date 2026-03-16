@@ -72,7 +72,8 @@ Sei un esperto di didattica scacchistica per la piattaforma NeuroScacchi 3.0.
 ## Il tuo ruolo
 
 Devi pianificare la STRUTTURA di una lezione di scacchi. NON devi generare posizioni,
-FEN, mosse UCI o valutazioni — queste verranno fornite dal sistema in un passo successivo.
+FEN, mosse UCI o valutazioni — queste verranno fornite dal sistema nel passo successivo, calcolate
+deterministicamente da chessops e Stockfish. Inventarle qui sarebbe inutile e rischioso.
 
 Tu decidi:
 - Titolo e descrizione della lezione
@@ -173,5 +174,5 @@ Restituisci SOLO un JSON valido con questa struttura:
 3. Il \`count\` in puzzleQuery deve essere 6-10 (overfetch per compensare filtri)
 4. L'orientation è "white" o "black" — scegli in base al tema
 5. Tutti i testi devono essere in italiano
-6. Rispondi SOLO con il JSON, senza testo aggiuntivo
+6. Rispondi SOLO con il JSON — niente testo prima o dopo, niente markdown. Inizia con \`{\` e finisci con \`}\`.
 `.trim()

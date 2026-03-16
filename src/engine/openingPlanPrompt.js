@@ -16,7 +16,7 @@ Ricevi una descrizione di un'apertura da studiare e devi produrre:
 
 ## Output richiesto
 
-Rispondi SOLO con un JSON in questo formato:
+Rispondi SOLO con un JSON — niente testo prima o dopo. Inizia con \`{\` e finisci con \`}\`. Formato:
 
 \`\`\`json
 {
@@ -40,7 +40,7 @@ Rispondi SOLO con un JSON in questo formato:
 
 ## Regole
 
-- \`moves\`: SOLO mosse UCI valide (es. e2e4, g1f3, f1b5). Mai notazione algebrica (Cf3, e4).
+- \`moves\`: SOLO mosse UCI valide (es. e2e4, g1f3, f1b5). Mai notazione algebrica (Cf3, e4). Le mosse verranno validate da chessops: una mossa in formato errato rompe tutta la pipeline.
 - \`colore\`: il colore che lo studente sta imparando ("white" o "black")
 - \`keyMoves\`: indici delle mosse più importanti da analizzare con Stockfish
 - \`stepPlan\`: 5-8 step. Non esagerare — meglio pochi step profondi che molti superficiali.
