@@ -7,6 +7,114 @@ import './AnalisiPage.css'
 
 const ANALISI = [
   {
+    id: 'a2',
+    date: '2026-03-16',
+    title: 'Knowledge Pipeline — analisi del documento + applicazione a NeuroScacchi',
+    tags: ['knowledge base', 'pipeline', 'qualità', 'architettura'],
+    body: `
+## Il documento in sintesi
+
+Il documento "Knowledge Pipeline v1.1" propone di dotare l'IA di NeuroScacchi di una base di conoscenza scacchistica costruita da materiale umano esperto — manuali, partite commentate, analisi di GM. L'architettura prevede:
+
+- **Bot Telegram** come interfaccia di ingestion: foto di pagine → Claude Vision (OCR intelligente) → PGN validato con python-chess → database
+- **Albero di posizioni** (non di partite): ogni nodo rappresenta una posizione FEN, accumula commenti da più fonti
+- **Commenti multipli** sulla stessa posizione come risorsa, non problema: arricchiscono anziché sovrascriversi
+- **Tutto nel prompt** (Approccio A) come punto di partenza: il materiale rilevante viene iniettato nel system prompt di Claude al momento della generazione della lezione
+- Il **coach resta il filtro**: l'IA produce bozze, il coach revede e adatta prima che lo studente veda qualcosa
+
+L'intuizione centrale è questa: un LLM non calcola varianti, ragiona su concetti. Se gli forniamo materiale umano già validato, diventa un traduttore tra il motore (sa ma non spiega) e il linguaggio didattico.
+
+---
+
+## Cosa si allinea perfettamente con NeuroScacchi attuale
+
+**L'architettura "IA fa pedagogia, sistema fa scacchi"** — introdotta dopo la crisi di marzo 2026 ("l'IA non sa fare scacchi") — è esattamente la stessa filosofia del documento. Buon segno: le due riflessioni convergono indipendentemente.
+
+**Il coach come filtro** — la lezione monolitica, curata, non è una conversazione con un chatbot. Già così in NeuroScacchi.
+
+**La validazione con python-chess** — nella pipeline attuale usiamo chessops (JavaScript) per lo stesso scopo: calcolo deterministico delle FEN, validazione mosse. Il documento propone python-chess (Python) per il bot Telegram. Stessa filosofia, strumenti diversi per contesti diversi — coerente.
+
+**Tutto nel prompt come punto di partenza** — è esattamente l'Approccio A già usato oggi (Explorer data + SF analysis iniettati nel system prompt). La Knowledge Pipeline estenderebbe questo con la narrativa umana esperta.
+
+---
+
+## Cosa non è aggiornato o è impreciso rispetto al progetto
+
+**Il framework pedagogico citato — Detective → Intento → Profilassi → Metacognizione** — non corrisponde ai tipi di step implementati in NeuroScacchi 3.0. I tipi attuali sono: `intent`, `detective`, `candidate`, `move`, `text`, `demo`. "Profilassi" e "Metacognizione" non esistono come step type. Il documento sembra derivare da una versione precedente o parallela del framework. Prima di usare questo schema nel prompt di generazione, bisogna decidere se quei concetti si mappano su step esistenti o se richiedono nuovi tipi.
+
+**Lo schema del prompt in sezione 2.3** produce una "lezione narrativa" — testo discorsivo da revisionare. La pipeline attuale produce JSON strutturato v3.0.0 che il player esegue direttamente. Questi due output sono incompatibili. Bisogna chiarire: la Knowledge Pipeline alimenta la generazione di JSON strutturati (come oggi), o introduce un passaggio intermedio di "bozza narrativa" che il coach poi traduce in JSON? Sono flussi molto diversi.
+
+**Il documento non menziona Lichess Explorer** — uno degli input più ricchi che già abbiamo (statistiche reali di milioni di partite, winrate, frequenza per ogni mossa a ogni posizione). La Knowledge Pipeline si aggiungerebbe a questo, non lo sostituirebbe.
+
+**"Aperture" come focus esclusivo** — il documento ragiona principalmente sulle aperture. Ma il database NeuroScacchi già ha 4.7 milioni di puzzle tattici Lichess. La Knowledge Pipeline per la tattica sarebbe diversa: non "commenti di manuali" ma forse "spiegazione del pattern tattico" per ogni tema (forchetta, inchiodatura, ecc.). Non viene affrontato.
+
+---
+
+## L'insight più prezioso
+
+**L'albero delle posizioni con commenti multipli** è l'idea più originale e potente del documento. Non è ovvia. La struttura naturale che viene in mente per i dati di apertura è "lista di PGN". Ma la struttura giusta è un albero dove ogni nodo-posizione accumula prospettive da più autori. Questo ha una conseguenza pratica enorme: la Ruy Lopez spiegata da Kasparov, da Kortschnoj, e da un libro didattico italiano dà tre angolature diverse sulla stessa mossa. L'IA le integra e il coach sceglie quale enfatizzare per quel preciso studente.
+
+Nessun singolo manuale può dare questo. È qualcosa che solo un sistema come questo può costruire nel tempo.
+
+---
+
+## Riserve e dubbi tecnici
+
+**1. Volume del contesto per apertura**
+"Tutto nel prompt" funziona se il materiale per una singola apertura entra nel context window senza dominarlo. Ma se carichiamo commenti da 3-5 libri su ogni variante della Ruy Lopez, quanti token diventano? La Ruy Lopez ha decine di varianti principali. Potremmo facilmente superare 30.000-50.000 token di solo materiale. Bisogna definire un criterio di selezione: quali nodi dell'albero caricare in base alla lezione richiesta.
+
+**2. La chiave del nodo**
+Il documento lo lascia aperto: sequenza di mosse? Hash FEN? ECO + variante? Questa decisione ha conseguenze importanti. La FEN è la più robusta (identificazione univoca della posizione indipendente dal percorso) ma esclude il contesto di come ci si è arrivati. La sequenza di mosse è più leggibile ma può essere ambigua (trasposizioni). Raccomandazione: FEN come chiave tecnica (identificazione univoca) + sequenza di mosse come campo descrittivo.
+
+**3. Notazione italiana → inglese**
+I libri italiani usano: C = Cavallo (N), A = Alfiere (B), T = Torre (R), D = Donna (Q), R = Re (K). La conversione non è banale se il prompt non è scritto bene: "C" in italiano potrebbe essere letto come cattura in contesti PGN. Il prompt di trascrizione deve essere molto preciso su questo punto e va testato accuratamente prima di usarlo in produzione.
+
+**4. Copyright**
+Trascrivere testi protetti da copyright in un database digitale è legalmente ambiguo anche per uso personale in alcuni paesi. Non è un blocco per uso interno e didattico personale, ma vale la pena esserne consapevoli se il sistema dovesse crescere.
+
+**5. Il bot Telegram come infrastruttura critica**
+Il Mac mini con Tailscale è una scelta pragmatica ma introduce un punto di fragilità (il Mac deve essere acceso, Tailscale deve funzionare). Per il prototipo va benissimo. Per uso continuativo con collaboratori esterni, la dipendenza dall'hardware locale è rischiosa.
+
+**6. Strategia "prima il digitale"**
+La sezione 3.4 è saggia: prima di scansionare un manuale, cercare le partite su 365chess.com, chessgames.com o database Lichess. Questo riduce drasticamente il rischio di errori OCR nella notazione. Vale la pena farne un principio operativo esplicito nel flusso.
+
+---
+
+## Domande aperte a cui devi rispondere
+
+**Sequencing — quando costruire questo?**
+La Knowledge Pipeline è un investimento significativo di tempo (bot, schema dati, ingestion di più libri). La domanda è: siamo già al punto in cui la mancanza di narrativa strategica è il principale limite della qualità delle lezioni? O ci sono prima altri problemi da risolvere nella pipeline attuale?
+
+**Il passaggio "bozza narrativa" vs "JSON diretto"**
+Vuoi che la Knowledge Pipeline alimenti direttamente la generazione di JSON v3.0.0 (continuità con il sistema attuale), oppure immagini un passaggio intermedio dove l'IA produce una bozza testuale che il coach legge e poi trasforma in lezione strutturata? Sono due prodotti diversi con implicazioni molto diverse sull'UX della console coach.
+
+**Quali fonti e in che lingua?**
+Il documento menziona Kasparov, Kotronias, Avrukh — tutti in inglese. I manuali italiani di aperture esistono ma sono più rari. La base di conoscenza sarà principalmente in inglese con commenti tradotti in italiano, o vuoi fonti originali italiane?
+
+**"Profilassi" e "Metacognizione" — fanno parte del piano?**
+Il documento usa questi due concetti pedagogici come fondamentali. In NeuroScacchi 3.0 non esistono come step type. Sono in programma? Se sì, la Knowledge Pipeline dovrebbe essere progettata tenendo conto di questi step futuri. Se no, il prompt di sezione 2.3 va adattato ai tipi esistenti.
+
+**Chi sono i collaboratori esterni?**
+Il documento apre questa possibilità in modo vago. Hai in mente persone specifiche? Cambierebbe il design del bot (es. autenticazione, quale bot Telegram, quanta autonomia dare ai collaboratori).
+
+---
+
+## Raccomandazione di sequenza
+
+Prima di costruire il bot Telegram, c'è un esperimento a costo zero che valida il concetto:
+
+1. Prendi una variante dell'apertura che già generi (es. Ruy Lopez, variante Berlinese)
+2. Scrivi manualmente un documento di 500-800 parole con: idee tipiche di entrambi i colori, piano strategico del Bianco, errori classici del Nero, 2-3 posizioni chiave spiegate a parole
+3. Iniettalo nel system prompt come sezione aggiuntiva ("Contesto strategico da fonte esperta")
+4. Genera la stessa lezione con e senza questo contesto
+5. Confronta la qualità
+
+Se la differenza è evidente, l'investimento nella pipeline è giustificato. Se è marginale, c'è qualcos'altro che limita la qualità.
+
+Questo esperimento richiede un'ora di lavoro, non settimane. Fallire velocemente è più utile che costruire una pipeline per qualcosa che non risolve il problema reale.
+    `.trim(),
+  },
+  {
     id: 'a1',
     date: '2026-03-16',
     title: 'Qualità massima delle lezioni — cosa separa NeuroScacchi da un maestro',
