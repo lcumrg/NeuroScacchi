@@ -7,6 +7,34 @@ import './DiarioPage.css'
 
 const SESSIONS = [
   {
+    id: 's0d', date: '2026-03-16',
+    summary: 'Analisi e miglioramento prompt generazione lezioni IA (solo aperture)',
+    items: [
+      'Analisi comparativa dei 4 prompt (lessonBuildPrompt, openingBuildPrompt, lessonPlanPrompt, openingPlanPrompt) vs Anthropic best practices',
+      'lessonBuildPrompt: aggiunto REGOLE DI STILE (≤12 parole/domanda, ≤5 parole/opzione, ≤2 frasi/feedback) — lo stesso standard già presente in openingBuildPrompt',
+      'lessonBuildPrompt: aggiunta guida Visual Aids sistematica (frecce/cerchi per ogni step interattivo) + REGOLA CRITICA text = last resort + demo = eccezionale',
+      'Tutti i build prompt: motivazione alle REGOLE FERREE ("perché": chessops valida ogni mossa — una mossa inventata causa crash immediato nel player)',
+      'Tutti i prompt: istruzione output rafforzata: "Inizia con { e finisci con }" — riduce testo spurio prima/dopo il JSON',
+      'DECISIONE: lezioni tattiche non implementate finché aperture non producono risultati OTTIMALI. Solo aperture da qui in avanti.',
+    ],
+  },
+  {
+    id: 's0c', date: '2026-03-15/16',
+    summary: 'Fase 2bis UX studenti + separazione Diario + ErrorBoundary + fix crash',
+    items: [
+      'Scacchiera Lichess marrone: #f0d9b5 / #b58863 (era grigio) — colori standard per studenti abituati a Lichess',
+      'FreezeOverlay redesign: radial-gradient con colore specifico per tipo attività (blu intent, arancio detective, verde candidate, viola move, giallo demo)',
+      'Color coding attività: border-top 4px solid con token CSS --activity-color per ogni tipo — il colore attraversa bottoni, domanda, selezioni',
+      'Bottoni e opzioni: radius 12px, shadow, scale(1.04) hover, scale(0.98) active — feedback tattile per bambini',
+      'Tipografia: question 1.1rem/800, label min 0.75rem, coordinate scacchiera 0.8rem/700',
+      'Chessboard.jsx key fix: risolto debito tecnico — key={cgKey} sul container (non più useEffect deps hack)',
+      'ErrorBoundary: componente React che cattura crash di render e mostra messaggio leggibile invece di schermata bianca',
+      'Fix crash TypeError undefined[2]: rimossi onRate e currentRating (riferimenti a stepRatings già eliminato) da FeedbackPanel',
+      'DiarioPage: separazione dal ProgettoPage — Roadmap, priorità, sessioni in pagina dedicata (#/diario)',
+      'App.jsx: aggiunta rotta #/diario, lazy import DiarioPage, ErrorBoundary attorno a PlayerPage',
+    ],
+  },
+  {
     id: 's0b', date: '2026-03-15',
     summary: 'Step snapshot per training IA + sistema auto-data diario al deploy',
     items: [
@@ -90,7 +118,7 @@ const ROADMAP = [
 // ═══════════════════════════════════════════════════════════
 
 function SessionLog() {
-  const [open, setOpen] = useState(new Set(['s0b', 's0']))
+  const [open, setOpen] = useState(new Set(['s0d', 's0c']))
   const toggle = id => setOpen(prev => {
     const n = new Set(prev)
     n.has(id) ? n.delete(id) : n.add(id)
@@ -184,14 +212,6 @@ export default function DiarioPage() {
           <div className="pd-section-title">Debito tecnico</div>
 
           <div className="pd-debt-card">
-            <h4>Chessboard.jsx — reinit forzato di Chessground</h4>
-            <p>Il reinit di Chessground al cambio di interattività avviene forzando l'useEffect. Causa: bug interno di Chessground — <code>.set()</code> non aggiorna <code>draggable.enabled</code>.</p>
-            <div className="pd-solution">
-              <strong>Soluzione futura:</strong> Usare la prop <code>key</code> sul container div, verificando prima la gestione del reattachment dei ref in React.
-            </div>
-          </div>
-
-          <div className="pd-debt-card" style={{ marginTop: '0.75rem' }}>
             <h4>FeedbackPage — schema non aggiornato</h4>
             <p>La pagina di visualizzazione feedback legge ancora i campi vecchi (<code>overallRating</code>, <code>note</code>, <code>rating</code> per step). Con il nuovo schema <code>{'{ tag, note, errors[] }'}</code> mostrerà dati parziali o vuoti.</p>
             <div className="pd-solution">
