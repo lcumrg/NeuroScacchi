@@ -27,7 +27,7 @@ import { legalDests } from './chessService.js'
  * @returns {Promise<{ lesson, validation, sfValidation, plan, materials, usage }>}
  */
 export async function generateOpeningLesson(params) {
-  const { apertura, colore, livello, varianti, profondita, model, onProgress } = params
+  const { apertura, colore, livello, varianti, profondita, model, onProgress, contestoStrategico } = params
   let totalUsage = { input_tokens: 0, output_tokens: 0 }
 
   // ═══ PASSO 1: IA pianifica ═══
@@ -73,7 +73,7 @@ export async function generateOpeningLesson(params) {
   // ═══ PASSO 3: IA costruisce ═══
   onProgress?.({ step: 3, phase: 'build', message: 'Passo 3/4 — IA costruisce la lezione...' })
 
-  const buildResult = await buildOpeningLesson({ plan, materials, model })
+  const buildResult = await buildOpeningLesson({ plan, materials, model, contestoStrategico })
   let lesson = buildResult.lesson
   totalUsage.input_tokens += buildResult.usage?.input_tokens || 0
   totalUsage.output_tokens += buildResult.usage?.output_tokens || 0

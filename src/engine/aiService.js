@@ -605,11 +605,25 @@ export async function planOpening({ apertura, colore, livello, varianti, profond
  * @param {string} [params.model]
  * @returns {Promise<{ lesson: Object, usage: Object }>}
  */
-export async function buildOpeningLesson({ plan, materials, model }) {
-  const userMessage = [
+export async function buildOpeningLesson({ plan, materials, model, contestoStrategico }) {
+  const parts = [
     '## PIANO DELLA LEZIONE',
     JSON.stringify(plan, null, 2),
     '',
+  ]
+
+  if (contestoStrategico?.trim()) {
+    parts.push(
+      '## CONTESTO STRATEGICO DA FONTE ESPERTA',
+      'Questo testo proviene da un manuale autorevole. Usalo per arricchire spiegazioni,',
+      'domande e feedback con profondità strategica reale. NON inventare posizioni o mosse.',
+      '',
+      contestoStrategico.trim(),
+      '',
+    )
+  }
+
+  parts.push(
     '## PACCHETTO MATERIALI',
     '### Posizioni calcolate',
     JSON.stringify(materials.positions, null, 2),
@@ -624,7 +638,9 @@ export async function buildOpeningLesson({ plan, materials, model }) {
     'Usa ESCLUSIVAMENTE le FEN e mosse dai materiali.',
     'NON aggiungere il campo transition — verrà calcolato automaticamente.',
     'Rispondi SOLO con il JSON.',
-  ].join('\n')
+  )
+
+  const userMessage = parts.join('\n')
 
   const messages = [{ role: 'user', content: userMessage }]
   let result = await sendMessage(messages, OPENING_BUILD_PROMPT, model)
