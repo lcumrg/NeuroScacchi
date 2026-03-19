@@ -615,8 +615,13 @@ export async function buildOpeningLesson({ plan, materials, model, contestoStrat
   if (contestoStrategico?.trim()) {
     parts.push(
       '## CONTESTO STRATEGICO DA FONTE ESPERTA',
-      'Questo testo proviene da un manuale autorevole. Usalo per arricchire spiegazioni,',
-      'domande e feedback con profondità strategica reale. NON inventare posizioni o mosse.',
+      'Questo testo proviene da un manuale autorevole di scacchi.',
+      '',
+      '**REGOLE DI UTILIZZO — obbligatorie:**',
+      '- Usalo SOLO per comprendere i concetti strategici a livello alto: piani tipici, idee chiave, errori classici.',
+      '- NON copiare MAI frasi o espressioni dal testo originale — nemmeno parzialmente.',
+      '- Riformula SEMPRE con parole tue, adattando al livello e all\'età dello studente.',
+      '- Il tuo compito è tradurre la profondità del manuale in domande, opzioni e feedback interattivi, non citarlo.',
       '',
       contestoStrategico.trim(),
       '',
