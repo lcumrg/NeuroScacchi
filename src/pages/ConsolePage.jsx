@@ -22,6 +22,7 @@ export default function ConsolePage() {
   const [varianti, setVarianti] = useState('')
   const [profondita, setProfondita] = useState('')
   const [obiettivo, setObiettivo] = useState('')
+  const [contestoStrategico, setContestoStrategico] = useState('')
 
   // Lesson generation state
   const [generating, setGenerating] = useState(false)
@@ -142,6 +143,7 @@ export default function ConsolePage() {
         varianti: varianti || undefined,
         profondita: profondita ? Number(profondita) : undefined,
         model: selectedModel,
+        contestoStrategico: contestoStrategico || undefined,
         onProgress: ({ phase, message }) => {
           setMessages(prev => {
             const updated = [...prev]
@@ -179,7 +181,7 @@ export default function ConsolePage() {
     } finally {
       setGenerating(false)
     }
-  }, [apertura, colore, livello, varianti, profondita, selectedModel])
+  }, [apertura, colore, livello, varianti, profondita, selectedModel, contestoStrategico])
 
   const handleStepSelect = useCallback((index) => {
     setSelectedStepIndex(index)
@@ -344,6 +346,23 @@ export default function ConsolePage() {
                 onChange={e => setObiettivo(e.target.value)}
                 rows={2}
               />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="contesto">
+                Contesto strategico
+                <span style={{ fontWeight: 400, color: 'var(--text-secondary)', marginLeft: '0.4rem' }}>(opzionale)</span>
+              </label>
+              <textarea
+                id="contesto"
+                placeholder={'Incolla qui estratti dal tuo manuale: idee tipiche, piani per entrambi i colori, errori classici, principi strategici dell\'apertura...'}
+                value={contestoStrategico}
+                onChange={e => setContestoStrategico(e.target.value)}
+                rows={5}
+              />
+              <p className="form-hint">
+                Testo da fonte esperta (manuale, trattato). Viene iniettato nel prompt di costruzione per arricchire la profondità strategica della lezione.
+              </p>
             </div>
 
             <div className="form-group">
