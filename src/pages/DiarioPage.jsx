@@ -7,6 +7,22 @@ import './DiarioPage.css'
 
 const SESSIONS = [
   {
+    id: 's0e', date: '2026-03-19/20',
+    summary: 'Pannello Sviluppo + AnalisiPage + Knowledge Pipeline + contesto strategico da manuale',
+    items: [
+      'SviluppoPage: nuovo pannello con sub-nav a schede (Analisi | Diario | Progetto | Feedback) — le pagine esistenti spostate lì, link legacy mantenuti',
+      'AnalisiPage: nuova sezione per analisi strategiche articolate con renderer markdown minimale e voci espandibili',
+      'Archiviate due analisi: Knowledge Pipeline v1.1 (documento Luca) + valutazione applicazione a NeuroScacchi (Claude)',
+      'Fix build: backtick non escaped nelle template literal di AnalisiPage — corretto prima del deploy',
+      'openingBuildPrompt + openingPlanPrompt: aggiunta motivazione esplicita alle regole FERREE ("perché esiste questa regola")',
+      'DECISIONE CONFERMATA: solo lezioni aperture finché la qualità non è ottimale — lezioni tattiche in standby',
+      'Analisi Knowledge Pipeline: fonte esperta esterna (libri fisici, niente file digitali) come strada per profondità strategica reale',
+      'Implementato campo "Contesto strategico" (textarea opzionale) nella Console Coach — inietta narrativa da manuale nel Passo 3 della pipeline',
+      'Istruzioni anti-plagio nel prompt: l\'IA usa il testo per capire i concetti a livello alto e riformula sempre, senza copiare frasi dalla fonte',
+      'Prossimo test: copiare 2-3 paragrafi da manuale su un\'apertura, generare con e senza contesto, confrontare profondità strategica',
+    ],
+  },
+  {
     id: 's0d', date: '2026-03-16',
     summary: 'Analisi e miglioramento prompt generazione lezioni IA (solo aperture)',
     items: [
@@ -118,7 +134,7 @@ const ROADMAP = [
 // ═══════════════════════════════════════════════════════════
 
 function SessionLog() {
-  const [open, setOpen] = useState(new Set(['s0d', 's0c']))
+  const [open, setOpen] = useState(new Set(['s0e', 's0d']))
   const toggle = id => setOpen(prev => {
     const n = new Set(prev)
     n.has(id) ? n.delete(id) : n.add(id)
