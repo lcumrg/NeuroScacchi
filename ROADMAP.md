@@ -6,23 +6,47 @@
 
 ## Lavoro in corso
 
-### Stato al 2026-03-14 — Sintesi
+### Stato al 2026-03-20 — Sintesi
 
 **Pipeline aperture: FUNZIONANTE** ✓
 - Opening Explorer proxy attivo con OAuth token Lichess — 11/11 posizioni con dati reali verificati
 - Prima lezione completa generata e testata su studenti reali (Ruy Lopez)
-- Prossimo passo: iterare sui prompt in base ai feedback raccolti; aumentare la qualità pedagogica degli step `intent` e `candidate`
+- Campo `contestoStrategico` in Console Coach: prototipo KB manuale con regole anti-plagio ✓
 
 **Sistema feedback coach: COMPLETO** ✓
 - Raccolta stelle per step durante la lezione + form valutazione finale su Firestore
 - FeedbackPage (`#/feedback`) per review sessioni passate e replay lezioni
-- Dati feedback verificati su Firestore (almeno 1 sessione con stepFeedback strutturato)
+
+**Knowledge Base strategica: PROGETTATA** ✓
+- Architettura a 3 strati (Explorer + Stockfish + KB) definita
+- Schema Firestore, flusso ingestion, retrieval e integrazione pipeline documentati
+- Documento di riferimento: `docs/architettura-knowledge-base.md`
+- **PROSSIMO PASSO: implementazione Fase KB-1 (IngestionPage + schema Firestore)**
 
 **Debito tecnico noto:** `Chessboard.jsx` reinit via dipendenze `useEffect` — soluzione alternativa con `key` prop documentata in fondo a questa roadmap.
 
 ---
 
 ### Storico sessioni di lavoro
+
+#### Sessione 2026-03-19/20 — Contesto strategico + architettura Knowledge Base
+
+**Contesto strategico (prototipo KB):**
+- Campo `contestoStrategico` aggiunto alla Console Coach (textarea opzionale, 5 righe) ✓
+- Passato attraverso la pipeline: `ConsolePage` → `openingPipeline` → `buildOpeningLesson` ✓
+- Iniettato nel Passo 3 come sezione `## CONTESTO STRATEGICO DA FONTE ESPERTA` ✓
+- Regole anti-plagio nel prompt: NON copiare mai frasi, riformulare sempre con parole proprie ✓
+
+**Analisi e progettazione Knowledge Base:**
+- Identificato il problema: l'IA genera "strategia plausibile" ma non ha profondità autorevole
+- Progettata architettura a 3 strati: Explorer (statistico) + Stockfish (computazionale) + KB (strategico)
+- Decisione chiave: **FEN come indice** — knowledge chunk ancorati alle posizioni dell'albero, non ai nomi delle aperture
+- Principio "IA fa pedagogia, sistema fa scacchi" esteso all'ingestion: Vision estrae testo + sequenze mosse, chessops calcola FEN
+- Schema Firestore `knowledgeChunks` definito
+- Flusso ingestion: Modalità B (foto → Vision → chessops → Firestore), poi Modalità C (PGN annotati)
+- Integrazione pipeline: Opzione 1 (KB opzionale per ora, Opzione 2 quando KB sarà ricca)
+- 6 problemi potenziali analizzati con soluzioni
+- Documento di riferimento: `docs/architettura-knowledge-base.md`
 
 #### Sessione 2026-03-14 — Fix pipeline + sistema feedback + migrazione Firestore
 
@@ -532,6 +556,58 @@ Pipeline dedicata alle aperture, costruita sulla stessa architettura della Fase 
 | **move** | Esegui la mossa dell'apertura (rinforzo) |
 | **demo** | Mostra la sequenza con narrazione del piano |
 
+### Fase 1D — Knowledge Base strategica
+
+**Stato: PROGETTATA — in attesa di implementazione**
+
+**Documento di riferimento:** `docs/architettura-knowledge-base.md`
+
+**Contesto:** La pipeline aperture ha due fonti di verità (Explorer statistico + Stockfish computazionale). Manca il terzo strato: conoscenza strategica autorevole da manuali esperti. Questo è il differenziatore reale dell'app rispetto a qualsiasi concorrente.
+
+**Principio architetturale:** La Knowledge Base è indicizzata per **FEN** (posizione esatta nell'albero delle aperture), non per nome dell'apertura. Quando la pipeline calcola le FEN del percorso con chessops, interroga la KB per ogni FEN. Match esatto, zero ambiguità.
+
+**Principio di ingestion:** stesso della pipeline — "IA fa pedagogia, il sistema fa scacchi": Vision estrae testo + sequenze di mosse, chessops calcola FEN. Vision non produce mai FEN.
+
+**Fasi di implementazione:**
+
+| Fase | Scope | Stato |
+|------|-------|-------|
+| **KB-0** | Prototipo: `contestoStrategico` textarea in Console (copia manuale dal libro) | COMPLETATO ✓ |
+| **KB-1** | Schema Firestore + `IngestionPage` (`#/ingestion`): upload foto → Vision → preview → salva | DA FARE |
+| **KB-2** | Retrieval in `openingEnricher.js`: query KB per ogni FEN del percorso → inietta nel prompt | DA FARE |
+| **KB-3** | Raffinamento: merge chunk duplicati, import PGN annotato (Modalità C), gestione KB esistente | DA FARE |
+| **KB-4** | Pipeline dipendente: warning per aperture senza copertura KB, suggerimento di arricchimento | FUTURO |
+
+**Dettaglio Fase KB-1 — IngestionPage:**
+
+- Upload foto pagina manuale
+- Chiamata Claude Vision con prompt di estrazione strutturata:
+  - Estrae: principiStrategici, piani bianco/nero, erroriTipici, concettiChiave, sequenzaMosse, apertura, variante
+  - NON produce FEN, NON copia testo raw
+- chessops calcola FEN dalla sequenzaMosse estratta
+- Preview: testo estratto + scacchiera con posizione risultante (verifica visiva)
+- Conferma → salva chunk su Firestore `knowledgeChunks`
+
+**Schema chunk Firestore:**
+```
+{
+  apertura, variante, sottoVariante, ecoCode,
+  sequenzaMosse, fens[],           // fens calcolate da chessops
+  principiStrategici[], piani{bianco, nero}, erroriTipici[], concettiChiave[],
+  livello,                          // "tutti" | "principiante" | "intermedio" | "avanzato"
+  fonte{nome, pagina, autore},
+  createdAt
+}
+```
+
+**Integrazione pipeline (Fase KB-2):**
+- `openingEnricher.js` → per ogni FEN calcolata, query `knowledgeChunks WHERE fens ARRAY_CONTAINS fen`
+- Se trovati: aggiunti al `materials` package come `knowledgeChunks: [...]`
+- Se non trovati: pipeline procede normalmente (KB opzionale)
+- `openingBuildPrompt.js` → sezione condizionale con chunk KB + regole anti-plagio (già parzialmente implementate con `contestoStrategico`)
+
+---
+
 ### Fase 2 — Il player studente (base)
 
 **Stato: COMPLETATA** ✓
@@ -620,20 +696,24 @@ L'apertura ad altri.
 
 ---
 
-### Priorità operative — stato attuale (2026-03-14)
+### Priorità operative — stato attuale (2026-03-20)
 
 **Principio guida:** le aperture sono l'unico tipo di contenuto attivo finché non hanno feedback costantemente positivi. Nessuna nuova tipologia di contenuto prima di questo traguardo.
 
-**Priorità 1 — Qualità contenuti aperture** (in corso)
+**Priorità 1 — Knowledge Base strategica (Fase 1D)**
+- Fase KB-1: implementare `IngestionPage` — la priorità immediata
+- Obiettivo: poter caricare le 26 pagine del manuale della Spagnola nel sistema
+- Dopo KB-1: testare KB-0 (contestoStrategico attuale) per validare che il contesto migliori le lezioni
+- Solo dopo validazione qualitativa → procedere con KB-2 (retrieval automatico in pipeline)
+
+**Priorità 2 — Qualità contenuti aperture**
 - Iterare sui prompt in base ai feedback raccolti
-- Obiettivo: generare lezioni che i bambini trovino chiare, stimolanti, corrette
+- La KB è lo strumento per migliorare strutturalmente la profondità strategica
 
-**Priorità 2 — Esperienza visiva player** (prossima, vedi Fase 2bis)
-- L'aspetto grafico è decisivo nei test con i bambini: stimola, gratifica, sostiene
-- Un buon contenuto presentato male appare come un cattivo contenuto
-- Non è secondario: è parte integrante della qualità percepita
+**Priorità 3 — Esperienza visiva player** (vedi Fase 2bis)
+- L'aspetto grafico è decisivo nei test con i bambini
 
-**Priorità 3 — Fasi 3-7** (dopo validazione contenuti + UI)
+**Priorità 4 — Fasi 3-7** (dopo validazione contenuti + UI)
 
 ---
 

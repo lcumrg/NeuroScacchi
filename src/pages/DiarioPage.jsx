@@ -7,6 +7,24 @@ import './DiarioPage.css'
 
 const SESSIONS = [
   {
+    id: 's0f', date: '2026-03-20',
+    summary: 'Architettura Knowledge Base strategica — analisi completa e roadmap',
+    items: [
+      'Analisi approfondita del problema: l\'IA genera "strategia plausibile" ma non ha profondità autorevole — serve un terzo strato di conoscenza',
+      'Progettata architettura a 3 strati: Explorer (statistico) + Stockfish (computazionale) + Knowledge Base (strategico da manuali esperti)',
+      'Decisione chiave: FEN come indice della KB — chunk ancorati all\'albero delle posizioni, non ai nomi delle aperture (no ambiguità, no matching testuale)',
+      'Principio esteso all\'ingestion: Vision estrae testo + sequenze mosse, chessops calcola FEN — Vision non produce mai FEN (stesso principio "IA fa pedagogia, sistema fa scacchi")',
+      'Schema Firestore knowledgeChunks definito: apertura, variante, sequenzaMosse, fens[], principiStrategici[], piani{bianco,nero}, erroriTipici[], fonte{}',
+      'Percorso ingestion: Modalità B (foto → Vision → chessops → Firestore) poi Modalità C (PGN annotati) — stesso schema Firestore',
+      'Integrazione pipeline: Opzione 1 (KB opzionale) per ora — pipeline funziona senza KB, inject automatico quando chunk disponibili',
+      'Opzione 2 (pipeline dipendente) pianificata per quando la KB avrà copertura sufficiente delle aperture principali',
+      '6 problemi potenziali analizzati con soluzioni: qualità estrazione Vision, chunk generici, granularità, overlap, adattamento livello, copertura parziale',
+      'Roadmap KB-0/1/2/3/4 definita: KB-0 già completato (contestoStrategico), KB-1 prossimo passo (IngestionPage)',
+      'Documento di riferimento: docs/architettura-knowledge-base.md',
+      'ROADMAP.md aggiornato con Fase 1D e nuove priorità operative',
+    ],
+  },
+  {
     id: 's0e', date: '2026-03-19/20',
     summary: 'Pannello Sviluppo + AnalisiPage + Knowledge Pipeline + contesto strategico da manuale',
     items: [
@@ -134,7 +152,7 @@ const ROADMAP = [
 // ═══════════════════════════════════════════════════════════
 
 function SessionLog() {
-  const [open, setOpen] = useState(new Set(['s0e', 's0d']))
+  const [open, setOpen] = useState(new Set(['s0f', 's0e']))
   const toggle = id => setOpen(prev => {
     const n = new Set(prev)
     n.has(id) ? n.delete(id) : n.add(id)
