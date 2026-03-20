@@ -7,6 +7,121 @@ import './AnalisiPage.css'
 
 const ANALISI = [
   {
+    id: 'a3',
+    date: '2026-03-20',
+    title: 'Knowledge Base strategica — architettura, problemi potenziali e roadmap',
+    tags: ['knowledge base', 'architettura', 'FEN', 'ingestion', 'pipeline'],
+    body: `
+## Il problema
+
+La pipeline aperture ha due fonti di verità: **Lichess Explorer** (statistico — cosa giocano i giocatori reali) e **Stockfish** (computazionale — la mossa oggettivamente migliore). Manca il terzo strato: conoscenza strategica autorevole da manuali esperti. L'IA genera "strategia plausibile" ma non ha la profondità di un maestro o di un manuale di qualità.
+
+---
+
+## I tre strati
+
+| Strato | Fonte | Cosa porta |
+|---|---|---|
+| Statistico | Lichess Opening Explorer | "Cosa giocano i giocatori reali al tuo livello" |
+| Computazionale | Stockfish + chessops | "Cosa è oggettivamente la mossa migliore" |
+| Strategico | Knowledge Base | "Perché questa struttura è buona, quali sono i piani, gli errori tipici" |
+
+Il terzo strato è il differenziatore reale. I primi due sono accessibili a chiunque. La Knowledge Base è costruita dal coach — è conoscenza proprietaria che si accumula nel tempo.
+
+---
+
+## La decisione chiave: FEN come indice
+
+L'approccio naive indicizzerebbe i chunk per nome dell'apertura ("Spagnola", "Berlino"). Problema: nomi ambigui, trasposizioni, matching testuale fragile.
+
+**La KB usa la FEN come chiave.** Le aperture sono alberi di posizioni — ogni nodo è una FEN univoca. Lichess Explorer naviga già questo albero FEN per FEN. Quando la pipeline calcola le FEN con chessops, per ogni FEN interroga la KB. Match esatto, zero ambiguità.
+
+Quando la pipeline è alla FEN X: tre query in parallelo → Explorer + Stockfish + Knowledge Base. L'IA riceve il massimo della conoscenza disponibile su quella posizione specifica.
+
+---
+
+## Il principio applicato all'ingestion
+
+"IA fa pedagogia, sistema fa scacchi" vale anche per costruire il database:
+
+- **Vision** legge la pagina del manuale ed estrae: testo strategico + sequenze di mosse citate nel testo
+- **Vision NON produce mai FEN** — Vision è affidabile per leggere notazione algebrica, non per calcolare posizioni
+- **chessops** converte le sequenze di mosse in FEN deterministicamente (zero errori)
+
+---
+
+## Percorso ingestion: B → C
+
+**Modalità B (attuale, prototipo):** foto del manuale → Vision estrae principi + sequenze mosse → chessops calcola FEN → chunk salvato su Firestore con FEN come indice
+
+**Modalità C (futuro):** PGN con commenti \`{}\` → parser chessops → chunk automatici. Stessa struttura Firestore — nessuna migrazione necessaria. Utile per: database digitali, PGN annotati da engine, analisi personali del coach, collaborazioni future.
+
+---
+
+## Schema chunk Firestore (knowledgeChunks)
+
+Ogni chunk contiene:
+- \`apertura\`, \`variante\`, \`ecoCode\` — classificazione
+- \`sequenzaMosse\` — percorso canonico nel albero (es. "1.e4 e5 2.Cf3 Cc6 3.Ab5 a6")
+- \`fens[]\` — calcolate da chessops sulla sequenzaMosse
+- \`principiStrategici[]\`, \`piani{bianco, nero}\`, \`erroriTipici[]\`, \`concettiChiave[]\`
+- \`livello\` — "tutti" | "principiante" | "intermedio" | "avanzato"
+- \`fonte{nome, pagina}\`
+
+Il contenuto è **strutturato, non testo raw**. Vision non trascrive il libro — estrae i fatti strategici in forma atomica. Questo è essenziale per il funzionamento delle regole anti-plagio.
+
+---
+
+## Integrazione nella pipeline
+
+Nel **Passo 2** di \`openingEnricher.js\`, dopo che chessops ha calcolato tutte le FEN del percorso, per ogni FEN: query Firestore \`knowledgeChunks WHERE fens ARRAY_CONTAINS fen\`.
+
+Se trovati: aggiunti al \`materials\` package come \`knowledgeChunks: [...]\`. Se non trovati: pipeline procede normalmente.
+
+**Opzione 1 (attuale):** KB opzionale. La pipeline funziona senza KB — l'app può generare lezioni su qualsiasi apertura anche prima che il database sia ricco.
+
+**Opzione 2 (futuro):** quando la KB coprirà le aperture principali, la pipeline segnala le aperture senza copertura e invita il coach ad arricchire il database.
+
+---
+
+## Problemi potenziali analizzati
+
+**1. Qualità estrazione Vision** — Vision può fraintendere la notazione. Soluzione: nell'interfaccia di ingestion, mostrare la scacchiera con la posizione calcolata. Il coach vede visivamente se la posizione è giusta prima di salvare.
+
+**2. Chunk troppo generici** — "il bianco ha la coppia di alfieri" non è utile senza contesto. Soluzione: \`sequenzaMosse\` è obbligatorio. Ogni chunk è ancorato a una posizione specifica.
+
+**3. Granularità** — una pagina può coprire 10 posizioni diverse. Soluzione: Vision identifica le "posizioni chiave" della pagina e produce un chunk per ciascuna (una pagina → N chunk).
+
+**4. Chunk duplicati** — due pagine dello stesso libro sovrapposti sulla stessa FEN. Soluzione: al salvataggio, controllo se esiste già un chunk per la stessa FEN con opzione di merge.
+
+**5. Adattamento al livello** — il manuale è scritto per giocatori avanzati. Soluzione: i principi estratti sono conoscenza grezza livello-agnostica. La riformulazione per livello è compito dell'IA al momento della costruzione della lezione (già gestita dal parametro \`livello\` nel prompt).
+
+**6. Copertura parziale** — la KB copre solo alcune aperture. Soluzione: l'Opzione 1 gestisce questo per design. Indicatore visivo in Console Coach: "KB disponibile" / "KB assente" per l'apertura richiesta.
+
+---
+
+## Roadmap
+
+| Fase | Scope | Stato |
+|---|---|---|
+| KB-0 | Prototipo: textarea \`contestoStrategico\` in Console | COMPLETATO |
+| KB-1 | Schema Firestore + \`IngestionPage\` (\`#/ingestion\`) | PROSSIMO |
+| KB-2 | Retrieval in \`openingEnricher.js\` + inject nel prompt | DA FARE |
+| KB-3 | Merge duplicati, import PGN (Modalità C), gestione KB | DA FARE |
+| KB-4 | Pipeline dipendente (Opzione 2) quando KB sarà ricca | FUTURO |
+
+---
+
+## Metriche di qualità
+
+**Breve termine (A/B manuale):** generare la stessa lezione con e senza KB, il coach valuta la profondità strategica delle domande. Già testabile con \`contestoStrategico\` attuale.
+
+**Medio termine (feedback studenti):** confrontare stelle degli step nelle lezioni con KB vs senza. Pattern atteso: con KB le domande Intent sono più contestualizzate → meno "Difficile" e più "Ok".
+
+**Qualitativo:** senza KB → "Perché il Nero gioca ...a6?". Con KB → "Il Nero ha appena giocato ...a6. Quale scopo ha questa mossa rispetto al piano del Bianco con 4.Aa4?". La differenza è misurabile leggendo le domande generate.
+    `.trim(),
+  },
+  {
     id: 'a2',
     date: '2026-03-16',
     title: 'Knowledge Pipeline — analisi del documento + applicazione a NeuroScacchi',
