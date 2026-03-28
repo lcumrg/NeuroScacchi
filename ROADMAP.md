@@ -558,7 +558,7 @@ Pipeline dedicata alle aperture, costruita sulla stessa architettura della Fase 
 
 ### Fase 1D — Knowledge Base strategica
 
-**Stato: PROGETTATA — in attesa di implementazione**
+**Stato: IN CORSO — KB-1 completata (2026-03-28)**
 
 **Documento di riferimento:** `docs/architettura-knowledge-base.md`
 
@@ -573,7 +573,7 @@ Pipeline dedicata alle aperture, costruita sulla stessa architettura della Fase 
 | Fase | Scope | Stato |
 |------|-------|-------|
 | **KB-0** | Prototipo: `contestoStrategico` textarea in Console (copia manuale dal libro) | COMPLETATO ✓ |
-| **KB-1** | Schema Firestore + `IngestionPage` (`#/ingestion`): upload foto → Vision → preview → salva | DA FARE |
+| **KB-1** | Schema Firestore + `IngestionPage` (`#/ingestion`): upload foto → Vision → preview → salva | COMPLETATO ✓ |
 | **KB-2** | Retrieval in `openingEnricher.js`: query KB per ogni FEN del percorso → inietta nel prompt | DA FARE |
 | **KB-3** | Raffinamento: merge chunk duplicati, import PGN annotato (Modalità C), gestione KB esistente | DA FARE |
 | **KB-4** | Pipeline dipendente: warning per aperture senza copertura KB, suggerimento di arricchimento | FUTURO |
@@ -696,14 +696,18 @@ L'apertura ad altri.
 
 ---
 
-### Priorità operative — stato attuale (2026-03-20)
+### Priorità operative — stato attuale (2026-03-28)
 
 **Principio guida:** le aperture sono l'unico tipo di contenuto attivo finché non hanno feedback costantemente positivi. Nessuna nuova tipologia di contenuto prima di questo traguardo.
 
 **Priorità 1 — Knowledge Base strategica (Fase 1D)**
-- Fase KB-1: implementare `IngestionPage` — la priorità immediata
-- Obiettivo: poter caricare le 26 pagine del manuale della Spagnola nel sistema
-- Dopo KB-1: testare KB-0 (contestoStrategico attuale) per validare che il contesto migliori le lezioni
+- Fase KB-1: COMPLETATA ✓ — `IngestionPage` (`#/ingestion`) implementata (2026-03-28)
+  - Upload foto → Gemini Vision → estrazione strutturata → chessops calcola FEN → preview con scacchiera → salva su Firestore
+  - Conversione automatica notazione italiana (Cf3, Ab5) → inglese (Nf3, Bb5) per chessops
+  - Netlify Functions: `kb-save`, `kb-list`, `kb-delete`
+  - Supporto Vision multimodale aggiunto a `ai-chat.js`
+- Prossimo: caricare le 26 pagine del manuale della Spagnola per popolare la KB
+- Poi: testare KB-0 (contestoStrategico) per validare che il contesto migliori le lezioni
 - Solo dopo validazione qualitativa → procedere con KB-2 (retrieval automatico in pipeline)
 
 **Priorità 2 — Qualità contenuti aperture**
