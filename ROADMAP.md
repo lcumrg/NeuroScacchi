@@ -1,822 +1,189 @@
-# NeuroScacchi 3.0 — Documento di Progetto
+# NeuroScacchi 3.1 — Documento di indirizzo
 
-*Documento riservato — Luca Morigi*
+*Luca Morigi, per Luca Morigi — Aprile 2026*
 
----
-
-## Lavoro in corso
-
-### Stato al 2026-03-20 — Sintesi
-
-**Pipeline aperture: FUNZIONANTE** ✓
-- Opening Explorer proxy attivo con OAuth token Lichess — 11/11 posizioni con dati reali verificati
-- Prima lezione completa generata e testata su studenti reali (Ruy Lopez)
-- Campo `contestoStrategico` in Console Coach: prototipo KB manuale con regole anti-plagio ✓
-
-**Sistema feedback coach: COMPLETO** ✓
-- Raccolta stelle per step durante la lezione + form valutazione finale su Firestore
-- FeedbackPage (`#/feedback`) per review sessioni passate e replay lezioni
-
-**Knowledge Base strategica: PROGETTATA** ✓
-- Architettura a 3 strati (Explorer + Stockfish + KB) definita
-- Schema Firestore, flusso ingestion, retrieval e integrazione pipeline documentati
-- Documento di riferimento: `docs/architettura-knowledge-base.md`
-- **PROSSIMO PASSO: implementazione Fase KB-1 (IngestionPage + schema Firestore)**
-
-**Debito tecnico noto:** `Chessboard.jsx` reinit via dipendenze `useEffect` — soluzione alternativa con `key` prop documentata in fondo a questa roadmap.
+*Nasce dalla sessione di ripensamento del 17 aprile 2026, dopo mesi di lavoro sulla versione 3.0. Sostituisce la ROADMAP stratificata tra marzo e aprile come riferimento principale. La vecchia ROADMAP è archiviata in `docs/archivio/ROADMAP-3.0-storica.md`.*
 
 ---
 
-### Storico sessioni di lavoro
+## Chi è NeuroScacchi nel 2026
 
-#### Sessione 2026-03-19/20 — Contesto strategico + architettura Knowledge Base
+NeuroScacchi nasce da un'intuizione didattica semplice: gli scacchi insegnano a pensare prima di agire, ma le piattaforme esistenti ti insegnano *cosa* giocare, non *come* pensare. Da questa intuizione è nato il metodo — il freeze, il ciclo Osserva → Ragiona → Scegli → Rifletti, le tre attività (Intent, Detective, Candidate) che si frappongono tra lo studente e la mossa.
 
-**Contesto strategico (prototipo KB):**
-- Campo `contestoStrategico` aggiunto alla Console Coach (textarea opzionale, 5 righe) ✓
-- Passato attraverso la pipeline: `ConsolePage` → `openingPipeline` → `buildOpeningLesson` ✓
-- Iniettato nel Passo 3 come sezione `## CONTESTO STRATEGICO DA FONTE ESPERTA` ✓
-- Regole anti-plagio nel prompt: NON copiare mai frasi, riformulare sempre con parole proprie ✓
+Questo è il **primo cuore** del progetto, quello fondativo. Negli ultimi mesi, con la versione 3.0, ne è emerso un secondo, meno visibile ma altrettanto centrale: **addomesticare l'intelligenza artificiale agli scacchi**. Non usarla come un oracolo che sa tutto, perché sugli scacchi non sa; ma farla lavorare in tandem con un motore scacchistico (Stockfish), con una libreria di mosse reali (Lichess Explorer), e con un coach umano che conosce il suo studente. L'IA produce pedagogia, il sistema garantisce la correttezza scacchistica, il coach sceglie e approva. Questo secondo cuore è quello che trasforma NeuroScacchi da un'intuizione didattica in un **sistema di produzione di contenuti personalizzati**.
 
-**Analisi e progettazione Knowledge Base:**
-- Identificato il problema: l'IA genera "strategia plausibile" ma non ha profondità autorevole
-- Progettata architettura a 3 strati: Explorer (statistico) + Stockfish (computazionale) + KB (strategico)
-- Decisione chiave: **FEN come indice** — knowledge chunk ancorati alle posizioni dell'albero, non ai nomi delle aperture
-- Principio "IA fa pedagogia, sistema fa scacchi" esteso all'ingestion: Vision estrae testo + sequenze mosse, chessops calcola FEN
-- Schema Firestore `knowledgeChunks` definito
-- Flusso ingestion: Modalità B (foto → Vision → chessops → Firestore), poi Modalità C (PGN annotati)
-- Integrazione pipeline: Opzione 1 (KB opzionale per ora, Opzione 2 quando KB sarà ricca)
-- 6 problemi potenziali analizzati con soluzioni
-- Documento di riferimento: `docs/architettura-knowledge-base.md`
+Tra i due cuori c'è un legame preciso: il metodo senza il sistema resta un'idea; il sistema senza il metodo genera lezioni generiche come tutte le altre. Vivono insieme.
 
-#### Sessione 2026-03-14 — Fix pipeline + sistema feedback + migrazione Firestore
+Nel 2026, NeuroScacchi è e resta un **laboratorio privato**. Non è un prodotto, non è un'app per il pubblico, non è una startup. È uno strumento che costruisco per me, per i miei tre figli giocatori agonistici, e — se tutto fila liscio — per qualche persona di fiducia (un collega, un parente, un allievo particolare) nei prossimi mesi. Non oltre.
 
-**Fix pipeline aperture:**
-- Proxy Netlify `opening-explorer.js` con OAuth token Lichess (fix 401) ✓
-- Fix params Explorer: `ratings`/`speeds` come CSV, non repeated params (fix 400) ✓
-- Errori Explorer ora visibili in chat coach invece di essere silenziosi ✓
-- `openingPipeline.js`: tracking `generatedBy` (modello IA usato) ✓
-- Prompt ottimizzato per bambini: domande ≤12 parole, opzioni ≤5, max 1 step `text` ✓
-- Fix schema: `allowedMoves`/`correctMoves` opzionali per step `intent` ✓
-- Mosse illegali non crashano: `openingEnricher.js` tronca alla prima illegale ✓
-- Try-catch su `legalDests` in `PlayerPage.jsx` ✓
-
-**Fix board interattiva:**
-- Bug: Chessground non aggiornava `draggable.enabled` via `.set()` (transizione non-interattiva → interattiva)
-- Fix: `interactive` e `viewOnly` aggiunti alle dipendenze dell'useEffect di init in `Chessboard.jsx` ✓
-
-**Migrazione localStorage → Firestore (completa):**
-- `lessonStore.js` riscritto completamente: zero localStorage, tutto async via API ✓
-- Nuove Netlify Functions: `lesson-list.js`, `lesson-get.js`, `lesson-delete.js` ✓
-- `LessonsPage.jsx` e `ConsolePage.jsx` aggiornati ✓
-
-**Sistema feedback coach:**
-- Stelle per step durante lezione (FeedbackPanel, 1-3: Difficile/Ok/Facile) ✓
-- Form valutazione finale: 5 stelle globale + 3 stelle + nota testuale per step ✓
-- Salvataggio su Firestore `lessonFeedback` via `feedback-save.js` ✓
-- `FeedbackPage.jsx` (`#/feedback`): lista sessioni, espansione dettagli step, replay ✓
-- `feedback-list.js` Netlify Function ✓
-
-#### Sessione 2026-03-13 — Migrazione Firestore + pipeline tattica + analisi architetturale
-
-- Migrazione puzzle da Turso a Firestore (`puzzle-search.js`, `puzzle-meta.js`) ✓
-- `FIREBASE_SERVICE_ACCOUNT` impostata in Netlify ✓
-- Analisi Stockfish post-generazione integrata (pallini qualità, confronto mossa IA vs SF) ✓
-- Identificati 8 gap critici nell'architettura di generazione lezioni
-- Progettata e implementata nuova pipeline "IA fa pedagogia, il sistema fa scacchi":
-  - `puzzleEnricher.js`, `lessonPipeline.js`, `lessonPlanPrompt.js`, `lessonBuildPrompt.js` ✓
-  - Toggle pipeline 3.0/legacy nella Console Coach ✓
-
-#### Sessione 2026-03-06/08 — Pipeline aperture (Fase 1C)
-
-- Decisione: focus esclusivo aperture, tattica in standby
-- `openingExplorer.js`, `openingEnricher.js`, `openingPipeline.js` ✓
-- `openingPlanPrompt.js`, `openingBuildPrompt.js` ✓
-- Console Coach rifatta con form aperture ✓
-- Scacchiera orientabile (bianco/nero) ✓
-- Analisi competitiva documentata (Chessdriller, ChessMind AI, Chessline.io) ✓
-- Hub documentazione nell'app (`#/doc`) ✓
+La dimensione pubblica — fondazione, libro, metodo pubblicato — resta come *sogno guida* all'orizzonte, non come scadenza. Ogni scelta di questa versione deve rispettare entrambe le cose: tenere il progetto vivibile oggi, nel tempo frammentato di un insegnante-padre-poeta, e non bruciare ponti verso una possibile condivisione futura.
 
 ---
 
-## 1. IL PROGETTO
+## Cosa vogliamo per giugno
 
-### Il problema
+Il traguardo concreto dei prossimi due mesi, da metà aprile a metà giugno, è duplice.
 
-Gli scacchi sono uno degli strumenti educativi più potenti che esistano: insegnano a pensare prima di agire, a considerare le conseguenze, a gestire l'incertezza. La ricerca accademica mostra risultati incoraggianti, in particolare per bambini e ragazzi con difficoltà attentive.
+**Un risultato misurabile**: arrivare a **5-10 lezioni di apertura di qualità**, già pronte e testate almeno da me, pronte da usare con i figli appena finisce la scuola. Quando scrivo "di qualità" intendo, in quest'ordine preciso:
 
-Il problema è che le piattaforme scacchistiche esistenti — Chess.com, Lichess, ChessKid, Chessable — insegnano *cosa* giocare ma non *come pensare*. Ti danno un puzzle, tu muovi, è giusto o sbagliato. Fine. Non c'è alcun lavoro sul processo decisionale, sulla consapevolezza, sulla capacità di fermarsi e ragionare prima di agire.
+Prima di tutto, la **qualità del linguaggio**. Le domande, le opzioni, le spiegazioni, i feedback devono essere scritti in italiano vero — quello che un bambino di 8-12 anni capisce davvero. Niente corporatese, niente IA-ese, niente costruzioni che adulti colti userebbero senza accorgersene. Una lezione NeuroScacchi si riconosce dalla lingua viva prima che dalla didattica sofisticata.
 
-Per ottenere un allenamento che lavori davvero su *come pensi*, oggi l'unica opzione è un coach umano competente — che costa, che non è sempre disponibile, e che raramente ha competenze incrociate su scacchi e profili cognitivi diversi (ADHD, autismo, plusdotazione).
+Subito dopo, la **profondità pedagogica**: la lezione deve spiegare il *perché*, non solo il *cosa*. L'idea dietro la mossa, non solo la mossa. Altrimenti è un drill di Chess.com vestito da lezione.
 
-### L'idea
+E in terzo luogo, l'**uso attento del metodo**: le attività Intent, Detective, Candidate devono comparire dove hanno senso, non a caso. Il freeze deve essere calibrato. Il ritmo della lezione deve rispettare la capacità di attenzione di un bambino.
 
-NeuroScacchi è una web app che mette insieme tre intelligenze per creare lezioni scacchistiche di qualità eccellente:
+La correttezza scacchistica (niente FEN sbagliate, niente mosse illegali, valutazioni Stockfish coerenti) è data per scontata: è un prerequisito, non un vanto. Se una lezione ha un errore scacchistico, è spazzatura a prescindere dal linguaggio.
 
-- **Un motore scacchistico (Stockfish)** che sa sempre qual è la mossa migliore, quanto è grave un errore, quali sono le minacce reali in una posizione.
-- **Un'intelligenza artificiale** che sa strutturare una lezione, formulare domande, costruire percorsi progressivi, adattare il linguaggio.
-- **Un essere umano** (genitore, insegnante, istruttore di scacchi) che conosce il proprio studente — i suoi punti forti, le sue difficoltà, cosa lo motiva e cosa lo frustra.
+**Un risultato di processo**: riuscire a lavorare al progetto con **continuità**, una o due sere a settimana, senza sparire per tre settimane e poi tornare smarriti. La continuità non è una virtù personale da tirare fuori, è qualcosa che il progetto stesso deve *abilitare* — ogni sessione deve lasciare punti di aggancio chiari per la successiva.
 
-Nessuno dei tre da solo basta. L'IA sbaglia sugli scacchi — la ricerca dimostra che i modelli linguistici producono mosse illegali oltre il 50% delle volte senza correzione esterna. Stockfish non sa insegnare. L'umano non ha tempo di costruire tutto da zero. Il valore nasce dalla collaborazione: **l'IA bozza, Stockfish valida, il coach rivede e approva**. Insieme, producono lezioni che prima richiedevano un maestro di scacchi con esperienza pedagogica.
-
-### Come funziona
-
-NeuroScacchi non è un'app di puzzle. È un sistema che insegna un ciclo decisionale: **Osserva → Ragiona → Scegli → Rifletti**.
-
-Ogni lezione parte da una posizione sulla scacchiera. Lo studente è obbligato a pensare prima di poter toccare i pezzi. Questo pensiero prende forme diverse:
-
-- **Intent** (domanda strategica): "Qual è il piano migliore per il Bianco?" Lo studente sceglie tra opzioni e deve dimostrare di capire il *perché* prima di poter muovere. Sviluppa il pensiero strategico.
-- **Detective** (trova il punto chiave): "Qual è il punto debole nella posizione del Nero?" Lo studente clicca su una casa della scacchiera. Non muove pezzi — impara a *leggere* la posizione. Sviluppa la visione posizionale.
-- **Candidate** (trova le alternative): "Trova 2 mosse candidate." Lo studente deve identificare più opzioni prima di sceglierne una. Sviluppa il pensiero sistematico.
-- Quando non ci sono attività intermedie e lo studente deve semplicemente muovere, un'**attesa temporizzata** gli dà comunque il tempo di pensare.
-
-Le lezioni mescolano questi tipi di attività in sequenze la cui lunghezza e composizione viene decisa dal sistema coach (IA + motore + umano) in base all'obiettivo didattico. Accanto alle lezioni ci sono puzzle, esami e step di verifica per consolidare le conoscenze e il metodo di ragionamento appreso.
-
-Dopo aver risposto correttamente, lo studente può vedere **aiuti visivi** — frecce che mostrano linee d'attacco, case evidenziate che raggruppano concetti. Il cervello impara a vedere la scacchiera a blocchi significativi, non come 64 case scollegate.
-
-L'idea di fondo è una: **aiutare a passare dall'istintività tattica alla visione strategica**. Non basta sapere la mossa giusta — devi sapere il perché, devi aver considerato le alternative, devi essere consapevole di come stai ragionando. Questa è la differenza tra un giocatore amatoriale e uno agonistico.
-
-### Per chi è
-
-NeuroScacchi non è un'app per un profilo specifico. È uno strumento che permette a chiunque insegni scacchi di creare percorsi su misura per studenti con esigenze diverse:
-
-- Un bambino ADHD con deficit nella memoria di lavoro ha bisogno di sessioni corte, molto rinforzo visivo, e feedback che non punisca gli errori.
-- Un bambino plusdotato ha bisogno di sfide che non lo annoino e domande che lo costringano a verbalizzare il ragionamento.
-- Un bambino autistico può beneficiare di struttura prevedibile, regole chiare e progressione esplicita.
-- Un adulto che vuole migliorare il proprio gioco torneistico ha bisogno di lavorare sulla disciplina decisionale sotto pressione.
-
-La piattaforma non decide cosa serve a chi — lo decide l'umano che crea la lezione, supportato dall'IA e dal motore.
-
-### Il vantaggio competitivo
-
-Nessuna piattaforma scacchistica oggi offre la combinazione di creazione lezioni assistita da IA, percorsi interattivi ramificati e contenuti centrati sul coach. Chess.com e Lichess hanno milioni di puzzle ma zero lavoro sul processo decisionale. ChessKid è pensata per bambini ma non adatta nulla a profili cognitivi diversi. Chessable insegna aperture per memorizzazione, non per comprensione. DecodeChess usa Stockfish più NLP per spiegare le mosse, ma è uno strumento di analisi, non un costruttore di lezioni.
-
-Per ottenere quello che NeuroScacchi offre, oggi serve un coach umano esperto — che costa 30-80€/ora e che raramente combina competenza scacchistica e sensibilità pedagogica per profili diversi. NeuroScacchi democratizza quell'esperienza.
-
-Il vantaggio difensivo non sta nelle funzionalità tecniche — un concorrente con più risorse potrebbe replicarle — ma nella **specializzazione pedagogica**. Le piattaforme esistenti ottimizzano per l'ampiezza dell'engagement; NeuroScacchi ottimizza per la profondità del pensiero. Questa distinzione conta per chi vuole insegnare a ragionare, non solo a giocare.
-
-### L'origine e la visione
-
-Il progetto nasce dall'esperienza personale di un padre e insegnante che gioca a scacchi in torneo con il proprio figlio ADHD e ha osservato che la concentrazione in contesto agonistico è la funzione esecutiva più compromessa sotto stress.
-
-La fase attuale è di sviluppo e test interno: il creatore e i suoi tre figli (12, 10 e 8 anni, tutti giocatori agonistici) sono il banco di prova. L'idea e il progetto sono da tutelare. In futuro NeuroScacchi potrebbe aprirsi a collaboratori fidati e una possibile commercializzazione non è esclusa — ma quelle decisioni verranno dopo, sulla base dei risultati reali.
-
-L'ambizione più grande è che NeuroScacchi diventi uno stimolo per una collaborazione tra scacchisti, psicologi e insegnanti — idealmente sotto forma di una fondazione dove competenze diverse convergono per creare contenuti proprietari e promuovere gli scacchi come strumento educativo efficace. Non necessariamente validato clinicamente su tutti gli aspetti, ma costruito con rigore, con dati, e con l'umiltà di chi sa che il valore è nell'esperienza sul campo prima che nella teoria.
-
-### Protezione dell'idea
-
-Il metodo didattico di NeuroScacchi (Intent/Detective/Candidate, freeze, scaffolding cognitivo) non è brevettabile nell'UE — l'art. 52(2)(c) della Convenzione Europea sui Brevetti esclude i metodi per compiere atti mentali e giocare. Le protezioni concrete sono:
-
-- **Segreti commerciali** (D.Lgs. 63/2018): invio di descrizioni datate del metodo via PEC, registro dei segreti commerciali, NDA per eventuali collaboratori, algoritmi sensibili lato server.
-- **Copyright** sul codice sorgente (automatico, vita + 70 anni sotto legge UE).
-- **Deposito SIAE** (~€150–200) e/o deposito notarile (~€200–500) per prova di paternità e data.
-
-Il costo totale per una fondazione IP solida è circa **€250–500**. Queste azioni vanno intraprese prima di qualsiasi condivisione o pubblicazione del progetto.
+Questi due risultati si rinforzano a vicenda: la continuità produce le lezioni, e avere lezioni concrete in vista dà senso alla continuità.
 
 ---
 
-## 2. IL METODO
+## Cosa teniamo a distanza
 
-### Principio
+Sono altrettanto importanti le cose che *non* proveremo a fare tra aprile e giugno. Esplicitarle libera energia. In questa versione 3.1 non entrano:
 
-Dal tatticismo istintivo al pensiero strategico. NeuroScacchi colma il gap tra il giocatore amatoriale che "vede la mossa" e lo scacchista agonistico che "capisce la posizione". Quella profondità di studio che oggi richiede anni di libri o un maestro, l'app la rende accessibile attraverso l'interazione IA + motore + coach umano.
+La **pipeline tattica sui puzzle Lichess**. È stata congelata a marzo e per ora resta tale. Il codice è scritto e funzionante, ma non viene riaperto, non viene toccato, non viene manutenuto con priorità. Se un giorno tornerà utile, sarà una decisione consapevole — non un ritorno automatico.
 
-### Principio non negoziabile
+Il **multi-utente, i profili studente separati, l'assegnazione lezioni**. Questo è il confine netto tra laboratorio e prodotto: resta fuori. La Fase 7 della vecchia ROADMAP è sospesa.
 
-**Non si toccano i pezzi senza aver prima pensato.**
+**Refactoring architetturali o riscritture**. Il progetto 3.0 ha un'architettura solida. Non la cambiamo. Niente migrazione a TypeScript, niente cambio di framework, niente ripensamenti di fondo. Il tempo disponibile non lo permette e il guadagno non giustificherebbe il rischio.
 
-Questo principio si realizza attraverso attività che si frappongono tra lo studente e la mossa (Intent, Detective, Candidate), oppure — quando non ci sono attività — attraverso un'attesa temporizzata che dà tempo per osservare e riflettere.
+**Sicurezza infrastrutturale pesante**. Le Netlify Functions oggi non sono protette da autenticazione — chiunque conosca gli URL può scrivere nel database. Questo è un debito noto. In regime di laboratorio privato familiare, con URL non pubblicati, il rischio resta tollerabile: l'oscurità degli URL è sufficiente per il perimetro A (tu \+ figli). Se nei prossimi mesi dovesse emergere il perimetro B (2-5 persone di fiducia esterne), la sistemazione diventa un'azione prioritaria prima di condividere gli URL — e in tal caso si interromperà la produzione di contenuti per affrontarla. Ma non facciamo il lavoro in anticipo: lo facciamo se e quando serve.
 
-Il freeze non è uno strumento tra gli altri. È il principio stesso che prende forme diverse a seconda del contesto: una domanda strategica *è* un freeze, un esercizio di individuazione *è* un freeze, un'attesa prima della mossa *è* un freeze.
+**La Fase 3 della vecchia ROADMAP: scheda studente e personalizzazione cognitiva**. L'infrastruttura di personalizzazione è ambiziosa e importante, ma richiede un ordine di grandezza più di lavoro di quello disponibile in questa finestra. Per ora i tre "profili studente" sono mentali — stanno nella testa del coach (me), non nel sistema. Quando crei una lezione per un figlio specifico, tieni tu conto di chi è. Sufficiente per il laboratorio privato.
 
-### Il ciclo
+**La commercializzazione, l'apertura a terzi, gli aspetti legali e IP di distribuzione**. Restano dove sono: registrati nella vecchia ROADMAP, protetti nell'IP di base (SIAE, NDA, segreto commerciale come già previsto), ma non oggetto di lavoro attivo.
 
-Il ciclo base è: **Freeze → Attività → Feedback**. Ma non è rigido. Gli elementi intermedi (aiuti visivi, calibrazione della fiducia, domande metacognitive) sono modulari: il coach può inserirli, spostarli, rimuoverli in base allo studente e all'obiettivo.
-
-Per un bambino ADHD il ciclo potrebbe essere molto strutturato con più strumenti attivi. Per un ragazzo plusdotato potrebbe essere snello con solo un'attività complessa. Per un bambino autistico potrebbe essere sempre uguale nella forma, prevedibile e rassicurante.
-
-Il coach decide — perché troppi strumenti insieme possono essere deleteri per certi profili (rallentamenti continui frustrano alcuni studenti) e troppo poca struttura manda in confusione altri.
-
-### Le tre attività e le loro radici
-
-I tre tipi di attività non sono scelte di design arbitrarie. Ciascuno mappa direttamente su tradizioni consolidate della pedagogia scacchistica e della scienza cognitiva:
-
-**Intent — Il pensiero strategico prima dell'azione.** Esternalizza quella che Adriaan de Groot identificò nel suo studio fondativo del 1946 come la "fase di orientamento" — i primi secondi in cui un giocatore esperto coglie la posizione e formula idee generali prima di calcolare. Si allinea con il framework degli "squilibri" di Jeremy Silman ("prima immagina la posizione ideale, poi cerca come arrivarci"). Forzando lo studente a categorizzare la posizione prima che la scacchiera si sblocchi, Intent allena il pensiero riflessivo che la ricerca ha dimostrato migliorare la qualità delle mosse a tutti i livelli (Moxley, Ericsson, Charness & Krampe, 2012).
-
-**Detective — Il riconoscimento di pattern e la lettura della posizione.** Isola il riconoscimento di pattern — il singolo predittore più forte dell'abilità scacchistica ad ogni livello, secondo la teoria del chunking di Chase e Simon (1973) e la teoria dei template di Gobet (1996). Separando l'osservazione dall'azione, Detective allena l'abilità percettiva e implementa la valutazione sistematica delle caratteristiche posizionali proposta da Dvoretsky.
-
-**Candidate — Il metodo delle mosse candidate.** Implementa direttamente il metodo di Alexander Kotov da *Pensare come un grande maestro* (1971): identificare tutte le mosse candidate valide prima di analizzarne qualcuna. Combatte il "pensiero circolare" e quella che Dan Heisman definisce "Hope Chess" — muovere senza verificare le risposte dell'avversario. Il principio di considerare alternative prima di impegnarsi è universalmente approvato nella pedagogia scacchistica.
-
-### Avvertimento sulla calibrazione per livello
-
-Il consenso nella didattica scacchistica è che **l'allenamento tattico deve dominare per i principianti** (indicativamente sotto i 1500 Elo), con i concetti strategici introdotti progressivamente — come nel curriculum in nove libri di Yusupov, che passa da forte enfasi tattica al livello base a strategia maggioritaria ai livelli avanzati.
-
-Se le attività Intent e Detective pesano troppo sulla riflessione strategica astratta per giovani principianti, rischiano di frustrare anziché sviluppare giocatori la cui base di riconoscimento dei pattern si sta ancora formando. Le attività vanno calibrate: **osservazione tattica concreta per i principianti, valutazione strategica per gli avanzati**.
-
-### Strumenti modulari a disposizione del coach
-
-- **Aiuti visivi** — Frecce e case evidenziate che appaiono dopo la risposta corretta. Costruiscono il chunking: la capacità di vedere la scacchiera a blocchi significativi.
-- **Calibrazione della fiducia** — Prima di confermare la mossa, lo studente dichiara "sono sicuro", "ho un dubbio" o "non lo so". Dopo, l'app confronta la fiducia con il risultato. Attivabile dal coach per gli studenti che ne beneficiano.
-- **Metacognizione** — Domande riflessive senza risposta giusta ("hai ragionato o hai risposto d'istinto?"). Attivabile dal coach, frequenza e momento configurabili.
-- **Feedback graduato** — Con Stockfish, non solo giusto/sbagliato ma quanto giusto/sbagliato.
-- **Traduzione semantica della valutazione** — Stockfish produce dati numerici (delta-eval in centipawn); l'IA li traduce in feedback narrativi strategici comprensibili allo studente. Un calo di -2.5 non diventa "hai perso 2.5 punti" ma "con questa mossa il controllo delle case scure si indebolisce e il Re resta esposto". Il dato oggettivo del motore alimenta la capacità narrativa dell'IA, producendo spiegazioni che normalmente richiederebbero un maestro.
-
-### Progressione
-
-All'apertura dell'app lo studente ha due opzioni:
-
-- **Lezioni singole** — A scelta, per argomento o tema, esplorabili liberamente.
-- **Percorsi di studio** — Sequenze strutturate di lezioni + puzzle di verifica + esami, con avanzamento progressivo.
-
-In futuro, ogni studente che accede vedrà i contenuti assegnati dal proprio coach.
-
-### Note bibliografiche
-
-Le radici scientifiche e pedagogiche del metodo si appoggiano su una tradizione consolidata:
-
-**Scienza cognitiva degli scacchi:**
-
-- De Groot, A. D. (1946). *Het denken van den schaker*. Amsterdam: Noord-Hollandsche Uitgevers Maatschappij. Traduzione inglese: *Thought and Choice in Chess* (1965, Mouton; ristampa 2008, Amsterdam University Press, ISBN: 978-90-5356-998-6).
-- Chase, W. G. & Simon, H. A. (1973). Perception in chess. *Cognitive Psychology*, 4(1), 55–81. DOI: 10.1016/0010-0285(73)90004-2.
-- Gobet, F. & Simon, H. A. (1996). Templates in chess memory. *Cognitive Psychology*, 31(1), 1–40. DOI: 10.1006/cogp.1996.0011.
-- Gobet, F. (2018). *The Psychology of Chess*. London: Routledge. ISBN: 978-1-138-21665-5.
-- Moxley, J. H., Ericsson, K. A., Charness, N. & Krampe, R. T. (2012). The role of intuition and deliberative thinking in experts' superior tactical decision-making. *Cognition*, 124(1), 72–78. DOI: 10.1016/j.cognition.2012.03.005.
-
-**Pedagogia scacchistica pratica:**
-
-- Kotov, A. (1971). *Think Like a Grandmaster*. London: Batsford. ISBN: 978-0-7134-0356-5. Edizione italiana: *Pensa come un grande maestro* (1983, Prisma Editori, a cura di S. Mariotti, ISBN: 978-88-7264-019-7).
-- Silman, J. (2010). *How to Reassess Your Chess* (4th ed.). Los Angeles: Siles Press. ISBN: 978-1-890085-13-1. Edizione italiana della 3ª ed.: *Teoria e pratica degli squilibri* (2005, Prisma, ISBN: 978-88-7264-094-4).
-- Heisman, D. (2014). *The Improving Chess Thinker* (2nd ed.). Boston: Mongoose Press. ISBN: 978-1-936277-48-3.
-
-**Meta-analisi sul trasferimento cognitivo:**
-
-- Sala, G. & Gobet, F. (2016). Do the benefits of chess instruction transfer to academic and cognitive skills? A meta-analysis. *Educational Research Review*, 18, 46–57. DOI: 10.1016/j.edurev.2016.02.002.
-- Sala, G. & Gobet, F. (2017). Does far transfer exist? Negative evidence from chess, music, and working memory training. *Current Directions in Psychological Science*, 26(6), 515–520. DOI: 10.1177/0963721417712760.
-
-**Pedagogia scacchistica in Italia:**
-
-- Trinchero, R. (a cura di) (2012). *Gli scacchi, un gioco per crescere: Sei anni di sperimentazione nella scuola primaria*. Milano: FrancoAngeli. ISBN: 978-8820405816.
-- Sgrò, G. (a cura di) (2012). *A scuola con i Re: Educare e rieducare attraverso il gioco degli scacchi*. Roma: Alpes Italia. ISBN: 978-8865311066. (Volume multidisciplinare con 30 contributori internazionali tra cui Fernand Gobet.)
-- Miletto, R., Pompa, A., Fucci, M. R. & Morrone, F. (2024). *I bambini e gli scacchi: Appunti per una teoria della mente*. Roma: Armando Editore. ISBN: 979-1259846587.
-- Messa, R. & Mearini, M. T. *Il gioco degli scacchi*. Messaggerie Scacchistiche. ISBN: 978-8898503070. (Il manuale giovanile più diffuso in Italia.)
+Tenere queste cose *fuori* dalla 3.1 non significa rinunciare a loro per sempre. Significa solo che in questa versione non ci occupiamo di loro, e quindi non ci rubano energia mentale.
 
 ---
 
-## 3. LA DIDATTICA PERSONALIZZATA
+## I due rischi strutturali, e come li affrontiamo
 
-### Principio
+Nella sessione di ripensamento sono emersi due rischi concreti che potrebbero far fallire questi due mesi. Meritano una strategia esplicita, non una raccomandazione generica.
 
-Ogni studente è diverso. La personalizzazione non è un'opzione avanzata — è il modo in cui NeuroScacchi funziona. La stessa posizione scacchistica può diventare lezioni completamente diverse a seconda di chi la studia: diversi tipi di attività, diversi strumenti attivi, diversa durata, diverso linguaggio del feedback.
+### Rischio 1 — La discontinuità
 
-La personalizzazione agisce su due piani:
+Smettere di aprire il progetto per tre settimane, tornare, non ricordare dove eri, sentirsi spaesati, allontanarsi di nuovo. Questa è una spirale classica, ed è particolarmente pericolosa per chi ha un profilo ADHD e una vita di insegnante con stagioni di tempo molto diseguale.
 
-- **Cosa si studia** — Quali posizioni, quali temi, quale difficoltà, quale progressione. Un bambino di 8 anni con Elo 900 ha bisogno di tattica di base e sviluppo dei pezzi; un ragazzo di 12 anni con Elo 1400 può lavorare su piani strategici e finali complessi.
-- **Come si studia** — Quali strumenti si attivano, quanto dura il freeze, quanto feedback serve, che tipo di linguaggio usare. Un bambino ADHD che si frustra facilmente ha bisogno di feedback graduato e sessioni brevi; un bambino autistico ha bisogno di routine prevedibili e regole esplicite; un plusdotato ha bisogno di sfide che non lo annoino.
+Il rischio non si elimina con la forza di volontà. Si riduce con scelte di processo:
 
-### La scheda studente
+**Ogni sessione di lavoro lascia un punto di aggancio esplicito per la successiva.** Concretamente: un foglio Google Fogli (di cui parleremo subito dopo) dove tutte le task vivono, con stato aggiornato, con note che raccontano dove eri, con una task *in corso* sempre visibile. Quando riapri il progetto dopo due settimane, non devi ricostruire il contesto leggendo codice: apri il foglio e vedi dove sei. La memoria non è tua, è del sistema.
 
-Il punto di partenza della personalizzazione è la **scheda studente** — un profilo che il coach compila inizialmente e che evolve nel tempo con i dati d'uso.
+**Le task sono piccole.** Una task del foglio deve stare in una sessione reale — 30 minuti, un'ora, al massimo due. Task più grandi vengono spezzate. Una task da "otto ore" è una task che non inizi mai.
 
-**Compilazione iniziale — dialogo coach + IA:**
+**Le sessioni di Claude Code cominciano e finiscono con un rito breve.** All'inizio: gli chiedi "dove eravamo rimasti?" e lui legge il foglio task e te lo riassume in 5 righe. Alla fine: gli chiedi di aggiornare il foglio e di scrivere la prossima task di aggancio. Così non devi ricordarti tu di farlo.
 
-Il coach racconta liberamente in chat quello che sa dello studente. Non un questionario rigido — un dialogo naturale. L'IA ascolta, estrae le informazioni, le organizza in una scheda strutturata e segnala le lacune ("non hai menzionato la durata ottimale delle sessioni — quanti minuti riesce a restare concentrato?"). Il coach rivede, corregge, integra e approva.
+**La produzione di lezioni è disaccoppiata dal lavoro tecnico.** Non devi sempre essere in modalità "programmatore" per avanzare. In serate stanche puoi limitarti a generare una lezione nella Console Coach, leggere l'output, segnare nel foglio cosa va e cosa no. Lavoro legittimo, continuità preservata, zero frustrazione.
 
-La scheda è organizzata su tre livelli:
+### Rischio 2 — La delusione di qualità
 
-- **Profilo scacchistico** (sempre): Elo o livello stimato, da quanto gioca, punti di forza e debolezza (tattica/strategia/finali/aperture/gestione del tempo), se gioca tornei, che aperture usa.
-- **Profilo di apprendimento** (sempre): come reagisce agli errori, se preferisce struttura rigida o flessibilità, durata ottimale della sessione, se si frustra facilmente, se tende a muovere d'impulso o a pensare troppo.
-- **Profilo cognitivo** (opzionale): ADHD, autismo, plusdotazione, difficoltà specifiche di memoria di lavoro, attenzione sostenuta, o altre informazioni che il coach ritenga rilevanti.
+Arrivare a giugno, finalmente con tempo libero, iniziare a testare le lezioni coi figli, e scoprire che "non funzionano davvero" — sono piatte, il linguaggio è freddo, il ritmo è sbagliato, i bambini si annoiano. Vivere questo come un fallimento, invece che come una ripresa.
 
-**Evoluzione con i dati d'uso:**
+Anche qui, il rischio si combatte con scelte di processo:
 
-Man mano che lo studente usa l'app, i risultati delle lezioni alimentano il profilo: accuracy per tema, tempi di risposta, pattern di errore ricorrenti, compliance con il freeze, durata effettiva delle sessioni. L'IA può suggerire aggiornamenti al coach ("l'accuracy sui finali è salita dal 40% al 65% negli ultimi due mesi — aggiorno il profilo?"), ma è sempre il coach umano che approva le modifiche.
+**Test piccoli ma frequenti, non un test catastrofico a giugno.** Ogni volta che produci una lezione, non la archivi direttamente — la leggi con occhio critico, la giochi tu stesso nel player, la valuti con i criteri di qualità di questa 3.1 (linguaggio, pedagogia, metodo). Se non ti convince già a te, non convincerà i figli. Correzione subito, non accumulo per dopo.
 
-### Come la scheda studente guida la creazione delle lezioni
+**Una lezione "campione" che fa da riferimento.** Prendiamo una lezione già prodotta che ti soddisfa — la Ruy Lopez di marzo o un'altra che sceglieremo — e la dichiariamo *standard di qualità*. Tutte le lezioni future si misurano contro quella. Se non sono alla sua altezza, non passano. Questo evita la deriva silenziosa della qualità, che è il modo tipico in cui i progetti di produzione decadono.
 
-Quando il coach crea una lezione, l'IA conosce la scheda dello studente e la usa come contesto per tutte le sue proposte:
+**Test con i figli ridotti al minimo essenziale già prima di giugno.** Anche mezz'ora al mese con un figlio, su una lezione alla volta, vale più di sessioni ipotetiche a giugno. Serve solo per avere un segnale precoce: "ecco, qui si annoiano", "ecco, qui ridono", "ecco, qui chiedono perché". Questi segnali indirizzano la produzione successiva molto più di qualsiasi analisi teorica. Non è "testare seriamente": è tastare il terreno.
 
-- **Selezione dei contenuti**: l'IA attinge dal database di puzzle (4,7M di puzzle Lichess con rating e tag tematici) e dall'Opening Explorer scegliendo posizioni adeguate al livello e ai temi su cui lo studente deve lavorare.
-- **Struttura della lezione**: più step con strumenti multipli per chi ha bisogno di struttura, lezioni snelle e sfidanti per chi non ne ha bisogno.
-- **Linguaggio e feedback**: adattato all'età e al profilo — spiegazioni semplici e incoraggianti per un bambino di 8 anni, analisi più tecniche per un ragazzo di 12.
-- **Configurazione degli strumenti**: il profilo suggerisce quali strumenti attivare per default (calibrazione della fiducia per chi tende a sopravvalutarsi, metacognizione per chi muove d'impulso) e quali tenere spenti.
-- **Calibrazione tattica/strategica**: per studenti principianti, le attività Intent e Detective restano sul piano tattico concreto; per studenti avanzati, si spostano verso la valutazione strategica astratta.
-
-Il coach può sempre sovrascrivere qualsiasi scelta dell'IA — la scheda studente è una guida, non un vincolo.
-
-### Prospettiva futura: analisi delle partite dello studente
-
-Quando il sistema sarà maturo, il coach potrà incollare un PGN di una partita reale dello studente. L'IA, conoscendo il profilo dello studente, identificherà i momenti critici (dove il delta-eval supera una soglia) e proporrà lezioni mirate su quegli errori specifici. Questo chiude il cerchio: lo studente gioca in torneo → il coach analizza la partita → l'IA genera lezioni sui punti deboli → lo studente migliora → gioca meglio in torneo.
+**Un esperimento mirato sulla Knowledge Base prima di investirci troppo.** La domanda aperta è: le lezioni generate con `contestoStrategico` ricco (testo da manuale incollato nella console) sono davvero migliori di quelle senza? Se sì, vale la pena di investire sulla KB piena (ingestione dei manuali). Se no, restiamo su KB-0 manuale e risparmiamo settimane. Il test si fa con poche lezioni, ben confrontate, letto dai tuoi figli in una sera. Finché non c'è risposta, la KB-2 (retrieval automatico) aspetta.
 
 ---
 
-## 4. IL DESIGN
+## Le aree di lavoro di primavera
 
-### Due interfacce
+Il lavoro dei prossimi due mesi si distribuisce su cinque aree, ciascuna con uno scopo chiaro. Non sono fasi in sequenza — sono **ambiti paralleli** che coabitano nello stesso foglio di task, con priorità diverse.
 
-L'app ha due anime distinte con due interfacce separate.
+### Area 1 — Ripulire prima di lavorare
 
-### Console Coach — Lo studio di registrazione
+Una serata sola, forse due, dedicate a mettere in ordine il progetto *prima* di iniziare a produrre. Non è "rifattorizzare", è semplicemente togliere di mezzo quello che confonde.
 
-La console è lo spazio dove il coach lavora con IA e Stockfish per creare le lezioni. È come uno studio di registrazione: il coach è il regista, l'IA è lo sceneggiatore che propone la struttura, Stockfish è il consulente tecnico che verifica la correttezza.
+**Cosa entra**: archiviare il codice della versione 2.x che è ancora nel progetto ma non serve più; disambiguare i due `ai-chat` che hanno lo stesso percorso; aggiornare il `README.md` che parla di un progetto che non esiste più; aggiornare il file `CLAUDE.md` che descrive una struttura molto più piccola di quella reale; congelare `ANALISI-CODICE.md` come documento storico; aggiornare Vite alla versione 6 per chiudere le vulnerabilità più rumorose.
 
-**Flusso di lavoro a tre livelli:**
+**Cosa non entra**: nessun lavoro strutturale sul codice, nessuna riscrittura, nessun cambio di libreria che richieda test.
 
-1. **Impostazione obiettivi** — Il coach spiega all'IA cosa vuole in una schermata iniziale: per chi è la lezione (con accesso alla scheda studente), su quale tema, quale obiettivo didattico, quale livello.
+**Perché conta**: un progetto ripulito è un progetto che Claude Code capisce meglio, che tu rileggi meglio dopo due settimane di silenzio, che ti fa sentire al timone invece che al rimorchio.
 
-2. **Creazione collaborativa** — L'IA propone una struttura (posizioni, step, domande, feedback), attingendo dal database puzzle Lichess, dall'Opening Explorer e dalle valutazioni cloud per posizioni adeguate al profilo dello studente. Stockfish valida in tempo reale che le posizioni siano corrette, che le mosse "sbagliate" siano davvero peggiori, che le mosse "giuste" siano effettivamente le migliori. L'IA non è affidabile da sola sugli scacchi — il sistema funziona perché le tre intelligenze si correggono a vicenda.
+### Area 2 — Produrre lezioni di apertura
 
-3. **Revisione e validazione** — Il coach vede la lezione risultante, può modificarla, correggerla, aggiustarla. Poi la valida e diventa disponibile.
+Il cuore operativo dei due mesi. Aprire la Console Coach, generare lezioni, rifinirle, archiviarle. Sempre sulla pipeline aperture — che è la pipeline "viva" del 3.0 e che si è dimostrata funzionante.
 
-**Layout:** la scacchiera al centro — la stessa visualizzazione che vedrà lo studente. Intorno, gli strumenti di lavoro del coach: la chat con l'IA, i pannelli di configurazione, i controlli Stockfish. Il coach mentre crea sta già vedendo l'esperienza dello studente. Quando modifica qualcosa, vede immediatamente l'effetto.
+**Cosa entra**: decidere insieme quali aperture coprire (Ruy Lopez per un figlio, Siciliana per un altro, Italiana come base comune, qualcosa per il Nero); produrre 1-2 lezioni a settimana; salvarle approvate su Firestore; giocarle tu stesso come primo test di qualità; annotare nel foglio cosa ha funzionato e cosa no.
 
-**In futuro:** assegnazione lezioni a studenti specifici, visualizzazione feedback e dati di utilizzo, compilazione e aggiornamento delle schede studente.
+**Cosa non entra**: la pipeline tattica, la generazione di puzzle, altri tipi di contenuto.
 
-**Nota tecnica — Scelta open source:** Il componente scacchiera utilizzerà Chessground, la libreria di Lichess (licenza GPL-3.0), che offre frecce e cerchi integrati — funzionalità essenziali per gli aiuti visivi del metodo. La scelta GPL è coerente con la visione non commerciale del progetto nella fase attuale. I contenuti creati (lezioni, percorsi) sono e resteranno proprietari.
+**Perché conta**: è l'unico modo per arrivare a giugno con il risultato promesso — 5-10 lezioni testabili. Tutto il resto è secondario.
 
-**Nota tecnica — Funzionamento offline:** Stockfish WASM (~7MB) e le lezioni scaricate vengono messe in cache via Service Worker (architettura PWA), permettendo allo studente di allenarsi senza connessione internet. Solo la creazione di lezioni con IA richiede connettività.
+### Area 3 — L'esperimento Knowledge Base
 
-### Interfaccia Studente
+Una sola domanda a cui rispondere: *la KB piena vale l'investimento di tempo?* La risposta non si indovina — si misura con un piccolo esperimento.
 
-Per ora essenziale: lista di lezioni disponibili e percorsi di studio. Un clic apre la lezione o il percorso. L'esperienza durante la lezione è guidata da ciò che il coach ha configurato.
+**Cosa entra**: usare la `IngestionPage` per caricare qualche pagina chiave da un manuale della Spagnola (non tutte le 26, bastano 3-5 per iniziare); produrre 2-3 lezioni della Spagnola con `contestoStrategico` ricco; produrre le stesse 2-3 lezioni senza contesto; leggerle con cura e confrontarle contro i criteri di qualità di questa 3.1. Chiaro: stiamo valutando se il contesto strategico che viene passato *a mano* migliora le lezioni. Non stiamo ancora costruendo il retrieval automatico.
 
----
+**Dipendenze**: la famosa intuizione della fotocopiatrice scolastica. Se il flusso di ingestione viene esteso per accettare PDF multi-pagina da scanner, il costo per popolare la KB cala drasticamente e l'esperimento diventa più ricco. È una task piccola del foglio, ma strategica.
 
-## 5. LA ROADMAP
+**Cosa non entra**: KB-2 (retrieval automatico in pipeline). KB-3 e KB-4. Nessun lavoro su quelle prima di aver risposto alla domanda di KB-0/KB-1.
 
-### Fase 0 — Fondamenta
+**Perché conta**: potrebbe risparmiare settimane di lavoro, o confermarne la necessità. In entrambi i casi, saperlo vale oro.
 
-**Stato: COMPLETATA** ✓
+### Area 4 — L'aspetto grafico per bambini
 
-Le cose senza cui niente funziona.
+L'intuizione di cui ti sei accorto nella sessione di oggi: la grafica attuale è "corporate e fredda", e per un bambino di 10 anni la qualità della lezione comincia dal colpo d'occhio, non dal testo. Una lezione scritta benissimo ma presentata in un'interfaccia triste perde metà della sua forza con uno studente di quell'età.
 
-- Componente scacchiera interattiva: **Chessground** (`@lichess-org/chessground`, GPL-3.0) — scacchiera SVG con frecce, cerchi, drag-and-drop, animazioni, supporto mobile. ~10KB, zero dipendenze.
-- Logica scacchistica: **chessops** (`chessops`, GPL-3.0) — validazione mosse, parsing FEN, parsing PGN con annotazioni Lichess (frecce, cerchi, eval), generazione mosse legali nel formato Chessground. Sostituisce chess.js con funzionalità più ricche.
-- Motore di analisi: **Stockfish WASM** (`stockfish` npm, GPL-3.0) — build lite ~7MB, single-thread, depth 15-20 sufficiente per l'uso didattico. Gira in un Web Worker, zero costi server.
-- **Database puzzle Lichess** importato in Firestore: 4,7M di puzzle con FEN, soluzione, rating, tag tematici (CC0, dominio pubblico). Indicizzato per tema + rating con indici compositi Firestore. Fonte principale da cui l'IA attinge posizioni per le lezioni.
-- Definizione del **formato lezione JSON v3**: versionamento semantico, unioni discriminate per tipo step, separazione contenuto/configurazione. Non esiste uno standard aperto per lezioni scacchistiche interattive — questo formato è parte del valore del progetto.
-- **IA generativa**: Google Gemini 2.5 Pro via API, chiamata lato server tramite Netlify Function (`ai-chat.js`) per proteggere la chiave. La scelta del provider è intercambiabile — l'interfaccia interna usa un contratto `{ messages, system } → { content, usage }` indipendente dal modello.
+**Cosa entra**: la Fase 2bis della vecchia ROADMAP è già documentata in `docs/design-ux-bambini.md`. Possiamo partire da lì, ma in dose molto ridotta — non tutto il piano di design, solo le cose a **impatto alto / sforzo basso**: palette più calda, colori della scacchiera tradizionali (marrone/beige stile Lichess), color coding dei tipi di attività, un'animazione o due di celebrazione sul "corretto\!". Lavoro di una sera, forse due.
 
-### Fase 1 — La console coach con IA
+**Cosa non entra**: il ridisegno sistematico dell'interfaccia, il rework tipografico completo, le animazioni avanzate, le icone personalizzate.
 
-**Stato: IN CORSO**
+**Perché conta**: senza questa area, le lezioni a giugno rischiano di deludere non per il contenuto ma per il contenitore. È un investimento piccolo ad altissima resa per il testing coi figli.
 
-Il cuore della 3.0: il sistema di creazione lezioni. L'IA arriva subito perché senza di essa il coach non può produrre contenuti di qualità in tempi ragionevoli. L'integrazione è progressiva:
+### Area 5 — La continuità come infrastruttura
 
-**Fase 1A — IA per il testo, Stockfish per gli scacchi.**
+Non è un'area di lavoro nel senso classico — è un'area di *supporto* alle altre quattro. Comprende le scelte di processo che rendono possibile tornare al progetto dopo una pausa.
 
-**Completato:**
-- Schermata di impostazione obiettivi con form tema/livello/rating/obiettivo ✓
-- Chat con IA integrata (iterazione raffinamento) ✓
-- Generazione lezione con multi-provider IA (Claude Sonnet/Opus + Gemini Flash/Pro) ✓
-- LessonViewer con visualizzazione step, errori schema, mosse illegali ✓
-- Validazione mosse con chessops (mosse illegali rilevate) ✓
-- Salvataggio bozza e approvazione in localStorage ✓
-- System prompt migliorato con regole anti-errori comuni ✓
-- Progress messages nel flusso generazione ✓
-- Infrastruttura database puzzle completa: `puzzle-search.js` (Netlify Function → Firestore), `puzzleDatabase.js` (client), `puzzle-meta.js` (metadati temi/aperture) ✓
-- **Database puzzle Lichess importato in Firestore** ✓ — ~4.7M puzzle filtrati per qualità (popularity ≥ 50, nbPlays ≥ 500), indici compositi (themes + rating) abilitati
-- Netlify Function `puzzle-search.js` riscritta per Firestore (Firebase Admin SDK) ✓
+**Cosa entra**: il foglio Google Fogli con tutte le task di queste cinque aree, con i campi che avevamo deciso (ID, titolo, descrizione in italiano leggibile, fase, priorità, stato, tempo stimato, chi fa, dipendenze, istruzioni tecniche per Claude Code, note). Il rito di apertura e chiusura sessione con Claude Code. L'aggiornamento del foglio come parte integrante di ogni sessione, non come aggiunta opzionale.
 
-- **Analisi Stockfish automatica dopo generazione** ✓ — ogni step viene analizzato con SF depth 15, mostra qualità (best/good/inaccuracy/mistake/blunder), mossa migliore SF vs mossa IA, top linee. Ri-analisi anche dopo raffinamento via chat.
+**Cosa non entra**: strumenti complicati, sistemi di project management pesanti, metriche elaborate. Un foglio. Una tabella. Tre colonne filtrabili. Basta e avanza.
 
-**Stato Fase 1A: INFRASTRUTTURA COMPLETA** ✓
-
-- Database puzzle Lichess attivo su Firestore ✓
-- Analisi Stockfish post-generazione funziona ✓
-- Salvataggio lezioni su Firestore completo (`lessonStore.js` — zero localStorage) ✓
-- Pipeline tattica (puzzle Lichess) implementata ma **in standby** — da validare con test reali prima di riaprire
-- Pipeline aperture con Opening Explorer: vedi Fase 1C (completata)
+**Perché conta**: è il moltiplicatore di tutto il resto. Senza continuità, produrre lezioni diventa un'impresa titanica; con continuità, diventa un'abitudine serale.
 
 ---
 
-### Problema critico identificato: l'IA non sa fare scacchi
+## Oltre giugno
 
-**Data identificazione: 2026-03-13**
+A giugno finisce la scuola, arrivano le vacanze, cambia il tempo disponibile. Non ha senso pianificare ora nel dettaglio l'estate — sarebbe pianificazione al buio. Ma ha senso fissare due cose.
 
-L'architettura attuale della generazione lezioni ha un difetto fondamentale: **chiede all'IA di calcolare scacchi** — generare FEN, determinare mosse migliori, calcolare posizioni risultanti. Gli LLM non sono in grado di farlo in modo affidabile. Risultato: lezioni con errori scacchistici gravi (posizioni impossibili, mosse illegali, valutazioni false come "Df1 è matto" quando c'è una torre che può catturare).
+**Il testing vero coi figli comincia a giugno**, non prima. Le sessioni del laboratorio familiare — uno o più figli davanti all'app, tu accanto che osservi e prendi note — diventano il centro dell'estate. Le 5-10 lezioni prodotte entro giugno sono il materiale su cui fare questo test. Se l'estate produce altre lezioni, bene; ma il cuore è il test.
 
-**8 gap identificati nell'architettura attuale:**
+**La fotocopiatrice della scuola è un'opportunità di giugno**. Finché sei a scuola, hai accesso a uno strumento che trasforma l'ingestione KB da lavoro manuale proibitivo a operazione rapida. Prima che le vacanze chiudano la scuola, potrebbe avere senso dedicare mezz'ora a scansionare i 3-4 manuali strategici che hai in casa. Il PDF prodotto resta a disposizione per l'ingestione progressiva nei mesi successivi.
 
-| # | Gap | Gravità |
-|---|-----|---------|
-| 1 | Solo il primo tag Lichess usato per la ricerca (sempre "fork" per tattica) | Media |
-| 2 | Temi non mappati → zero puzzle → IA inventa posizioni | Alta |
-| 3 | IA può usare puzzle "come ispirazione" o ignorarli del tutto | **Critica** |
-| 4 | FEN validata solo per formato regex, non per legalità posizione | Alta |
-| 5 | Mosse mai validate per legalità nella posizione data | **Critica** |
-| 6 | Catena FEN tra step non calcolata, solo string-match | **Critica** |
-| 7 | Nessun Stockfish nel loop di generazione | **Critica** |
-| 8 | initialFen vs steps[0].fen non verificato | Bassa |
+Il resto dell'estate si definirà sulla base di due segnali: cosa ti dicono i figli durante i test di giugno, e cosa ti ha detto l'esperimento sulla Knowledge Base. Da lì nascerà, se necessario, una versione 3.2 del documento. Non prima.
 
-Il principio delle "3 intelligenze" (IA bozza, SF valida, umano approva) è corretto ma l'implementazione attuale lo viola: l'IA fa tutto da sola e SF interviene solo dopo, come audit — troppo tardi per essere utile.
+All'orizzonte più lontano — nei mesi e anni che verranno — resta il sogno del progetto come metodo condiviso: fondazione, libro, collaborazione con psicologi e insegnanti. Non è scadenza, è direzione. Ogni scelta di questa primavera deve essere coerente con quella possibilità, senza che la forzi.
 
 ---
 
-### Nuova pipeline di generazione: "IA fa pedagogia, il sistema fa scacchi"
+## Porte che restano aperte
 
-**Documento di riferimento:** `docs/architettura-pipeline-lezioni.md`
+Il perimetro operativo dei prossimi due mesi è la strada del **laboratorio privato**. Ma alcune piccole scelte di igiene vanno curate in questa primavera anche se non servirebbero al laboratorio, perché sono **precondizioni per tutte le strade future** che un giorno potremmo decidere di imboccare (pubblicazione del metodo, rete informale di collaboratori, eventuale associazione).
 
-Il cambio architetturale separerà nettamente i ruoli. L'IA interviene due volte (pianifica e costruisce) ma **non tocca mai FEN, mosse o valutazioni** — quelli arrivano da Lichess, Stockfish e chessops.
+Tre filoni da tenere vivi con attenzione leggera ma costante:
 
-#### Pipeline a 4 passi
+**Proprietà intellettuale**. Le azioni già previste (deposito SIAE, deposito notarile, NDA tipo per futuri collaboratori) non le anticipiamo per spaventarci, ma non le rimandiamo sine die. Quando una di queste azioni costa poco tempo e chiude una porta di rischio, la facciamo.
 
-```
-Passo 0: UMANO → descrive il bisogno
-Passo 1: IA PIANIFICA → struttura pedagogica, criteri ricerca puzzle
-Passo 2: SISTEMA CERCA E VALIDA → Lichess + SF + chessops → materiali certificati
-Passo 3: IA COSTRUISCE → con materiali validati scrive domande, feedback, spiegazioni
-Passo 4: UMANO → rivede e approva
-```
+**Qualità del codice e tracciabilità**. Niente refactoring pesanti, ma scelte piccole che non chiudono porte: commit messaggi leggibili, documentazione architetturale aggiornata, licenze open source correttamente tracciate (`chessops`, `chessground` e Stockfish sono GPL-3.0, e questo ha implicazioni per una eventuale distribuzione futura).
 
-**Passo 1 — IA Pianifica**: produce un piano strutturato (JSON) con titolo, tipi di attività, sequenza pedagogica, criteri di ricerca puzzle (tag Lichess, range rating, quantità). Non genera nessuna FEN né mossa.
+**Pubblicabilità dei materiali**. Ogni lezione, documento, schema prodotto viene scritto *come se* un giorno potesse essere letto da un terzo — un editor, un collega, un revisore. Non significa asettico: significa rileggibile senza di me. Lingua curata, riferimenti corretti, radici metodologiche documentate.
 
-**Passo 2 — Sistema Cerca e Valida** (zero IA):
-- Query puzzle da Firestore con i criteri del piano
-- Per ogni puzzle, `chessops.makeMove()` calcola deterministicamente ogni FEN intermedia lungo la sequenza di mosse
-- Stockfish analizza le posizioni chiave: eval, mosse migliori, minacce
-- Output: "pacchetto materiali" con posizioni reali, mosse verificate, analisi SF
-
-**Passo 3 — IA Costruisce**: riceve piano + materiali certificati. Scrive domande, opzioni, feedback, spiegazioni. Usa **solo** le FEN e le mosse dal pacchetto materiali. Post-processing automatico verifica che nessuna FEN sia stata inventata e calcola le transizioni deterministicamente.
-
-**Passo 4 — Umano Valida**: invariato — il coach rivede e approva nella Console Coach.
-
-#### Come il puzzle Lichess diventa lezione
-
-Un puzzle Lichess ha: FEN iniziale + sequenza di mosse (la prima è dell'avversario = setup, la seconda è la soluzione del giocatore, ecc.). Il sistema calcola tutte le posizioni intermedie con chessops:
-
-```
-positions[0] = FEN iniziale
-positions[1] = dopo mossa avversario (= la posizione del puzzle)
-positions[2] = dopo soluzione giocatore
-positions[3] = dopo risposta avversario
-...
-```
-
-Ogni posizione è analizzata da SF. L'IA poi mappa queste posizioni su step della lezione:
-
-| Step | Posizione | Dati scacchi | IA fa |
-|------|-----------|-------------|-------|
-| intent | positions[1] | correctMoves da puzzle, allowedMoves da SF top 3-4 | Scrive domanda e opzioni |
-| detective | positions[1] | correctSquare da target mossa migliore | Scrive domanda |
-| candidate | positions[1] | candidateMoves da SF, bestMove da SF | Scrive istruzioni |
-| move | positions[1] | correctMoves da puzzle | Scrive feedback |
-| text | opzionale | nessuno | Scrive contenuto |
-| demo | positions[0] | moves da sequenza puzzle | Scrive spiegazione |
-
-#### File da creare
-
-| File | Ruolo |
-|------|-------|
-| `src/engine/lessonPipeline.js` | Orchestratore dei 4 passi |
-| `src/engine/puzzleEnricher.js` | Passo 2: calcolo posizioni, analisi SF, validazione |
-| `src/engine/lessonPlanPrompt.js` | System prompt per Passo 1 (pianificazione) |
-| `src/engine/lessonBuildPrompt.js` | System prompt per Passo 3 (costruzione) |
-
-#### File da modificare
-
-| File | Modifiche |
-|------|-----------|
-| `src/engine/aiService.js` | Aggiungere `planLesson()` e `buildLesson()`. Mantenere vecchio flusso come fallback. |
-| `src/engine/chessService.js` | Aggiungere helper `makeMoveFromUci()` e `getSan()` |
-| `src/pages/ConsolePage.jsx` | Wiring nuova pipeline con toggle vecchia/nuova |
-
-#### Fasi di implementazione
-
-| Fase | Scope | Prerequisiti |
-|------|-------|-------------|
-| **1A-Pipeline-A** | Foundation: `puzzleEnricher.js`, helper `chessService.js`, skeleton pipeline | Nessuno |
-| **1A-Pipeline-B** | Passo 1+2: prompt pianificazione, `planLesson()`, `buildMaterialsPackage()` con SF | A |
-| **1A-Pipeline-C** | Passo 3+integrazione: prompt costruzione, `buildLesson()`, validazione, ConsolePage | B |
-| **1A-Pipeline-D** | Polish: cloud eval, fallback, rimozione toggle | C |
-
-#### Budget performance
-
-| Fase | Tempo |
-|------|-------|
-| Passo 1 (IA pianifica) | 5-15s |
-| Passo 2 (fetch + compute + SF) | 16-27s |
-| Passo 3 (IA costruisce) | 10-20s |
-| Post-processing | <200ms |
-| **Totale** | **31-62s** (25-45s con cloud eval) |
+Il bivio vero sulla natura futura del progetto (laboratorio, opera d'autore, rete informale, associazione) si affronterà a **settembre 2026**, dopo l'estate di testing, con più dati ed energia. Da qui a lì, il compito è solo: non chiudere porte per distrazione.
 
 ---
 
-**Fase 1B — Raffinamenti pipeline tattica.**
+## Nota di chiusura
 
-**Stato: DA FARE (bassa priorità — tattica in standby)**
-- Cloud eval Lichess come prima fonte, SF locale come fallback
-- Gestione fallback quando non ci sono abbastanza puzzle per i criteri
-- Supporto per FEN fornita dal coach (bypass puzzle database)
-- Raffinamento iterativo: il coach chiede modifiche via chat, la pipeline ri-valida
+Questo documento è scritto in un momento di lucidità del progetto — dopo settimane di distanza fisica, con la prospettiva ristabilita da una sessione di ripensamento. Quella lucidità non durerà da sola. Servirà rileggere queste pagine quando la discontinuità minaccerà di riprendere il sopravvento — magari tra due settimane, o tra due mesi. Il documento è scritto apposta per essere rileggibile senza sforzo.
 
----
-
-### Fase 1C — Pipeline aperture con Opening Explorer
-
-**Stato: COMPLETATA** ✓
-
-Pipeline dedicata alle aperture, costruita sulla stessa architettura della Fase 1A ma con fonte dati e prompt completamente diversi. L'obiettivo è la comprensione del piano, non la memorizzazione delle mosse.
-
-**Documento di riferimento:** `docs/analisi-pipeline-aperture.md`
-
-**Principio chiave:** L'IA spiega il *perché* di ogni mossa usando dati statistici reali ("il 73% dei giocatori al tuo livello risponde così") e analisi Stockfish. Lo studente ragiona prima di muovere, non dopo aver memorizzato.
-
-**File da creare:**
-
-| File | Ruolo |
-|---|---|
-| `src/engine/openingExplorer.js` | Client Lichess Opening Explorer API |
-| `src/engine/openingEnricher.js` | Cammina mosse + statistiche Explorer + analisi SF |
-| `src/engine/openingPipeline.js` | Orchestratore 4 passi per aperture |
-| `src/engine/openingPlanPrompt.js` | Prompt pianificazione lezione apertura |
-| `src/engine/openingBuildPrompt.js` | Prompt costruzione step (centrato su comprensione piano) |
-
-**File da modificare:**
-
-| File | Modifiche |
-|---|---|
-| `src/pages/ConsolePage.jsx` | Sezione aperture: form con apertura, colore, varianti, profondità |
-| `src/engine/aiService.js` | Aggiungere `planOpening()` e `buildOpeningLesson()` |
-| `src/pages/LessonViewer.jsx` | Orientation: passare bianco/nero a Chessground |
-
-**Input coach per una lezione di apertura:**
-- Apertura (es. "Siciliana Najdorf, variante Inglese")
-- Colore (Bianco / Nero) — determina l'orientamento della scacchiera
-- Varianti da coprire (testo libero)
-- Profondità (numero di mosse)
-- Livello studente (mappato su fascia Elo Explorer)
-
-**Come le attività esistenti si applicano alle aperture:**
-
-| Attività | Uso per aperture |
-|---|---|
-| **text** | Introduce l'idea dell'apertura, spiega la struttura |
-| **intent** | "Perché il Nero gioca ...c5 invece di ...e5?" |
-| **detective** | Trova la casa/pezzo che definisce la struttura |
-| **candidate** | Scegli tra le mosse più giocate a questo livello (statistiche reali) |
-| **move** | Esegui la mossa dell'apertura (rinforzo) |
-| **demo** | Mostra la sequenza con narrazione del piano |
-
-### Fase 1D — Knowledge Base strategica
-
-**Stato: PROGETTATA — in attesa di implementazione**
-
-**Documento di riferimento:** `docs/architettura-knowledge-base.md`
-
-**Contesto:** La pipeline aperture ha due fonti di verità (Explorer statistico + Stockfish computazionale). Manca il terzo strato: conoscenza strategica autorevole da manuali esperti. Questo è il differenziatore reale dell'app rispetto a qualsiasi concorrente.
-
-**Principio architetturale:** La Knowledge Base è indicizzata per **FEN** (posizione esatta nell'albero delle aperture), non per nome dell'apertura. Quando la pipeline calcola le FEN del percorso con chessops, interroga la KB per ogni FEN. Match esatto, zero ambiguità.
-
-**Principio di ingestion:** stesso della pipeline — "IA fa pedagogia, il sistema fa scacchi": Vision estrae testo + sequenze di mosse, chessops calcola FEN. Vision non produce mai FEN.
-
-**Fasi di implementazione:**
-
-| Fase | Scope | Stato |
-|------|-------|-------|
-| **KB-0** | Prototipo: `contestoStrategico` textarea in Console (copia manuale dal libro) | COMPLETATO ✓ |
-| **KB-1** | Schema Firestore + `IngestionPage` (`#/ingestion`): upload foto → Vision → preview → salva | DA FARE |
-| **KB-2** | Retrieval in `openingEnricher.js`: query KB per ogni FEN del percorso → inietta nel prompt | DA FARE |
-| **KB-3** | Raffinamento: merge chunk duplicati, import PGN annotato (Modalità C), gestione KB esistente | DA FARE |
-| **KB-4** | Pipeline dipendente: warning per aperture senza copertura KB, suggerimento di arricchimento | FUTURO |
-
-**Dettaglio Fase KB-1 — IngestionPage:**
-
-- Upload foto pagina manuale
-- Chiamata Claude Vision con prompt di estrazione strutturata:
-  - Estrae: principiStrategici, piani bianco/nero, erroriTipici, concettiChiave, sequenzaMosse, apertura, variante
-  - NON produce FEN, NON copia testo raw
-- chessops calcola FEN dalla sequenzaMosse estratta
-- Preview: testo estratto + scacchiera con posizione risultante (verifica visiva)
-- Conferma → salva chunk su Firestore `knowledgeChunks`
-
-**Schema chunk Firestore:**
-```
-{
-  apertura, variante, sottoVariante, ecoCode,
-  sequenzaMosse, fens[],           // fens calcolate da chessops
-  principiStrategici[], piani{bianco, nero}, erroriTipici[], concettiChiave[],
-  livello,                          // "tutti" | "principiante" | "intermedio" | "avanzato"
-  fonte{nome, pagina, autore},
-  createdAt
-}
-```
-
-**Integrazione pipeline (Fase KB-2):**
-- `openingEnricher.js` → per ogni FEN calcolata, query `knowledgeChunks WHERE fens ARRAY_CONTAINS fen`
-- Se trovati: aggiunti al `materials` package come `knowledgeChunks: [...]`
-- Se non trovati: pipeline procede normalmente (KB opzionale)
-- `openingBuildPrompt.js` → sezione condizionale con chunk KB + regole anti-plagio (già parzialmente implementate con `contestoStrategico`)
-
----
-
-### Fase 2 — Il player studente (base)
-
-**Stato: COMPLETATA** ✓
-
-Il player minimo per eseguire le lezioni create in Fase 1.
-
-- Freeze (attesa temporizzata quando non ci sono attività) ✓
-- Freeze saltato per step `text` (il testo è già l'attività) ✓
-- Tutti e 6 i tipi di attività: Intent, Detective, Candidate, Move, Text, Demo ✓
-- Aiuti visivi (frecce e case evidenziate) ✓
-- Feedback base corretto/scorretto ✓
-- Lista lezioni (LessonsPage), clic per aprire e giocare ✓
-- Transizioni animate tra step ✓
-- Schermata completamento lezione ✓
-- **Sistema feedback coach** ✓ — stelle per step durante la lezione (Difficile/Ok/Facile), form valutazione finale (5 stelle globale + 3 stelle + nota per ogni step + note generali), salvataggio su Firestore `lessonFeedback`
-- **Salvataggio e lettura lezioni da Firestore** ✓ — `lessonStore.js` completamente asincrono, zero localStorage; Netlify Functions `lesson-save`, `lesson-list`, `lesson-get`, `lesson-delete`
-- **FeedbackPage** (`#/feedback`) ✓ — review feedback passati, espansione dettagli per step, replay lezioni
-- **Scacchiera orientabile** ✓ — `orientation` da `lesson.orientation` (bianco/nero per aperture)
-- **Board interattiva corretta** ✓ — fix Chessground reinit su cambio `interactive`/`viewOnly`
-
-**Nota sull'engagement:** La ricerca indica 10–20 minuti come durata ottimale per sessione di contenuti scacchistici educativi con bambini di 8–12 anni. La soglia critica per verificare l'efficacia è di 25–30 ore totali di istruzione (Sala & Gobet, 2016), che a 3–5 sessioni settimanali da 10–20 minuti richiede 8–16 settimane di uso sostenuto.
-
-### Fase 3 — Scheda studente e personalizzazione
-
-**Stato: DA FARE** — Stima: 2-3 sessioni (~5-8 ore)
-
-La didattica personalizzata prende forma.
-
-- Creazione della scheda studente: dialogo coach + IA per la compilazione iniziale (profilo scacchistico, di apprendimento, cognitivo opzionale)
-- L'IA usa la scheda come contesto nella creazione delle lezioni
-- Raccolta dati d'uso base (accuracy, tempi, pattern di errore)
-- Suggerimenti IA per aggiornamento profilo basati sui dati
-
-### Fase 4 — Raffinamento console coach
-
-**Stato: DA FARE** — Stima: 2-3 sessioni (~6-10 ore)
-
-Lo studio di registrazione diventa completo.
-
-- Editor raffinato: modifica singoli step, riordina, aggiusta domande e feedback
-- Configurazione degli strumenti modulari per la singola lezione
-- Personalizzazione dei parametri del freeze
-
-### Fase 5 — Strumenti modulari nel player
-
-**Stato: DA FARE** — Stima: 3-4 sessioni (~8-12 ore)
-
-Il player supporta tutto ciò che è opzionale.
-
-- Calibrazione della fiducia
-- Domande metacognitive
-- Feedback graduato via Stockfish
-- Ogni strumento risponde a ciò che il coach ha configurato nella lezione
-
-### Fase 6 — Percorsi e verifiche
-
-**Stato: DA FARE** — Stima: 3-5 sessioni (~10-16 ore)
-
-La struttura di avanzamento.
-
-- Creazione di percorsi (sequenze di lezioni + puzzle + esami)
-- Lato studente: selezione percorsi con visualizzazione avanzamento
-- Lato coach: strumenti per assemblare percorsi
-
-### Fase 7 — Multi-utente (futuro)
-
-**Stato: DA FARE** — Stima: 4-6 sessioni (~15-25 ore)
-
-L'apertura ad altri.
-
-- Account studenti
-- Il coach assegna lezioni e percorsi a studenti specifici
-- Dashboard per visualizzare feedback e dati di utilizzo
-
----
-
-### Stime cumulative
-
-| Completato (6-14 Mar 2026) | ~24-30 ore attive in ~6 giorni di lavoro |
-|---|---|
-| **Restante (Fasi 2bis + 3-7)** | **~54-86 ore stimate** |
-| Velocità osservata | ~3-4 ore per sessione intensa |
-| Stima sessioni rimanenti | ~18-28 sessioni |
-
-*Nota: ogni fase include una quota di debug imprevedibile (~30% del tempo storico). La variabile principale è la qualità iterativa dei prompt IA — se richiedono molti cicli di raffinamento, le fasi di generazione si allungano.*
-
----
-
-### Priorità operative — stato attuale (2026-03-20)
-
-**Principio guida:** le aperture sono l'unico tipo di contenuto attivo finché non hanno feedback costantemente positivi. Nessuna nuova tipologia di contenuto prima di questo traguardo.
-
-**Priorità 1 — Knowledge Base strategica (Fase 1D)**
-- Fase KB-1: implementare `IngestionPage` — la priorità immediata
-- Obiettivo: poter caricare le 26 pagine del manuale della Spagnola nel sistema
-- Dopo KB-1: testare KB-0 (contestoStrategico attuale) per validare che il contesto migliori le lezioni
-- Solo dopo validazione qualitativa → procedere con KB-2 (retrieval automatico in pipeline)
-
-**Priorità 2 — Qualità contenuti aperture**
-- Iterare sui prompt in base ai feedback raccolti
-- La KB è lo strumento per migliorare strutturalmente la profondità strategica
-
-**Priorità 3 — Esperienza visiva player** (vedi Fase 2bis)
-- L'aspetto grafico è decisivo nei test con i bambini
-
-**Priorità 4 — Fasi 3-7** (dopo validazione contenuti + UI)
-
----
-
-### Fase 2bis — Esperienza visiva per bambini
-
-**Stato: PROSSIMA** — Stima: 2-3 sessioni (~6-10 ore)
-
-**Documento di riferimento:** `docs/design-ux-bambini.md` — analisi completa con varianti freeze, tipografia, bottoni, frecce/evidenziazioni, problema visualizzazione mentale della scacchiera, checklist implementazione.
-
-**Contesto:** I test con i bambini confermano che l'aspetto grafico è un fattore decisivo di engagement, motivazione e percezione della qualità. La base CSS è solida (variabili, tema, responsive) ma il look attuale è corporate e freddo — progettato inconsciamente per adulti, non per bambini di 8-12 anni.
-
-**Aree di intervento in ordine di priorità:**
-
-**A. Palette e identità visiva** (impatto alto, sforzo medio)
-- Sostituire il blu indigo corporate (#283593) con una palette più calda e vivace
-- Direzione: colori ispirati agli scacchi ma giocosi — legno caldo, verde vivace, accenti oro
-- Color coding per tipo di attività: ogni attività ha il suo colore identificativo
-  - Intent → azzurro (pensiero strategico)
-  - Detective → arancio (scoperta, investigazione)
-  - Candidate → verde (generazione alternativa)
-  - Move → viola/indaco (esecuzione, azione)
-  - Text → neutro caldo (lettura, contesto)
-
-**B. Scacchiera** (impatto alto, sforzo basso)
-- Colori case: sostituire il grigio anonimo con marrone/beige tradizionale (es. Lichess brown: #b58863 / #f0d9b5)
-- Coordinate: font più leggibile, colori vivaci
-- Pezzi: verificare che il set sia leggibile a tutte le dimensioni
-
-**C. Celebrazioni e feedback positivo** (impatto molto alto, sforzo medio)
-- Animazione "Corretto!" con elemento celebrativo (confetti CSS, pulse colorato)
-- Schermata "Lezione completata!" con animazione e tono festoso
-- Micro-animazione su risposta corretta nelle opzioni Intent (scale + glow)
-- FreezeOverlay: meno severo, più "momento di preparazione" che "blocco"
-
-**D. Differenziazione visiva delle attività** (impatto alto, sforzo medio)
-- Ogni tipo di attività ha bordo/header colorato distintivo
-- Icona visiva per tipo (domanda, lente, rami, freccia)
-- Il bambino riconosce a colpo d'occhio "che tipo di sfida" sta per affrontare
-
-**E. Bottoni e interazioni** (impatto medio, sforzo basso)
-- Scale-up sottile su hover dei bottoni (1.04×)
-- Opzioni Intent: bordo più marcato, visual feedback hover più deciso
-- Progress bar: più spessa, colorata per fase
-
-**F. Tipografia e leggibilità** (impatto medio, sforzo basso)
-- Aumentare le dimensioni base dei testi nei pannelli attività
-- Domande delle attività: font-size più grande e bold marcato
-- Label troppo piccole (0.65rem): portare a minimo 0.75rem
-
-**Non fare (scope out):**
-- Aggiungere suoni/audio (fuori scope)
-- Ridisegnare la Console Coach (è per adulti — va bene com'è)
-- Cambiare la struttura layout (funziona)
-
-### Debito tecnico — Chessboard.jsx
-
-**Reinit di Chessground al cambio di interattività**
-
-La fix attuale aggiunge `interactive` e `viewOnly` alle dipendenze dell'`useEffect` che inizializza Chessground, forzando un destroy + reinit completo ogni volta che la board passa da non-interattiva a interattiva (e viceversa). Funziona, ma non è la soluzione più pulita.
-
-**Causa radice:** Chessground ha un bug interno — `.set()` non aggiorna correttamente `draggable.enabled` quando passa da `false` a `true`.
-
-**Soluzione preferibile:** usare il prop `key` sul container div invece di gestire le dipendenze manualmente:
-
-```jsx
-<div
-  key={`cg-${interactive ? 'i' : 'n'}-${viewOnly ? 'v' : 'n'}`}
-  ref={cgContainerRef}
-  style={{ width: size, height: size }}
-/>
-```
-
-React smonta e rimonta il DOM element al cambio di `key`, triggering il ciclo cleanup/init dell'`useEffect` in modo naturale. L'`useEffect` di init tornerebbe alla sola dipendenza `[size]`. Prima di implementare: verificare che React gestisca correttamente il reattachment del `ref` al remount e che non ci siano race condition con il ResizeObserver.
-
----
-
-### Orizzonte futuro (non in roadmap)
-
-Idee da esplorare in futuro senza impegno attuale:
-
-- Analisi PGN delle partite dello studente per generare lezioni mirate sui punti deboli
-- Integrazione di stimoli audio e altri strumenti sensoriali
-- Modalità partita con scaffolding
-- Apertura a collaboratori fidati e/o fondazione educativa
-- Possibile commercializzazione sulla base dei risultati reali
-- **Randomizzazione del ripasso** (ispirazione ChessMind.ai): dopo aver completato una lezione, possibilità di rivedere le posizioni chiave in ordine casuale invece che lineare — costringe il riconoscimento del contesto invece della memorizzazione della sequenza. Riusa le attività esistenti, nessun nuovo schema dati necessario.
-
-#### Hover preview avanzato per le opzioni Intent (estensioni future)
-
-Attualmente implementata l'**Opzione A** (frecce/cerchi statici sul board al passaggio del mouse), già parte del sistema `previewVisualAids` nel JSON della lezione.
-
-Idee per evoluzioni future:
-
-- **Opzione B — FEN anteprima**: ogni opzione porta un `previewFen` opzionale. Hovering → la scacchiera si aggiorna alla posizione risultante da quella scelta. Più potente ma rischia di "spoilerare" — mostra la conseguenza senza far ragionare. Va valutato se contraddice il principio "pensa prima di muovere".
-
-- **Opzione C — Analisi Stockfish live**: hovering su un'opzione → Stockfish analizza la mossa associata in tempo reale e disegna la top line sulla scacchiera. Molto d'impatto per studenti avanzati, permette di vedere immediatamente la qualità di ogni piano. Richiede l'integrazione di Stockfish nel Player (Fase 3+) e una gestione dei thread SF per non bloccare l'interfaccia.
-
-### Azioni IP immediate (prima di qualsiasi condivisione)
-
-- Invio descrizione datata del metodo via PEC
-- Deposito SIAE e/o notarile del documento di progetto e del codice
-- Predisposizione NDA per eventuali futuri collaboratori
-
----
-
-*NeuroScacchi 3.0 e tutti i contenuti sono di proprietà esclusiva di Luca Morigi. Tutti i diritti riservati.*
+Se a una futura rilettura qualcosa qui dentro non ti sembrerà più vero, la cosa giusta non sarà ignorarlo: sarà aprire una nuova sessione di ripensamento e scrivere la 3.2. I piani vivi hanno il diritto e il dovere di essere riscritti. L'importante è che non restino impliciti.  

@@ -38,10 +38,30 @@ export default async (req) => {
     }
 
     // Converti dal formato Anthropic (user/assistant) al formato Gemini (user/model)
-    const contents = messages.map(msg => ({
-      role: msg.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: msg.content }],
-    }))
+    // Supporta content come stringa o array di parti (testo + immagini per Vision)
+    const contents = messages.map(msg => {
+      const role = msg.role === 'assistant' ? 'model' : 'user'
+
+      // Se content è un array, è multimodale (testo + immagini)
+      if (Array.isArray(msg.content)) {
+        const parts = msg.content.map(part => {
+          if (part.type === 'text') return { text: part.text }
+          if (part.type === 'image') {
+            return {
+              inline_data: {
+                mime_type: part.mime_type || 'image/jpeg',
+                data: part.data, // base64
+              },
+            }
+          }
+          return { text: String(part) }
+        })
+        return { role, parts }
+      }
+
+      // Stringa semplice — comportamento classico
+      return { role, parts: [{ text: msg.content }] }
+    })
 
     const requestBody = {
       contents,

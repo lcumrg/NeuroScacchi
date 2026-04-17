@@ -1,0 +1,343 @@
+/* IngestionPage — Knowledge Base Ingestion */
+
+.ingestion-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.ingestion-page h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.ingestion-page .subtitle {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Upload area */
+.ingestion-upload {
+  border: 2px dashed var(--border-color);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  background: var(--bg-card);
+}
+
+.ingestion-upload:hover,
+.ingestion-upload.drag-over {
+  border-color: var(--color-primary);
+  background: var(--color-primary-bg);
+}
+
+.ingestion-upload input[type="file"] {
+  display: none;
+}
+
+.ingestion-upload .upload-label {
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.ingestion-upload .upload-label strong {
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+/* Meta fields */
+.ingestion-meta {
+  display: grid;
+  grid-template-columns: 1fr 100px 1fr;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ingestion-meta label {
+  font-size: 0.75rem;
+  color: var(--text-label);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ingestion-meta input {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: var(--bg-main);
+  color: var(--text-primary);
+}
+
+/* Preview image */
+.ingestion-preview-image {
+  max-width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: 8px;
+  margin-top: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+/* Processing status */
+.ingestion-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+  background: var(--color-primary-bg);
+  color: var(--color-primary);
+  font-size: 0.875rem;
+}
+
+.ingestion-status.error {
+  background: var(--color-error-bg, #fef2f2);
+  color: var(--color-error, #dc2626);
+}
+
+.ingestion-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Chunk cards */
+.ingestion-chunks {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.chunk-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.chunk-card.has-error {
+  border-color: var(--color-error, #dc2626);
+}
+
+.chunk-card.saved {
+  border-color: var(--color-success, #16a34a);
+  opacity: 0.7;
+}
+
+.chunk-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.chunk-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  flex: 1;
+}
+
+.chunk-badge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  background: var(--bg-main);
+  color: var(--text-secondary);
+}
+
+.chunk-body {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .chunk-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chunk-board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chunk-board .move-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chunk-board .move-nav button {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-main);
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+}
+
+.chunk-board .move-nav button:hover {
+  background: var(--color-primary-bg);
+}
+
+.chunk-details {
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.chunk-details h4 {
+  margin: 0.75rem 0 0.25rem;
+  font-size: 0.8rem;
+  color: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.chunk-details h4:first-child {
+  margin-top: 0;
+}
+
+.chunk-details ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.chunk-details li {
+  margin-bottom: 0.25rem;
+}
+
+.chunk-details .moves-raw {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  background: var(--bg-main);
+  padding: 0.5rem;
+  border-radius: 6px;
+  word-break: break-all;
+}
+
+.chunk-error {
+  color: var(--color-error, #dc2626);
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: var(--color-error-bg, #fef2f2);
+  border-radius: 6px;
+}
+
+/* Actions */
+.chunk-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.btn-save {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-primary);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.btn-save:hover { opacity: 0.9; }
+.btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-discard {
+  padding: 0.5rem 1.25rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.btn-discard:hover {
+  background: var(--bg-main);
+}
+
+.btn-extract {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-primary);
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: opacity var(--transition-fast);
+}
+
+.btn-extract:hover { opacity: 0.9; }
+.btn-extract:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Saved chunks list */
+.saved-chunks-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--border-color);
+}
+
+.saved-chunks-section h2 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.saved-chunk-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.85rem;
+}
+
+.saved-chunk-row .chunk-info {
+  flex: 1;
+}
+
+.saved-chunk-row .chunk-info strong {
+  color: var(--text-primary);
+}
+
+.saved-chunk-row .chunk-fens {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-label);
+}
+
+.saved-chunk-row button {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-error, #dc2626);
+  font-size: 0.75rem;
+  cursor: pointer;
+}

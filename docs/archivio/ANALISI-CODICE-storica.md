@@ -1,3 +1,5 @@
+> Fotografia al 2026-03-13. Congelata, non più aggiornata. Documento corrente per lo stato del codice: STATO-ATTUALE.md.
+
 # ANALISI-CODICE.md — Analisi codice vs ROADMAP
 
 *Generata automaticamente il 2026-03-13 durante la sessione di sviluppo.*

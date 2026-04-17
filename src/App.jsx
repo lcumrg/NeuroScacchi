@@ -7,6 +7,7 @@ import ErrorBoundary from './components/ErrorBoundary.jsx'
 const DocPage = lazy(() => import('./pages/DocPage.jsx'))
 const SviluppoPage = lazy(() => import('./pages/SviluppoPage.jsx'))
 const PlayerPage = lazy(() => import('./pages/PlayerPage.jsx'))
+const IngestionPage = lazy(() => import('./pages/IngestionPage.jsx'))
 
 function getRoute() {
   const hash = window.location.hash || '#/'
@@ -16,9 +17,10 @@ function getRoute() {
   if (hash.startsWith('#/progetto')) return 'sviluppo'
   if (hash.startsWith('#/diario'))   return 'sviluppo'
   if (hash.startsWith('#/feedback')) return 'sviluppo'
-  if (hash.startsWith('#/doc'))      return 'doc'
-  if (hash.startsWith('#/lessons'))  return 'lessons'
-  if (hash.startsWith('#/player'))   return 'player'
+  if (hash.startsWith('#/doc'))       return 'doc'
+  if (hash.startsWith('#/lessons'))   return 'lessons'
+  if (hash.startsWith('#/player'))    return 'player'
+  if (hash.startsWith('#/ingestion')) return 'ingestion'
   return 'demo'
 }
 
@@ -85,6 +87,7 @@ export default function App() {
         {navLink('#/',         'Demo',          route === 'demo')}
         {navLink('#/console',  'Console Coach', route === 'console')}
         {navLink('#/lessons',  'Lezioni',       route === 'lessons')}
+        {navLink('#/ingestion','KB Ingestion',  route === 'ingestion')}
         {navLink('#/sviluppo', 'Sviluppo',      route === 'sviluppo')}
       </nav>
 
@@ -109,6 +112,11 @@ export default function App() {
               <PlayerPage />
             </Suspense>
           </ErrorBoundary>
+        )}
+        {route === 'ingestion' && (
+          <Suspense fallback={fallback}>
+            <IngestionPage />
+          </Suspense>
         )}
       </main>
 

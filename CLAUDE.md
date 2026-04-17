@@ -1,5 +1,14 @@
 # CLAUDE.md - Istruzioni per Claude Code
 
+---
+DOCUMENTI DI RIFERIMENTO (da consultare all'inizio di ogni sessione):
+- ROADMAP.md → visione e piano di lavoro (versione 3.1, aprile 2026)
+- STATO-ATTUALE.md → fotografia tecnica del codice
+- DOMANDE-APERTE.md → questioni da chiarire con l'utente
+
+PRINCIPIO GUIDA: il perimetro operativo è "laboratorio privato" (vedi ROADMAP.md). Ogni scelta tecnica proposta in sessione va verificata contro la ROADMAP. In caso di dubbio tra più strade, chiedere all'utente invece di decidere autonomamente.
+---
+
 ## Progetto
 
 NeuroScacchi 3.0 — Training engine per scacchi con creazione lezioni assistita da IA + Stockfish + coach umano.
