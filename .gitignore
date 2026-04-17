@@ -9,3 +9,5 @@ public/stockfish/
 
 # Puzzle database and downloaded data
 data/
+.DS_Store
+**/.DS_Store
