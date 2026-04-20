@@ -28,6 +28,23 @@ Ad ogni sessione di lavoro:
 2. **Se prendi una decisione di design**: documentala nella roadmap o in un file dedicato.
 3. **Se aggiungi nuovi task**: aggiungili nella fase appropriata della roadmap.
 
+## Things — area "NeuroScacchi" come task board viva
+
+L'utente tiene le task operative in **Things 3**, nell'area "NeuroScacchi". È l'incarnazione concreta dell'Area 5 della ROADMAP 3.1 ("la continuità come infrastruttura"). I cinque progetti dell'area corrispondono alle cinque aree di lavoro della 3.1: Pulizia codice, Lezioni di apertura, Esperimento KB, Grafica per bambini, Continuità e processo.
+
+**Claude Code può leggere e modificare Things direttamente via AppleScript** (`osascript`). Dal 2026-04-20, su richiesta esplicita dell'utente, l'istruzione è:
+
+1. **Leggere Things a ogni inizio sessione**, senza chiedere. Quando l'utente dice "riprendiamo", "dove eravamo", "cosa facciamo oggi" o simili, aprire direttamente la lista "Oggi" e i progetti dell'area NeuroScacchi e presentare una sintesi concisa (non riversare tutti i 30+ todo aperti).
+2. **Proporre aggiornamenti al termine di ogni task completata.** Claude può spuntare/modificare le task via AppleScript, ma **solo previa conferma esplicita** dell'utente — la spunta è una decisione sua.
+3. **Ricordargli di aprirla quando perde il filo.** Se l'utente sembra disorientato, ripete domande, o chiede "e adesso?", rileggere Things prima di proporre.
+
+Note tecniche su AppleScript Things 3:
+- `every project of theArea` **non funziona** (errore -1728). Iterare invece `every project` e filtrare su `name of (area of p)`.
+- Usare `every checklist item of t` (non `checklist items of t`).
+- La lista "Oggi" in localizzazione italiana si chiama `"Oggi"`, non `"Today"`.
+
+Questa è un'istruzione persistente: vale per tutte le sessioni future, anche quando l'utente non la rinnova esplicitamente.
+
 ## Stack tecnico
 
 - React 18 + Vite
@@ -35,26 +52,62 @@ Ad ogni sessione di lavoro:
 - **chessops** — logica scacchistica, parsing FEN/PGN, validazione mosse
 - **Stockfish WASM** — motore di analisi nel browser via Web Worker
 - Firebase Auth + Firestore (anche per il database 4.7M puzzle Lichess)
-- Multi-provider IA: Claude (Anthropic) + Google Gemini via Netlify Function (`netlify/functions/ai-chat.js`)
+- Multi-provider IA: Claude (Anthropic) + Google Gemini, orchestrati da una **edge function** streaming (`netlify/edge-functions/ai-chat.js`). Esiste anche `netlify/functions/ai-chat.js` non-streaming con supporto Vision per l'ingestione KB.
 
 ## Struttura codice
 
+Ordine di grandezza reale al 2026-04-20: ~20 moduli in `src/engine/`, 11 pagine, 10 componenti, 13 Netlify functions + 1 edge function, 6 documenti in `docs/`. Una fotografia descrittiva completa vive in `STATO-ATTUALE.md` — qui solo il riassunto navigabile.
+
 ```
 src/
-  App.jsx                 # Entry point
-  main.jsx                # React root
-  index.css               # CSS variables, tema chiaro/scuro
+  App.jsx                        # Entry point, routing hash-based
+  main.jsx                       # React root + AuthProvider
+  index.css                      # CSS variables, tema chiaro/scuro
+  engine/                        # 20 moduli: logica scacchistica, pipeline, prompt
+    chessService.js              #   wrapper chessops (FEN/PGN, legalità)
+    stockfishService.js          #   singleton WASM, lifecycle + API
+    openingPipeline.js           #   pipeline aperture a 4 passi (viva)
+    openingEnricher.js           #   Explorer + SF + chessops sui piani IA
+    openingPlanPrompt.js         #   prompt passo 1 (piano lezione)
+    openingBuildPrompt.js        #   prompt passo 3 (contenuti pedagogici)
+    lessonPipeline.js            #   pipeline tattica (congelata)
+    puzzleEnricher.js            #   arricchimento puzzle (congelato)
+    lessonSchema.js              #   validatore runtime v3.0.0
+    lessonStore.js, kbStore.js   #   I/O Firestore via Netlify functions
+    kbIngestion.js               #   Fase KB-1: pagina manuale → chunk
+    lichessCloudEval.js          #   cloud eval Lichess (fallback)
+    sfAnalysisService.js         #   analisi Stockfish on-demand UI
+    aiService.js                 #   client edge function /api/ai-chat
+    lessonSystemPrompt.js        #   system prompt generico
+  pages/                         # 11 pagine .jsx + CSS
+    ConsolePage                  #   creazione lezioni (cuore coach)
+    PlayerPage                   #   esecuzione lezione (studente)
+    LessonsPage                  #   archivio lezioni
+    IngestionPage                #   upload pagine manuale → KB
+    AnalisiPage, DiarioPage      #   pannello Sviluppo
+    FeedbackPage, ProgettoPage   #   pannello Sviluppo
+    SviluppoPage                 #   contenitore dei precedenti
+    DemoPage, DocPage            #   onboarding/documentazione
+  components/                    # UI riusabile
+    Chessboard.jsx               #   wrapper Chessground (responsive)
+    LessonViewer.jsx             #   viewer lezione JSON
+    StockfishPanel.jsx, EvalBar  #   analisi manuale coach
+    player/                      #   sotto-componenti step player
+    ErrorBoundary.jsx
   shared/
-    firebase.js           # Firebase config
+    firebase.js                  # Firebase config (client)
     contexts/
-      AuthContext.jsx      # Auth context
+      AuthContext.jsx            # AuthProvider (presente ma non cablato)
 netlify/
-  functions/
-    ai-chat.js            # Proxy multi-provider IA (Claude + Gemini)
-    puzzle-search.js      # Query puzzle Lichess su Firestore
-    puzzle-meta.js        # Metadati temi/aperture Lichess
+  edge-functions/
+    ai-chat.js                   # Edge streaming Claude + Gemini
+  functions/                     # 13 functions: CRUD lezioni/KB/feedback,
+                                 # puzzle-search, opening-explorer, ai-chat (Vision), ecc.
 public/
-  stockfish/              # Stockfish WASM files
+  stockfish/                     # Stockfish WASM files
+docs/                            # 6 documenti architetturali + archivio 3.0
+  archivio/                      #   ROADMAP-3.0-storica, ANALISI-CODICE-storica
+functions/                       # Firebase Functions 2.x (LEGACY, da archiviare)
 ```
 
 ## Convenzioni
